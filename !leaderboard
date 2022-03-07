@@ -1,0 +1,11 @@
+$nomention
+
+$deletecommand
+
+$color[$random[000000;999999]]
+
+$title[$customEmoji[emoji_3]***CroNobi Leaderboard***]
+
+$globalUserLeaderboard[CroNobi;asc]
+
+$footer[!leaderboard command]
