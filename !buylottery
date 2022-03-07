@@ -1,0 +1,17 @@
+$nomention
+
+$onlyIf[$getVar[CroNobi;$authorID]>=10;You don’t have enough to purchase a lottery ticket]
+
+You purchased $message[1] lottery ticket(s)
+
+$setVar[CroNobi;$sub[$getVar[CroNobi;$authorID];$multi[$message[1];10]];$authorID]
+
+$setVar[Lottery_Ticket;$sum[$message[1];$getVar[Lottery_Ticket;$authorID]];$authorID]
+
+$setServerVar[totalLottery;$sum[$getServerVar[totalLottery];$multi[$getVar[valueLottery];$message[1]]]]
+
+$sendMessage[
+
+Current Lottery Pool: $getServerVar[totalLottery] 
+
+Price Per Ticket: $getVar[valueLottery]]
