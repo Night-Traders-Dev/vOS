@@ -1,0 +1,29 @@
+$nomention
+
+$deletecommand
+
+$setVar[earned;$random[1;10]]
+
+$setVar[CroNobi;$sum[$getVar[earned];$getVar[CroNobi;$authorID]];$authorID]
+
+$setVar[remCroNobi;$sub[$getVar[remCroNobi];$getVar[earned]]]
+
+$setVar[cirCroNobi;$sum[$getVar[cirCroNobi];$getVar[earned]]]
+
+$title[$username[$authorID]]
+
+$description[
+
+ $customEmoji[:emoji_3:] Earned $getVar[earned] CroNobi, please wait 1 Minute
+
+]
+
+$footer[]
+
+$color[$random[000000;999999]]
+
+
+
+$setVar[earned;0]
+
+$cooldown[1m; please wait %time%]
