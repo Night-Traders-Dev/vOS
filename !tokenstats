@@ -1,0 +1,19 @@
+$nomention
+
+$deletecommand
+
+$title[CroNobi Price]
+
+Market Cap: $getVar[mcCroNobi]
+
+Circulating Supply: $getVar[cirCroNobi]
+
+Remaining Supply: $getVar[remCroNobi]
+
+Total Supply: $getVar[maxCroNobi]
+
+$enableDecimals[yes]
+
+$description[Current Price: $$divide[$getVar[mcCroNobi];$getVar[cirCroNobi]]]
+
+$footer[$addTimestamp]
