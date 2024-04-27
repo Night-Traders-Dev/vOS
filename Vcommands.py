@@ -90,21 +90,24 @@ class VCommands:
 
 
 
+
     @staticmethod
     def cat(fs, current_directory, path=None):
         """cat: Display file content\nUsage: cat [file_path]"""
         if not path:
             print("Error: Please specify a file path to read.")
             return
+
+        # Concatenate current directory path with the specified path if necessary
+        if not path.startswith('/'):
+            path = os.path.join(current_directory.get_full_path(), path)
+
         try:
-            if path.startswith('/'):
-                file_content = fs.read_file(path)
-            else:
-                file_path = os.path.join(current_directory.get_full_path(), path)
-                file_content = fs.read_file(file_path)
-                print(file_content)
+            file_content = fs.read_file(path)
+            print(file_content)
         except FileNotFoundError:
             print(f"File '{path}' not found.")
+
 
 
     @staticmethod
