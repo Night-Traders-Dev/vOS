@@ -130,7 +130,7 @@ class VCommands:
         if not path:
             filename = input("Enter filename: ")
             if not filename.strip():
-                fs.kernel.log_command("[Nano]Filename cannot be empty.")
+                fs.kernel.log_command("[Nano] Filename cannot be empty.")
                 print("Filename cannot be empty.")
                 return
             path = os.path.join(current_directory.get_full_path(), filename)
@@ -140,19 +140,32 @@ class VCommands:
                 # If relative, make it relative to the current directory
                 path = os.path.join(current_directory.get_full_path(), path)
 
-        fs.kernel.log_command("[Nano]Full path: " + path)
-        fs.kernel.log_command("[Nano]Current directory: " + current_directory.get_full_path())
-        fs.kernel.log_command("[Nano]Existing files in the current directory: " + str(current_directory.files))
-        fs.kernel.log_command("[Nano]Existing subdirectories in the current directory: " + str(current_directory.subdirectories))
+        fs.kernel.log_command("[Nano] Full path: " + path)
+        fs.kernel.log_command("[Nano] Current directory: " + current_directory.get_full_path())
+        fs.kernel.log_command("[Nano] Existing files in the current directory: " + str(current_directory.files))
+        fs.kernel.log_command("[Nano] Existing subdirectories in the current directory: " + str(current_directory.subdirectories))
 
         print("Nano-like text editor. Press :w to save and exit.")
-        nano_file = ""
+
+        # Load file content if the file exists
+        if fs.file_exists(path):
+            try:
+                nano_file = fs.read_file(path)
+                print(nano_file)  # Print existing content
+            except FileNotFoundError:
+                fs.kernel.log_command(f"[Nano] File '{path}' not found.")
+                nano_file = ""
+        else:
+            nano_file = ""
+
         while True:
             line = input()
             if line == ":w":
                 fs.create_file(path, nano_file)
                 break
             nano_file += line + "\n"
+
+
 
     @staticmethod
     def version():
