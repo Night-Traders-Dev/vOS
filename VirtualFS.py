@@ -4,9 +4,10 @@ import gzip
 from virtualkernel import VirtualKernel
 
 class File:
-    def __init__(self, name, content=""):
+    def __init__(self, name, content="", permissions=""):
         self.name = name
         self.content = content
+        self.permissions = permissions if permissions else "rw-r--r--"  # Default permissions: rw-r--r--
 
     def read(self):
         return self.content
@@ -15,20 +16,29 @@ class File:
         self.content = content
 
 class Directory:
-    def __init__(self, name, parent=None):
+    def __init__(self, name, parent=None, permissions=""):
         self.name = name
         self.subdirectories = {}
         self.files = {}
         self.parent = parent
+        self.permissions = permissions if permissions else "rwxr-xr-x"  # Default permissions: rwxr-xr-x
 
-    def add_directory(self, directory):
+
+    def startswith(self, prefix):
+        return self.name.startswith(prefix)
+
+    def add_directory(self, directory, permissions=""):
         self.subdirectories[directory.name] = directory
+        directory.parent = self
+        directory.permissions = permissions if permissions else "rwxr-xr-x"  # Default permissions: rwxr-xr-x
 
     def remove_directory(self, name):
         del self.subdirectories[name]
 
-    def add_file(self, file):
+    def add_file(self, file, permissions=""):
         self.files[file.name] = file
+        file.parent = self
+        file.permissions = permissions if permissions else "rw-r--r--"  # Default permissions: rw-r--r--
 
     def remove_file(self, name):
         del self.files[name]
@@ -37,19 +47,82 @@ class Directory:
         path = self.name
         parent = self.parent
         while parent:
-            path = os.path.join(parent.name, path)
+            if isinstance(parent.name, str):  # Check if parent directory name is a string
+                path = os.path.join(parent.name, path)
             parent = parent.parent
         return '/' + path if path else '/'
 
+
+
 class VirtualFileSystem:
-    def __init__(self):
+    def __init__(self, permissions=""):
+        self.permissions = permissions if permissions else "rwxr-xr-x"
         self.kernel = VirtualKernel()
         self.kernel.log_command("Kernel Module for VirtualFileSystem loaded")
         self.root = Directory("")
         self.filesystem_data = self.load_file_system("file_system.json")
         self.current_directory = self.root
+        self.kernel.log_command(f"Setting Default Directory: {self.current_directory}")
         self.kernel.log_command("Loading OS and Placing OS files...")
         self.add_os_filesystem(self.filesystem_data)
+
+    def allowed_perms(self, user_perms, object_perms):
+        """
+        Compare user's permissions with object's permissions.
+
+        Parameters:
+            user_perms (str): Permissions of the user (e.g., 'rwx').
+            object_perms (str): Permissions of the file or directory being accessed.
+
+        Returns:
+            bool: True if the user's permissions are sufficient, False otherwise.
+        """
+        # Define operation mapping
+        operation_map = {
+            "read": 0,
+            "write": 1,
+            "execute": 2
+        }
+
+        # Check if the user's permissions supersede the object's permissions for each operation
+        for operation, index in operation_map.items():
+            if user_perms[index] < object_perms[index]:
+                return False  # User's permissions are insufficient for this operation
+
+        return True  # User's permissions are sufficient for all operations
+
+
+    def find_item(self, path):
+        """
+        Find an item (file or directory) in the filesystem given its path.
+        """
+        # Split the path into directory components
+        components = path.strip("/").split("/")
+
+        # Start from the root directory
+        current_directory = self.root
+
+        # Traverse through each component of the path
+        for component in components:
+            if component == "":
+                continue
+            if component not in current_directory.subdirectories and component not in current_directory.files:
+                raise FileNotFoundError(f"Item '{path}' not found.")
+            if component in current_directory.subdirectories:
+                current_directory = current_directory.subdirectories[component]
+            elif component in current_directory.files:
+                return current_directory.files[component]
+
+        # Return the final item
+        return current_directory
+
+
+    def directory_exists(self, path):
+        try:
+            self.find_directory(self.root, path)
+            return True
+        except FileNotFoundError:
+            return False
 
     def add_default_filesystem(self):
         default_filesystem_data = {
@@ -156,17 +229,22 @@ class VirtualFileSystem:
 
         return current_directory
 
-    def create_file(self, path, content=""):
+    def create_file(self, path, content="", permissions=""):
         directory_path, filename = os.path.split(path)
         parent_directory = self.find_directory(self.root, directory_path)
-        parent_directory.add_file(File(filename, content))
+        new_file = File(filename, content, permissions)
+        parent_directory.add_file(new_file)
         self.kernel.log_command(f"Created file: {os.path.join(parent_directory.get_full_path(), filename)}")
 
     def read_file(self, path):
         directory_path, filename = os.path.split(path)
         parent_directory = self.find_directory(self.root, directory_path)
         if filename in parent_directory.files:
-            return parent_directory.files[filename].read()
+            # Check permissions before allowing file access
+            if self.check_permissions(parent_directory.files[filename].permissions, "read"):
+                return parent_directory.files[filename].read()
+            else:
+                raise PermissionError("Permission denied: read access not allowed for file")
         else:
             raise FileNotFoundError("File not found")
 
@@ -174,8 +252,12 @@ class VirtualFileSystem:
         directory_path, filename = os.path.split(path)
         parent_directory = self.find_directory(self.root, directory_path)
         if filename in parent_directory.files:
-            parent_directory.remove_file(filename)
-            self.kernel.log_command(f"Removed file: {path}")
+            # Check permissions before allowing file deletion
+            if self.check_permissions(parent_directory.files[filename].permissions, "execute"):
+                parent_directory.remove_file(filename)
+                self.kernel.log_command(f"Removed file: {path}")
+            else:
+                raise PermissionError("Permission denied: delete access not allowed for file")
         else:
             raise FileNotFoundError("File not found")
 
@@ -192,6 +274,68 @@ class VirtualFileSystem:
                 raise FileExistsError("File already exists")
         else:
             raise FileNotFoundError("File not found")
+
+    # Method to check file permissions
+    def check_permissions(self, file_permissions, operation, elevated_permissions=None):
+        # If elevated permissions are not provided, use the default permissions
+        if elevated_permissions is None:
+            elevated_permissions = self.permissions
+
+        # Parse permission string
+        owner_perms = file_permissions[0:3]
+        group_perms = file_permissions[3:6]
+        other_perms = file_permissions[6:]
+
+        # Define operation mapping
+        operation_map = {
+            "read": 0,
+            "write": 1,
+            "execute": 2
+        }
+
+        # Determine which permissions to check based on the operation
+        if operation == "read":
+            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
+        elif operation == "write":
+            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
+        elif operation == "execute":
+            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
+        else:
+            raise ValueError("Invalid operation")
+
+        # Check if the operation is permitted based on elevated permissions
+        if elevated_permissions[0] == "r":
+            owner_perm = "r"
+        else:
+            owner_perm = "-"
+        if elevated_permissions[1] == "w":
+            group_perm = "w"
+        else:
+            group_perm = "-"
+        if elevated_permissions[2] == "x":
+            other_perm = "x"
+        else:
+            other_perm = "-"
+
+        elevated_perms_to_check = owner_perm + group_perm + other_perm
+
+        return perms_to_check == elevated_perms_to_check
+
+    def get_permissions(self, path):
+        # Find the directory or file based on the provided path
+        item = self.find_item(path)
+
+        # Check if the item exists
+        if item:
+            # Check permissions for the item
+            permissions = item.permissions
+
+            # Return the permissions
+            return permissions
+        else:
+            # Item not found
+            return "Item not found"
+
 
     def load_file_system(self, file_path):
         if os.path.exists(file_path):
