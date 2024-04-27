@@ -6,19 +6,29 @@ from virtualmachine import VirtualMachine
 from virtualkernel import VirtualKernel
 
 class VirtualOS:
-    def __init__(self):                                                                                                                                              self.kernel = VirtualKernel()
+    def __init__(self):
+        self.kernel = VirtualKernel()
         self.kernel.log_command("Booting up VirtualOS")
         self.kernel.log_command("Initializing filesystem...")
         self.fs = VirtualFileSystem()  # Initialize the filesystem
         self.kernel.log_command("Loading file system from file_system.json...")
-        self.load_with_loading_circle()  # Call method to load with loading circle                                                                                                                                                                                                                                                # Check if 'home' directory exists
+        self.load_with_loading_circle()  # Call method to load with loading circle
+
+        # Check if 'home' directory exists
         if "home" in self.fs.root.subdirectories:
-            # Check if 'user' directory exists                                                                                                                           if "user" in self.fs.root.subdirectories["home"].subdirectories:                                                                                                 # Set default starting directory to /home/user
+            # Check if 'user' directory exists
+            if "user" in self.fs.root.subdirectories["home"].subdirectories:
+                # Set default starting directory to /home/user
                 self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
             else:
                 self.kernel.log_command("User directory not found. Creating...")
-                self.fs.create_directory("/home/user")                                                                                                                       self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]                                                                  else:                                                                                                                                                            self.kernel.log_command("Home directory not found. Creating...")
-            self.fs.create_directory("/home")                                                                                                                            self.fs.create_directory("/home/user")                                                                                                                       self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
+                self.fs.create_directory("/home/user")
+                self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
+        else:
+            self.kernel.log_command("Home directory not found. Creating...")
+            self.fs.create_directory("/home")
+            self.fs.create_directory("/home/user")
+            self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
 
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
@@ -125,11 +135,34 @@ class VirtualOS:
                 elif command.startswith("echo"):
                     _, *args = command.split(" ")
                     VCommands.echo(*args)
+
+                elif command.startswith("help"):
+                    parts = command.split(" ")
+                    if len(parts) > 1:
+                        _, command_name = parts
+                        if hasattr(VCommands, command_name):
+                            # Display command specific help
+                            print(getattr(VCommands, command_name).__doc__)
+                        else:
+                            print(f"Command '{command_name}' not found.")
+                    else:
+                        # Display overall help
+                        print("Available commands:")
+                        for method_name in dir(VCommands):
+                            method = getattr(VCommands, method_name)
+                            if callable(method) and not method_name.startswith("__"):
+                                print(method.__doc__)
                 else:
-                    print("Command not found. Available commands: mkdir, ls, cd, cat, rmdir, nano, version, clear, run_vm, dmesg, toggle_fs_monitoring, monitor_fs, exit")
+                    print("Command not found. Type 'help' to see available commands.")
                     self.kernel.log_command(f"[!] Command '{command}' not found.")
             except Exception as e:
                 self.kernel.handle_error(e)
+
+#                else:
+#                    print("Command not found. Available commands: mkdir, ls, cd, cat, rmdir, nano, version, clear, run_vm, dmesg, toggle_fs_monitoring, monitor_fs, exit")
+#                    self.kernel.log_command(f"[!] Command '{command}' not found.")
+#            except Exception as e:
+#                self.kernel.handle_error(e)
 
 if __name__ == "__main__":
     virtual_os = VirtualOS()
