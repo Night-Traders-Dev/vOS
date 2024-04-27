@@ -1,84 +1,115 @@
 import os
 import sys
 import platform
-from virtualfs import File                                                         
+from virtualfs import File
+
 class VCommands:
-    @staticmethod                                                                      def mkdir(fs, path):
-        fs.create_directory(path)                                                          return fs
+    @staticmethod
+    def mkdir(fs, path=None):
+        if not path:
+            print("Error: Please specify a directory path to create.")
+            return
+
+        # Check if the path starts with '/' indicating an absolute path
+        if path.startswith('/'):
+            directory_path = path
+        else:
+            # If not an absolute path, create the directory in the current directory
+            directory_path = os.path.join(fs.current_directory.get_full_path(), path)
+
+        fs.create_directory(directory_path)
+        fs.kernel.log_command(f"Created directory: {directory_path}")
 
     @staticmethod
     def ls(fs, current_directory, path=None):
-        if path:
+        if not path:
+            directory = current_directory
+        else:
             try:
                 directory = fs.find_directory(current_directory, path)
-                for name, item in directory.subdirectories.items():
-                    print(f"{name}/")
-                for name, item in directory.files.items():                                             print(name)
             except FileNotFoundError:
                 print(f"Directory '{path}' not found.")
-        else:
-            for name, item in current_directory.subdirectories.items():
-                print(f"{name}/")
-            for name, item in current_directory.files.items():
-                print(name)
+                return
+
+        for name, item in directory.subdirectories.items():
+            print(f"{name}/")
+        for name, item in directory.files.items():
+            print(name)
 
     @staticmethod
     def cd(fs, current_directory, path):
-        if path == "..":
+        if not path or path == ".":
+            return current_directory
+        elif path == "..":
             if current_directory == fs.root:
                 print("Already at the top of the directory.")
             else:
-                current_directory = current_directory.parent
+                return current_directory.parent
         else:
             try:
                 new_directory = fs.find_directory(current_directory, path)
-                current_directory = new_directory                                              except FileNotFoundError:
+                return new_directory
+            except FileNotFoundError:
                 print(f"Directory '{path}' not found.")
-        return current_directory
+                return current_directory
 
     @staticmethod
-    def cat(fs, path):
+    def cat(fs, path=None):
+        if not path:
+            print("Error: Please specify a file path to read.")
+            return
+
         try:
             file_content = fs.read_file(path)
             print(file_content)
-        except FileNotFoundError:                                                              print(f"File '{path}' not found.")
-                                                                                       @staticmethod
-    def rmdir(fs, path):
+        except FileNotFoundError:
+            print(f"File '{path}' not found.")
+
+    @staticmethod
+    def rmdir(fs, path=None):
+        if not path:
+            print("Error: Please specify a directory path to remove.")
+            return
+
         try:
             fs.remove_directory(path)
+            fs.kernel.log_command(f"Removed directory: {path}")
         except FileNotFoundError:
             print(f"Directory '{path}' not found.")
 
     @staticmethod
     def nano(fs, current_directory, path=None):
-        if path:
-            try:
-                nano_file = fs.read_file(path)
-            except FileNotFoundError:
-                nano_file = ""
-        else:
-            filename = input("Enter filename: ")
-            if not filename.strip():                                                               print("Filename cannot be empty.")
+        if not path:                                                                                                                                                     filename = input("Enter filename: ")
+            if not filename.strip():
+                print("Filename cannot be empty.")
                 return
             path = os.path.join(current_directory.get_full_path(), filename)
-            nano_file = ""                                                         
-        print("Nano-like text editor. Press :w to save and exit.")                         while True:
+
+        print("Nano-like text editor. Press :w to save and exit.")
+        nano_file = ""
+        while True:
             line = input()
             if line == ":w":
                 fs.create_file(path, nano_file)
                 break
             nano_file += line + "\n"
-                                                                                       @staticmethod
-    def version():                                                                         print("VOS Version: V0.0.1")
+
+    @staticmethod
+    def version():
+        print("VOS Version: V0.0.1")
         print(f"Python Version: {sys.version}")
-        print("VirtualFS Version: V0.0.1")                                                 print("VirtualMachine Version: V0.0.1")
+        print("VirtualFS Version: V0.0.1")
+        print("VirtualMachine Version: V0.0.1")
 
     @staticmethod
     def clear_screen():
         if platform.system() == "Windows":
-            os.system("cls")                                                               else:                                                                                  os.system("clear")
+            os.system("cls")
+        else:
+            os.system("clear")
 
-    @staticmethod                                                                      def pwd(current_directory):
+    @staticmethod
+    def pwd(current_directory):
         print(current_directory.get_full_path())
 
     @staticmethod
@@ -89,17 +120,25 @@ class VCommands:
 
         # Check if the path starts with '/' indicating an absolute path
         if path.startswith('/'):
-            directory_path, filename = os.path.split(path)
-            parent_directory = fs.find_directory(fs.root, directory_path)
+            file_path = path
         else:
             # If not an absolute path, create the file in the current directory
-            parent_directory = fs.current_directory
-            filename = path
-                                                                                           parent_directory.add_file(File(filename))
-        fs.kernel.log_command(f"Created file: {os.path.join(parent_directory.get_full_path(), filename)}")
-                                                                                       @staticmethod
-    def rm(fs, path):
-        try:                                                                                   fs.remove_file(path)
+            file_path = os.path.join(fs.current_directory.get_full_path(), path)
+
+        parent_directory_path, filename = os.path.split(file_path)
+        parent_directory = fs.find_directory(fs.root, parent_directory_path)
+        parent_directory.add_file(File(filename))
+        fs.kernel.log_command(f"Created file: {file_path}")
+
+    @staticmethod
+    def rm(fs, path=None):
+        if not path:
+            print("Error: Please specify a file path to remove.")
+            return
+
+        try:
+            fs.remove_file(path)
+            fs.kernel.log_command(f"Removed file: {path}")
         except FileNotFoundError:
             print(f"File '{path}' not found.")
 
@@ -107,7 +146,9 @@ class VCommands:
     def mv(fs, old_path, new_path):
         try:
             fs.rename_file(old_path, new_path)
-        except FileNotFoundError:                                                              print(f"File '{old_path}' not found.")
+            fs.kernel.log_command(f"Moved file '{old_path}' to '{new_path}'")
+        except FileNotFoundError:
+            print(f"File '{old_path}' not found.")
         except FileExistsError:
             print(f"File '{new_path}' already exists.")
 
@@ -116,6 +157,7 @@ class VCommands:
         try:
             file_content = fs.read_file(src_path)
             fs.create_file(dest_path, file_content)
+            fs.kernel.log_command(f"Copied file '{src_path}' to '{dest_path}'")
         except FileNotFoundError:
             print(f"File '{src_path}' not found.")
 
