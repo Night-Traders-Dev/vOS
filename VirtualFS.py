@@ -22,7 +22,7 @@ class Directory:
         self.parent = parent
 
     def add_directory(self, directory):
-        self.subdirectories[directory.name] = directory                                                                                                      
+        self.subdirectories[directory.name] = directory
     def remove_directory(self, name):
         del self.subdirectories[name]
 
@@ -41,10 +41,8 @@ class Directory:
         return '/' + path if path else '/'
 
 class VirtualFileSystem:
-    def __init__(self):
-        self.root = Directory("")
+    def __init__(self):                                                                                      self.root = Directory("")
         self.kernel = VirtualKernel()
-#        self.add_default_filesystem()
         self.load_file_system("file_system.json")
         self.current_directory = self.root
 
@@ -181,12 +179,11 @@ class VirtualFileSystem:
                     if 'home' not in self.root.subdirectories:
                         self.root.add_directory(Directory('home', self.root))
         else:
-            print("File system JSON file not found. Initializing with an empty root directory.")
+            print("File system JSON file not found. Initializing with default root directory.")
+            self.kernel.log_command("[!] File system JSON file not found. Initializing with default root directory.")
+            self.add_default_filesystem()
 
     def save_file_system(self, file_path):
-#        if os.path.exists(file_path):
-#            print(f"File {file_path} already exists. File system will not be overwritten.")
-#            return
         with gzip.open(file_path, 'wb') as file:
             encoded_data = json.dumps(self._encode_directory(self.root)).encode('utf-8')
             file.write(encoded_data)
