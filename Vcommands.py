@@ -196,7 +196,8 @@ class VCommands:
 
     @staticmethod
     def touch(fs, current_directory, path=None):
-        """                                                             touch: Create a new file\nUsage: touch [file_path]
+        """
+        touch: Create a new file\nUsage: touch [file_path]
         If no file path is provided, creates a file in the curr>
         """
         if not path:
@@ -221,6 +222,10 @@ class VCommands:
             print("Error: Please specify a file path to remove.")
             return
 
+        # Concatenate current directory path with the specified path
+        if not path.startswith('/'):
+            path = os.path.join(fs.current_directory.get_full_path(), path)
+
         try:
             fs.remove_file(path)
             fs.kernel.log_command(f"Removed file: {path}")
@@ -232,6 +237,16 @@ class VCommands:
         """
         mv: Move a file or directory\nUsage: mv [old_path] [new_path]
         """
+        if not old_path or not new_path:
+            print("Error: Please specify both old and new paths.")
+            return
+
+        # Concatenate current directory path with the specified paths
+        if not old_path.startswith('/'):
+           old_path = os.path.join(fs.current_directory.get_full_path(), old_path)
+        if not new_path.startswith('/'):
+            new_path = os.path.join(fs.current_directory.get_full_path(), new_path)
+
         try:
             fs.rename_file(old_path, new_path)
             fs.kernel.log_command(f"Moved file '{old_path}' to '{new_path}'")
@@ -245,12 +260,23 @@ class VCommands:
         """
         cp: Copy a file or directory\nUsage: cp [source_path] [destination_path]
         """
+        if not src_path or not dest_path:
+            print("Error: Please specify both source and destination paths.")
+            return
+
+        # Concatenate current directory path with the specified paths
+        if not src_path.startswith('/'):
+            src_path = os.path.join(fs.current_directory.get_full_path(), src_path)
+        if not dest_path.startswith('/'):
+            dest_path = os.path.join(fs.current_directory.get_full_path(), dest_path)
+
         try:
             file_content = fs.read_file(src_path)
             fs.create_file(dest_path, file_content)
             fs.kernel.log_command(f"Copied file '{src_path}' to '{dest_path}'")
         except FileNotFoundError:
             print(f"File '{src_path}' not found.")
+
 
     @staticmethod
     def echo(*args):
