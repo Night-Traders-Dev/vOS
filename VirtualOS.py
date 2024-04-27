@@ -72,9 +72,6 @@ class VirtualOS:
                     _, path = command.split(" ", 1)
                     VCommands.mkdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
- #               elif command.startswith("ls"):
- #                   _, path = command.split(" ", 1)
- #                   VCommands.ls(self.fs, self.current_directory, path)
 
 
                 elif command.startswith("ls"):
@@ -89,14 +86,22 @@ class VirtualOS:
                     _, path = command.split(" ", 1)
                     self.current_directory = VCommands.cd(self.fs, self.current_directory, path)
                 elif command.startswith("cat"):
-                    _, path = command.split(" ", 1)
-                    VCommands.cat(self.fs, path)
+                    try:
+                        _, path = command.split(" ", 1)
+                    except ValueError:
+                  # If no path is specified, use the current directory
+                        path = None
+                    VCommands.cat(self.fs, self.current_directory, path)
                 elif command.startswith("rmdir"):
                     _, path = command.split(" ", 1)
                     VCommands.rmdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                 elif command.startswith("nano"):
-                    _, path = command.split(" ", 1)
+                    try:
+                         _, path = command.split(" ", 1)
+                    except ValueError:
+                        # If no path is specified, use the current directory
+                        path = None
                     VCommands.nano(self.fs, self.current_directory, path)
                 elif command.startswith("version"):
                     VCommands.version()
@@ -112,9 +117,6 @@ class VirtualOS:
                     self.kernel.monitor_filesystem("file_system.json")
                 elif command == "pwd":  # Corrected call to pwd method
                     VCommands.pwd(self.current_directory)  # Pass the current directory
-#                elif command.startswith("touch"):
-#                    _, path = command.split(" ", 1)
-#                    VCommands.touch(self.fs, path)
                 elif command.startswith("touch"):
                     try:
                         _, path = command.split(" ", 1)
