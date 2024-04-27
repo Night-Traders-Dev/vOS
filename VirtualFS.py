@@ -41,13 +41,13 @@ class Directory:
             parent = parent.parent
         return '/' + path if path else '/'
 
-class VirtualFileSystem:
-    def __init__(self):
+class VirtualFileSystem:                                                                                                                                         def __init__(self):
+        self.kernel = VirtualKernel()
+        self.kernel.log_command("Kernel Module for VirtualFileSystem loaded")
         self.root = Directory("")
         self.filesystem_data = self.load_file_system("file_system.json")
-        self.kernel = VirtualKernel()
         self.current_directory = self.root
-        self.kernel.log_command("Loading OS files...")
+        self.kernel.log_command("Loading OS and Placing OS files...")
         self.add_os_filesystem(self.filesystem_data)
 
     def add_default_filesystem(self):
@@ -212,7 +212,7 @@ class VirtualFileSystem:
                         self.root.add_directory(Directory('home', self.root))
         else:
             print("File system JSON file not found. Initializing with default root directory.")
-  #          self.kernel.log_command("[!] File system JSON file not found. Initializing with default root directory.")
+            self.kernel.log_command("[!] File system JSON file not found. Initializing with default root directory.")
             self.add_default_filesystem()
 
     def save_file_system(self, file_path):
