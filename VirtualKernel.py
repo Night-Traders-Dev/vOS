@@ -6,26 +6,50 @@ class VirtualKernel:
     def __init__(self):
         self.processes = []
         self.dmesg_file = "dmesg"
-        self.filesystem_monitoring_enabled = False                                         self.last_error = None
+        self.filesystem_monitoring_enabled = True
+        self.last_error = None
+
+    def reboot_os(self):
+        """
+        Reboots the virtual operating system by resetting kernel state,
+        clearing the screen, and printing the current dmesg.
+        """
+        # Clear the screen
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        # Reset kernel state or perform any necessary actions to reboot the OS
+        print("Rebooting the virtual operating system...")
+        self.log_command("[!!]Rebooting vOS...")
+        self.processes = []  # Reset the list of processes
+        print("Virtual operating system rebooted successfully.")
+        self.print_dmesg()
+
 
     def create_process(self, program):
         new_process = VirtualProcess(program)
         self.processes.append(new_process)
 
     def schedule_processes(self):
-        for process in self.processes:                                                         try:                                                                                   process.execute()
+        for process in self.processes:
+            try:
+                process.execute()
             except Exception as e:
                 self.handle_error(e)
-                                                                                                   # Recover from error by removing the last process and retrying
+
+                # Recover from error by removing the last process and retrying
                 self.recover_from_error()
 
-    def log_command(self, command):                                                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    def log_command(self, command):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(self.dmesg_file, "a") as f:
             f.write(f"[{timestamp}] {command}\n")
-                                                                                       def boot_verbose(self):
+
+    def boot_verbose(self):
         verbose_message = "VirtualOS boot-up completed."
-        self.log_command(verbose_message)                                          
-    def print_dmesg(self):                                                                 try:
+        self.log_command(verbose_message)
+
+    def print_dmesg(self):
+        try:
             with open(self.dmesg_file, "r") as f:
                 print(f.read())
         except FileNotFoundError:
@@ -34,7 +58,8 @@ class VirtualKernel:
     def delete_dmesg(self):
         try:
             os.remove(self.dmesg_file)
-            print("dmesg file deleted.")                                                   except FileNotFoundError:
+            print("dmesg file deleted.")
+        except FileNotFoundError:
             print("dmesg file not found.")
 
     def toggle_filesystem_monitoring(self):
@@ -53,7 +78,9 @@ class VirtualKernel:
         if self.processes:
             del self.processes[-1]  # Remove the last process that caused the error
             print("Recovered from error by removing the last process.")
-        else:                                                                                  print("No processes left to recover from error.")
+        else:
+            print("No processes left to recover from error.")
+            self.reboot_os()
 
 class VirtualProcess:
     def __init__(self, program):
