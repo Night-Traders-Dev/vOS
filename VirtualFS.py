@@ -23,6 +23,7 @@ class Directory:
 
     def add_directory(self, directory):
         self.subdirectories[directory.name] = directory
+
     def remove_directory(self, name):
         del self.subdirectories[name]
 
@@ -41,10 +42,13 @@ class Directory:
         return '/' + path if path else '/'
 
 class VirtualFileSystem:
-    def __init__(self):                                                                                      self.root = Directory("")
+    def __init__(self):
+        self.root = Directory("")
+        self.filesystem_data = self.load_file_system("file_system.json")
         self.kernel = VirtualKernel()
-        self.load_file_system("file_system.json")
         self.current_directory = self.root
+        self.kernel.log_command("Loading OS files...")
+        self.add_os_filesystem(self.filesystem_data)
 
     def add_default_filesystem(self):
         default_filesystem_data = {
@@ -74,8 +78,34 @@ class VirtualFileSystem:
         default_directory = self._decode_directory(default_filesystem_data)
         self.root = default_directory
 
-        if 'home' not in self.root.subdirectories:
-            self.root.add_directory(Directory('home', self.root))
+
+    def add_os_filesystem(self, filesystem_data):
+        # Add provided files to their relevant locations
+        provided_files = {
+            "vcommands.py": {"name": "bin/vcommands.py"},  # Place vcommands.py in /bin
+            "virtualkernel.py": {"name": "boot/virtualkernel.py"},  # Place virtualkernel.py in /boot
+            "virtualos.py": {"name": "boot/virtualos.py"},  # Place virtualos.py in /boot
+            "virtualfs.py": {"name": "boot/virtualfs.py"},  # Place virtualfs.py in /boot
+            "virtualmachine.py": {"name": "sbin/virtualmachine.py"}  # Place virtualmachine.py in /sbin
+        }
+
+        for file_name, file_data in provided_files.items():
+            file_path = os.path.join(os.path.dirname(__file__), file_name)
+            with open(file_path, 'r') as file:
+                content = file.read()
+
+            # Get the parent directory name from the file data
+            directory_name = os.path.dirname(file_data["name"])
+
+            # Find the directory corresponding to the parent directory name in the filesystem data
+            parent_directory = self.find_directory(self.root, directory_name)
+
+            # Get the base file name from the file data
+            base_file_name = os.path.basename(file_data["name"])
+
+            # Add the file to the parent directory with the base file name
+            parent_directory.add_file(File(base_file_name, content))
+
 
     def file_exists(self, path):
         directory_path, filename = os.path.split(path)
@@ -168,6 +198,7 @@ class VirtualFileSystem:
                 with gzip.open(file_path, 'rb') as file:
                     data = json.loads(file.read().decode('utf-8'))
                     self.root = self._decode_directory(data)
+                    return data
 
                     if 'home' not in self.root.subdirectories:
                         self.root.add_directory(Directory('home', self.root))
@@ -175,12 +206,13 @@ class VirtualFileSystem:
                 with open(file_path, 'r') as file:
                     data = json.load(file)
                     self.root = self._decode_directory(data)
+                    return data
 
                     if 'home' not in self.root.subdirectories:
                         self.root.add_directory(Directory('home', self.root))
         else:
             print("File system JSON file not found. Initializing with default root directory.")
-            self.kernel.log_command("[!] File system JSON file not found. Initializing with default root directory.")
+  #          self.kernel.log_command("[!] File system JSON file not found. Initializing with default root directory.")
             self.add_default_filesystem()
 
     def save_file_system(self, file_path):
