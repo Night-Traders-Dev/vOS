@@ -79,7 +79,8 @@ class VCommands:
             if current_directory == fs.root:
                 print("Already at the top of the directory.")
             else:
-                return current_directory.parent                                                                                                                      else:
+                return current_directory.parent
+        else:
             try:
                 new_directory = fs.find_directory(current_directory, path)
                 return new_directory
@@ -87,19 +88,24 @@ class VCommands:
                 print(f"Directory '{path}' not found.")
                 return current_directory
 
+
+
     @staticmethod
-    def cat(fs, path=None):
-        """
-        cat: Display file content\nUsage: cat [file_path]
-        """
+    def cat(fs, current_directory, path=None):
+        """cat: Display file content\nUsage: cat [file_path]"""
         if not path:
             print("Error: Please specify a file path to read.")
             return
         try:
-            file_content = fs.read_file(path)
-            print(file_content)
+            if path.startswith('/'):
+                file_content = fs.read_file(path)
+            else:
+                file_path = os.path.join(current_directory.get_full_path(), path)
+                file_content = fs.read_file(file_path)
+                print(file_content)
         except FileNotFoundError:
             print(f"File '{path}' not found.")
+
 
     @staticmethod
     def rmdir(fs, path=None):
@@ -115,18 +121,30 @@ class VCommands:
         except FileNotFoundError:
             print(f"Directory '{path}' not found.")
 
+
     @staticmethod
     def nano(fs, current_directory, path=None):
         """
-        nano: Open a file in a nano-like text editor\nUsage: nano [file_path]
-        If no file path is provided, prompts the user to enter a file name and creates a new file.
+        nano: Open a file in a nano-like text editor\nUsage: nano [file_path]                         If no file path is provided, prompts the user to enter a file name and creates a new file in the current directory.
         """
         if not path:
             filename = input("Enter filename: ")
             if not filename.strip():
+                fs.kernel.log_command("[Nano]Filename cannot be empty.")
                 print("Filename cannot be empty.")
                 return
             path = os.path.join(current_directory.get_full_path(), filename)
+        else:
+            # Check if the path is relative or absolute
+            if not path.startswith('/'):
+                # If relative, make it relative to the current directory
+                path = os.path.join(current_directory.get_full_path(), path)
+
+        fs.kernel.log_command("[Nano]Full path: " + path)
+        fs.kernel.log_command("[Nano]Current directory: " + current_directory.get_full_path())
+        fs.kernel.log_command("[Nano]Existing files in the current directory: " + str(current_directory.files))
+        fs.kernel.log_command("[Nano]Existing subdirectories in the current directory: " + str(current_directory.subdirectories))
+
         print("Nano-like text editor. Press :w to save and exit.")
         nano_file = ""
         while True:
@@ -164,21 +182,22 @@ class VCommands:
         print(current_directory.get_full_path())
 
     @staticmethod
-    def touch(fs, path=None):
-        """
-        touch: Create a new file\nUsage: touch [file_path]
-        If no file path is provided, creates a file in the current directory.
+    def touch(fs, current_directory, path=None):
+        """                                                             touch: Create a new file\nUsage: touch [file_path]
+        If no file path is provided, creates a file in the curr>
         """
         if not path:
             print("Error: Please specify a file path to create.")
             return
-        # Concatenate current directory and path
-        file_path = os.path.join(fs.current_directory.get_full_path(), path) if not path.startswith('/') else path
+
+        # Concatenate current directory path with the specified path
+        file_path = os.path.join(current_directory.get_full_path(), path)
 
         parent_directory_path, filename = os.path.split(file_path)
         parent_directory = fs.find_directory(fs.root, parent_directory_path)
         parent_directory.add_file(File(filename))
         fs.kernel.log_command(f"Created file: {file_path}")
+
 
     @staticmethod
     def rm(fs, path=None):
