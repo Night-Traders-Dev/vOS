@@ -51,7 +51,7 @@ class VirtualOS:
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
         for _ in range(10):  # Repeat the animation 10 times
             for char in loading_animation:
-                sys.stdout.write('\r' + f"Loading... {char}")  # Overwrite the same line with the loading animation
+                sys.stdout.write('\r' + f"Booting vOS... {char}")  # Overwrite the same line with the loading animation
                 sys.stdout.flush()
                 time.sleep(0.1)  # Add a short delay to control the speed of the animation
         sys.stdout.write('\r')  # Clear the loading animation line
@@ -68,6 +68,17 @@ class VirtualOS:
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     break
+
+                elif command.startswith("reboot"):
+                    confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
+                    if confirmation == "yes":
+                        self.kernel.reboot_os()  # Call the reboot function from the kernel
+                    else:
+                        print("Reboot cancelled.")
+                        self.kernel.log_command(f"[!]Reboot cancelled")
+
+
+
                 elif command.startswith("mkdir"):
                     _, path = command.split(" ", 1)
                     VCommands.mkdir(self.fs, path)
@@ -159,12 +170,6 @@ class VirtualOS:
                     self.kernel.log_command(f"[!] Command '{command}' not found.")
             except Exception as e:
                 self.kernel.handle_error(e)
-
-#                else:
-#                    print("Command not found. Available commands: mkdir, ls, cd, cat, rmdir, nano, version, clear, run_vm, dmesg, toggle_fs_monitoring, monitor_fs, exit")
-#                    self.kernel.log_command(f"[!] Command '{command}' not found.")
-#            except Exception as e:
-#                self.kernel.handle_error(e)
 
 if __name__ == "__main__":
     virtual_os = VirtualOS()
