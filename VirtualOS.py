@@ -35,11 +35,13 @@ class VirtualOS:
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
         self.kernel.log_command("Logging component version numbers...")
-        self.kernel.log_command("Component Version Numbers:/n")
-        self.kernel.log_command("VirtualKernel Version: V0.0.1")                                                                        self.kernel.log_command("VirtualOS Version: V0.0.1")
+        self.kernel.log_command("Component Version Numbers:\n")
+        self.kernel.log_command("VirtualKernel Version: V0.0.1")
+        self.kernel.log_command("VirtualOS Version: V0.0.1")
         self.kernel.log_command("VirtualFS Version: V0.0.1")
         self.kernel.log_command("VirtualMachine Version: V0.0.1")
         self.kernel.log_command(f"Python Version: {sys.version}")
+        self.kernel.log_command(f"Permissions: {self.current_directory.permissions}")
 
         try:
             self.kernel.boot_verbose()
@@ -68,6 +70,21 @@ class VirtualOS:
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     break
+                elif command.startswith("sudo "):  # Check if the command starts with 'sudo'
+                    parts = command.split(" ")
+                    sudo_command = parts[1]  # Extract the command after 'sudo'
+                    # Extract permissions if provided
+                    permissions = parts[2] if len(parts) > 2 else ""
+                    # Capture the entire command including path and file
+                    sudo_args = ' '.join(parts[1:])
+                    VCommands.sudo(self, self.fs, self.current_directory, sudo_args)
+
+                elif command.startswith("su"):
+                    parts = command.split(" ", 1)
+                    permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
+                    VCommands.su(self.fs, self.current_directory, permissions)
+
+
 
                 elif command.startswith("reboot"):
                     confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
@@ -76,6 +93,11 @@ class VirtualOS:
                     else:
                         print("Reboot cancelled.")
                         self.kernel.log_command(f"[!]Reboot cancelled")
+
+                elif command.startswith("perms"):
+                    _, path = command.split(" ", 1)
+                    VCommands.perms(self.fs, path)
+
 
 
 
