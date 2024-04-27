@@ -2,8 +2,12 @@ import os
 import sys
 import platform
 from virtualfs import File
+from virtualfs import Directory
+from virtualkernel import VirtualKernel
 
 class VCommands:
+    def __init__(self):
+        self.kernel = VirtualKernel()
     @staticmethod
     def help(command=None):
         """
@@ -33,6 +37,99 @@ class VCommands:
             print("mv - Move a file or directory")
             print("cp - Copy a file or directory")
             print("echo - Display arguments")
+
+
+    @staticmethod
+    def su(fs, current_directory, permissions="rwxrwxrwx"):
+        """
+        su: Temporarily elevate privileges for all commands\nUsage: su [permissions]
+        """
+        try:
+            # Store the original permissions
+            original_permissions = current_directory.permissions
+
+            # Temporarily change permissions to the specified value
+            current_directory.permissions = permissions
+
+            print(f"Permissions elevated to: {permissions}")
+
+            # Run a subshell with elevated privileges
+            while True:
+                command = input(f"{current_directory.get_full_path()} # ").strip()
+                if command == "exit":
+                    print("Exiting su...")
+                    break
+
+                # Execute the command with elevated privileges
+                try:
+                    parts = command.split(" ")
+                    cmd = parts[0]
+                    args = " ".join(parts[1:])
+                    method = getattr(VCommands, cmd)
+                    method(fs, current_directory, args)
+                except Exception as e:
+                    print(f"Error: {e}")
+
+        finally:
+            # Restore the original permissions
+            current_directory.permissions = original_permissions
+            print(f"Permissions restored to: {original_permissions}")
+
+
+
+    @staticmethod
+    def sudo(self, fs, current_directory, sudo_command, permissions=None):
+        """
+        sudo: Elevate privileges for a command\nUsage: sudo [command]
+        """
+        try:
+            # Store the original permissions
+            original_permissions = current_directory.permissions
+
+            # Temporarily change permissions to allow all operations
+            current_directory.permissions = "rwxrwxrwx"
+
+            # Check if the command exists and is callable
+            if hasattr(VCommands, sudo_command):
+                method = getattr(VCommands, sudo_command)
+                if callable(method):
+                    # Execute the command with elevated privileges
+                    method(fs, current_directory)
+                else:
+                    print(f"Error: '{sudo_command}' is not callable.")
+            else:
+                print(f"Error: Command '{sudo_command}' not found.")
+
+            # Restore the original permissions
+            current_directory.permissions = original_permissions
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+
+    @staticmethod
+    def perms(fs, path=None):
+        """
+        perms: Check permissions for a file or directory\nUsage: perms [file_path]
+        """
+        if not path:
+            print("Error: Please specify a file or directory path to check permissions.")
+            return
+
+        # Concatenate current directory path with the specified path
+        if not path.startswith('/'):
+            path = os.path.join(fs.current_directory.get_full_path(), path)
+
+        try:
+            # Check if the file or directory exists
+            if fs.file_exists(path) or fs.directory_exists(path):
+                permissions = fs.get_permissions(path)
+                print(f"Permissions for '{path}': {permissions}")
+            else:
+                print(f"Error: File or directory '{path}' not found.")
+        except FileNotFoundError:
+            print(f"Error: File or directory '{path}' not found.")
+
 
     @staticmethod
     def mkdir(fs, path=None):
@@ -216,13 +313,20 @@ class VCommands:
         fs.kernel.log_command(f"Created file: {file_path}")
 
 
+
     @staticmethod
     def rm(fs, path=None):
         """
         rm: Remove a file\nUsage: rm [file_path]
         """
+        # Use the current directory if no path is specified
         if not path:
             print("Error: Please specify a file path to remove.")
+            return
+
+        # Check if the path is already a string
+        if not isinstance(path, str):
+            print("Error: Invalid file path.")
             return
 
         # Concatenate current directory path with the specified path
@@ -230,10 +334,15 @@ class VCommands:
             path = os.path.join(fs.current_directory.get_full_path(), path)
 
         try:
-            fs.remove_file(path)
-            fs.kernel.log_command(f"Removed file: {path}")
+            # Check if the file exists
+            if fs.file_exists(path):
+                # Remove the file
+                fs.remove_file(path)
+                fs.kernel.log_command(f"Removed file: {path}")
+            else:
+                print(f"Error: File '{path}' not found.")
         except FileNotFoundError:
-            print(f"File '{path}' not found.")
+            print(f"Error: File '{path}' not found.")
 
     @staticmethod
     def mv(fs, old_path, new_path):
