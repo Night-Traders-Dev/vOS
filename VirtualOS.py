@@ -1,7 +1,8 @@
 import sys
 import time
 from virtualfs import VirtualFileSystem
-from vcommands import VCommands                                                                                                                              from virtualmachine import VirtualMachine
+from vcommands import VCommands
+from virtualmachine import VirtualMachine
 from virtualkernel import VirtualKernel
 
 class VirtualOS:
@@ -35,15 +36,13 @@ class VirtualOS:
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
         self.kernel.log_command("Logging component version numbers...")
         self.kernel.log_command("Component Version Numbers:/n")
-        self.kernel.log_command("VirtualKernel Version: V0.0.1")
-        self.kernel.log_command("VirtualOS Version: V0.0.1")
+        self.kernel.log_command("VirtualKernel Version: V0.0.1")                                                                        self.kernel.log_command("VirtualOS Version: V0.0.1")
         self.kernel.log_command("VirtualFS Version: V0.0.1")
         self.kernel.log_command("VirtualMachine Version: V0.0.1")
         self.kernel.log_command(f"Python Version: {sys.version}")
 
         try:
             self.kernel.boot_verbose()
-            self.kernel.log_command("VirtualOS boot-up completed.")
         except Exception as e:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
 
