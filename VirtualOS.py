@@ -1,17 +1,18 @@
 import sys
 import time
 from virtualfs import VirtualFileSystem
-from vcommands import VCommands
-from virtualmachine import VirtualMachine
+from vcommands import VCommands                                                                                                                              from virtualmachine import VirtualMachine
 from virtualkernel import VirtualKernel
 
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
-        self.kernel.log_command("Booting up VirtualOS")
-        self.kernel.log_command("Initializing filesystem...")
+        VCommands.clear_screen()
+        self.kernel.log_command("Initializing Kernel...")
+        self.kernel.log_command("Booting up VirtualOS...")
+        self.kernel.log_command("Initializing VirtualFileSystem...")
         self.fs = VirtualFileSystem()  # Initialize the filesystem
-        self.kernel.log_command("Loading file system from file_system.json...")
+        self.kernel.log_command("Loading VirtualFileSystem...")
         self.load_with_loading_circle()  # Call method to load with loading circle
 
         # Check if 'home' directory exists
@@ -33,12 +34,12 @@ class VirtualOS:
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
         self.kernel.log_command("Logging component version numbers...")
-        self.kernel.log_command("Component Version Numbers:")
-        self.kernel.log_command("VOS Version: V0.0.1")
-        self.kernel.log_command(f"Python Version: {sys.version}")
+        self.kernel.log_command("Component Version Numbers:/n")
+        self.kernel.log_command("VirtualKernel Version: V0.0.1")
+        self.kernel.log_command("VirtualOS Version: V0.0.1")
         self.kernel.log_command("VirtualFS Version: V0.0.1")
         self.kernel.log_command("VirtualMachine Version: V0.0.1")
-        self.kernel.log_command("Booting up kernel...")
+        self.kernel.log_command(f"Python Version: {sys.version}")
 
         try:
             self.kernel.boot_verbose()
