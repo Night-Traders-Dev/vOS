@@ -41,7 +41,8 @@ class Directory:
             parent = parent.parent
         return '/' + path if path else '/'
 
-class VirtualFileSystem:                                                                                                                                         def __init__(self):
+class VirtualFileSystem:
+    def __init__(self):
         self.kernel = VirtualKernel()
         self.kernel.log_command("Kernel Module for VirtualFileSystem loaded")
         self.root = Directory("")
