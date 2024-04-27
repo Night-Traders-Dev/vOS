@@ -2,7 +2,8 @@ import json
 import os
 import gzip
 from virtualkernel import VirtualKernel
-                                                                                                                                                             class File:
+
+class File:
     def __init__(self, name, content=""):
         self.name = name
         self.content = content
@@ -21,8 +22,7 @@ class Directory:
         self.parent = parent
 
     def add_directory(self, directory):
-        self.subdirectories[directory.name] = directory
-
+        self.subdirectories[directory.name] = directory                                                                                                      
     def remove_directory(self, name):
         del self.subdirectories[name]
 
@@ -78,6 +78,14 @@ class VirtualFileSystem:
 
         if 'home' not in self.root.subdirectories:
             self.root.add_directory(Directory('home', self.root))
+
+    def file_exists(self, path):
+        directory_path, filename = os.path.split(path)
+        parent_directory = self.find_directory(self.root, directory_path)
+        if filename in parent_directory.files:
+            return True
+        else:
+            return False
 
     def create_directory(self, path):
         current_directory = self.root
