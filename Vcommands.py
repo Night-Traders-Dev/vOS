@@ -52,6 +52,7 @@ class VCommands:
 
             # Temporarily change permissions to the specified value
             current_directory.permissions = permissions
+            fs.permissions = permissions
 
             print(f"Permissions elevated to: {permissions}")
 
@@ -78,6 +79,7 @@ class VCommands:
         finally:
             # Restore the original permissions
             current_directory.permissions = original_permissions
+            fs.permissions = original_permissions
             print(f"Permissions restored to: {original_permissions}")
 
 
@@ -195,25 +197,25 @@ class VCommands:
 
 
     @staticmethod
-    def cat(self, fs, current_directory, path=None):
-        perms = self.current_directory.permissions
-        self.kernel.log_command(f"Cat Debug\n {perms}\n{self.current_directory.get_full_path()}")
-        """cat: Display file content\nUsage: cat [file_path]"""
-        path = current_directory
+    def cat(fs, current_directory, path=None):
+        # Get permissions of the current directory
+        perms = current_directory.permissions
+
         if not path:
             print("Error: Please specify a file path to read.")
             return
 
         # Concatenate current directory path with the specified path if necessary
         if not path.startswith('/'):
-            path = os.path.join(self.current_directory.get_full_path(), path)
+            path = os.path.join(current_directory.get_full_path(), path)
 
         try:
-            file_content = self.read_file(path)
+            # Read the file content
+            file_content = fs.read_file(path)
+            # Print the file content
             print(file_content)
         except FileNotFoundError:
             print(f"File '{path}' not found.")
-
 
 
     @staticmethod
@@ -324,7 +326,7 @@ class VCommands:
 
 
     @staticmethod
-    def rm(fs, path=None):
+    def rm(fs, current_directory, path=None):
         """
         rm: Remove a file\nUsage: rm [file_path]
         """
@@ -340,7 +342,7 @@ class VCommands:
 
         # Concatenate current directory path with the specified path
         if not path.startswith('/'):
-            path = os.path.join(fs.current_directory.get_full_path(), path)
+            path = os.path.join(current_directory.get_full_path(), path)
 
         try:
             # Check if the file exists
