@@ -4,10 +4,21 @@ from virtualfs import VirtualFileSystem
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
 from virtualkernel import VirtualKernel
+from virtualkernel import UserAccount
+from virtualkernel import PasswordFile
 
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
+        self.usertools = UserAccount(
+            username="admin",
+            password="admin",
+            uid=1000,
+            gid=1000,
+            home_dir="/home/admin",
+            shell="/bin/bash"
+        )
+#        self.passwordtools = PasswordFile()
         VCommands.clear_screen()
         self.kernel.log_command("Logging component version numbers...")
         self.kernel.log_command("Component Version Numbers:\n")
@@ -87,8 +98,6 @@ class VirtualOS:
                     permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
                     VCommands.su(self, self.fs, self.current_directory, permissions)
 
-
-
                 elif command.startswith("reboot"):
                     confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
                     if confirmation == "yes":
@@ -101,14 +110,10 @@ class VirtualOS:
                     _, path = command.split(" ", 1)
                     VCommands.perms(self.fs, path)
 
-
-
-
                 elif command.startswith("mkdir"):
                     _, path = command.split(" ", 1)
                     VCommands.mkdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
-
 
                 elif command.startswith("ls"):
                     parts = command.split(" ")
@@ -122,38 +127,49 @@ class VirtualOS:
                 elif command.startswith("cd"):
                     _, path = command.split(" ", 1)
                     self.current_directory = VCommands.cd(self, self.fs, self.current_directory, path)
+
                 elif command.startswith("cat"):
                     try:
                         _, path = command.split(" ", 1)
                     except ValueError:
-                  # If no path is specified, use the current directory
+                        # If no path is specified, use the current directory
                         path = None
                     VCommands.cat(self.fs, self.current_directory, path)
+
                 elif command.startswith("rmdir"):
                     _, path = command.split(" ", 1)
                     VCommands.rmdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
+
                 elif command.startswith("nano"):
                     try:
-                         _, path = command.split(" ", 1)
+                        _, path = command.split(" ", 1)
                     except ValueError:
                         # If no path is specified, use the current directory
                         path = None
                     VCommands.nano(self.fs, self.current_directory, path)
+
                 elif command.startswith("version"):
                     VCommands.version()
+
                 elif command == "clear":
                     VCommands.clear_screen()
+
                 elif command == "run_vm":  # Command to run the virtual machine
                     self.vm.run()
+
                 elif command == "dmesg":  # Command to print virtual dmesg
                     self.kernel.print_dmesg()
+
                 elif command == "toggle_fs_monitoring":  # Command to toggle filesystem monitoring
                     self.kernel.toggle_filesystem_monitoring()
+
                 elif command == "monitor_fs":  # Command to monitor filesystem
                     self.kernel.monitor_filesystem("file_system.json")
+
                 elif command == "pwd":  # Corrected call to pwd method
                     VCommands.pwd(self.current_directory)  # Pass the current directory
+
                 elif command.startswith("touch"):
                     try:
                         _, path = command.split(" ", 1)
@@ -165,15 +181,34 @@ class VirtualOS:
                 elif command.startswith("rm"):
                     _, path = command.split(" ", 1)
                     VCommands.rm(self.fs, self.current_directory, path)
+
                 elif command.startswith("mv"):
                     _, old_path, new_path = command.split(" ", 2)
                     VCommands.mv(self.fs, old_path, new_path)
+
                 elif command.startswith("cp"):
                     _, src_path, dest_path = command.split(" ", 2)
                     VCommands.cp(self.fs, src_path, dest_path)
+
                 elif command.startswith("echo"):
                     _, *args = command.split(" ")
                     VCommands.echo(*args)
+
+                elif command.startswith("adduser"):
+                    _, username, password = command.split(" ", 2)
+                    self.usertools.add_user(self.fs, username, password)
+
+                elif command.startswith("deluser"):
+                    _, username = command.split(" ", 1)
+                    self.usertools.delete_user(self.fs, username)
+
+                elif command.startswith("updateuser"):
+                    _, username, new_password = command.split(" ", 2)
+                    self.usertools.update_user(self.fs, username, new_password)
+
+                elif command.startswith("readuser"):
+                    _, username = command.split(" ", 1)
+                    self.usertools.read_user(self.fs, username)
 
                 elif command.startswith("help"):
                     parts = command.split(" ")
