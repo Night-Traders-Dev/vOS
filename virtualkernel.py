@@ -1,6 +1,67 @@
-from datetime import datetime
 import os
+import hashlib
+import base64
+from datetime import datetime
 import traceback
+
+class UserAccount:
+    def __init__(self, username, password, uid, gid, home_dir, shell):
+        self.username = username
+        self.password = self.encrypt_password(password)
+        self.uid = uid
+        self.gid = gid
+        self.home_dir = home_dir
+        self.shell = shell
+
+    def encrypt_password(self, password):
+        # Use SHA-256 hashing algorithm for password encryption
+        hashed_password = hashlib.sha256(password.encode()).digest()
+        # Encode the hashed password using base64 for storage
+        return base64.b64encode(hashed_password).decode()
+
+    def check_password(self, password):
+        # Encrypt the provided password and compare with the stored encrypted password
+        return self.password == self.encrypt_password(password)
+
+class PasswordFile:
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def add_user(self, user):
+        # Write the user account information to the password file
+        with open(self.file_path, 'a') as file:
+            file.write(f"{user.username}:{user.password}:{user.uid}:{user.gid}:{user.home_dir}:{user.shell}\n")
+
+    def remove_user(self, username):
+        # Read all lines from the password file, excluding the user to be removed
+        with open(self.file_path, 'r') as file:
+            lines = file.readlines()
+        with open(self.file_path, 'w') as file:
+            for line in lines:
+                if not line.startswith(f"{username}:"):
+                    file.write(line)
+
+    def update_user_password(self, username, new_password):
+        # Read all lines from the password file, updating the password for the specified user
+        with open(self.file_path, 'r') as file:
+            lines = file.readlines()
+        with open(self.file_path, 'w') as file:
+            for line in lines:
+                if line.startswith(f"{username}:"):
+                    parts = line.strip().split(':')
+                    parts[1] = UserAccount.encrypt_password(new_password)
+                    file.write(':'.join(parts) + '\n')
+                else:
+                    file.write(line)
+
+    def get_user(self, username):
+        # Read all lines from the password file, searching for the specified user
+        with open(self.file_path, 'r') as file:
+            for line in file:
+                parts = line.strip().split(':')
+                if parts[0] == username:
+                    return UserAccount(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])
+        return None
 
 class VirtualKernel:
     def __init__(self):
@@ -8,12 +69,10 @@ class VirtualKernel:
         self.dmesg_file = "dmesg"
         self.filesystem_monitoring_enabled = True
         self.last_error = None
+        self.password_file = PasswordFile("passwd")  # Initialize password file
 
     def reboot_os(self):
-        """
-        Reboots the virtual operating system by resetting kernel state,
-        clearing the screen, and printing the current dmesg.
-        """
+        """Reboots the virtual operating system."""
         # Clear the screen
         os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -23,7 +82,6 @@ class VirtualKernel:
         self.processes = []  # Reset the list of processes
         print("Virtual operating system rebooted successfully.")
         self.print_dmesg()
-
 
     def create_process(self, program):
         new_process = VirtualProcess(program)
@@ -35,7 +93,6 @@ class VirtualKernel:
                 process.execute()
             except Exception as e:
                 self.handle_error(e)
-
                 # Recover from error by removing the last process and retrying
                 self.recover_from_error()
 
