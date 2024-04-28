@@ -3,11 +3,13 @@ import sys
 import platform
 from virtualfs import File
 from virtualfs import Directory
+from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
 
 class VCommands:
     def __init__(self):
         self.kernel = VirtualKernel()
+        self.vfs = VirtualFileSystem()
     @staticmethod
     def help(command=None):
         """
@@ -40,7 +42,7 @@ class VCommands:
 
 
     @staticmethod
-    def su(fs, current_directory, permissions="rwxrwxrwx"):
+    def su(self, fs, current_directory, permissions="rwxrwxrwx"):
         """
         su: Temporarily elevate privileges for all commands\nUsage: su [permissions]
         """
@@ -62,11 +64,14 @@ class VCommands:
 
                 # Execute the command with elevated privileges
                 try:
-                    parts = command.split(" ")
-                    cmd = parts[0]
-                    args = " ".join(parts[1:])
-                    method = getattr(VCommands, cmd)
-                    method(fs, current_directory, args)
+                    if command == "dmesg":
+                        self.kernel.print_dmesg()
+                    else:
+                        parts = command.split(" ")
+                        cmd = parts[0]
+                        args = " ".join(parts[1:])
+                        method = getattr(VCommands, cmd)
+                        method(fs, current_directory, args)
                 except Exception as e:
                     print(f"Error: {e}")
 
@@ -166,7 +171,7 @@ class VCommands:
             print(name)
 
     @staticmethod
-    def cd(fs, current_directory, path):
+    def cd(self, fs, current_directory, path):
         """
         cd: Change directory\nUsage: cd [directory_path]
         """
@@ -180,6 +185,7 @@ class VCommands:
         else:
             try:
                 new_directory = fs.find_directory(current_directory, path)
+                self.kernel.log_command(f"cd Debug: {current_directory}\n{path}\n{new_directory}")
                 return new_directory
             except FileNotFoundError:
                 print(f"Directory '{path}' not found.")
@@ -189,18 +195,21 @@ class VCommands:
 
 
     @staticmethod
-    def cat(fs, current_directory, path=None):
+    def cat(self, fs, current_directory, path=None):
+        perms = self.current_directory.permissions
+        self.kernel.log_command(f"Cat Debug\n {perms}\n{self.current_directory.get_full_path()}")
         """cat: Display file content\nUsage: cat [file_path]"""
+        path = current_directory
         if not path:
             print("Error: Please specify a file path to read.")
             return
 
         # Concatenate current directory path with the specified path if necessary
         if not path.startswith('/'):
-            path = os.path.join(current_directory.get_full_path(), path)
+            path = os.path.join(self.current_directory.get_full_path(), path)
 
         try:
-            file_content = fs.read_file(path)
+            file_content = self.read_file(path)
             print(file_content)
         except FileNotFoundError:
             print(f"File '{path}' not found.")
