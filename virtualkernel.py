@@ -75,6 +75,25 @@ class PasswordFile:
                     return UserAccount(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])
         return None
 
+    def authenticate(self, username, password):
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        stored_password = self.users.get(username)
+        if stored_password and stored_password == hashed_password:
+            return True
+        else:
+            return False
+
+    def login_prompt(self):
+        while True:
+            username = input("Username: ")
+            password = input("Password: ")
+            if self.authenticate(username, password):
+                print("Login successful!")
+                break
+            else:
+                print("Invalid username or password. Please try again.")
+
+
 class VirtualKernel:
     def __init__(self):
         self.processes = []
