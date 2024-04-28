@@ -22,6 +22,8 @@ class VirtualOS:
         self.fs = VirtualFileSystem()  # Initialize the filesystem
         self.kernel.log_command("Loading VirtualFileSystem...")
         self.load_with_loading_circle()  # Call method to load with loading circle
+        self.user_perms = "rwxr-xr-x"
+        self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
 
         # Check if 'home' directory exists
         if "home" in self.fs.root.subdirectories:
@@ -35,8 +37,7 @@ class VirtualOS:
                 self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
         else:
             self.kernel.log_command("Home directory not found. Creating...")
-            self.fs.create_directory("/home")
-            self.fs.create_directory("/home/user")
+            self.fs.create_directory("/home")                                                                            self.fs.create_directory("/home/user")
             self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
 
         self.kernel.log_command("Initializing VirtualMachine...")
@@ -48,8 +49,7 @@ class VirtualOS:
             self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
         except Exception as e:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
-
-    def load_with_loading_circle(self):
+                                                                                                                 def load_with_loading_circle(self):
         self.kernel.log_command("Boot Animation Loaded...")
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
         for _ in range(10):  # Repeat the animation 10 times
@@ -162,7 +162,7 @@ class VirtualOS:
 
                 elif command.startswith("rm"):
                     _, path = command.split(" ", 1)
-                    VCommands.rm(self.fs, path)
+                    VCommands.rm(self.fs, self.current_directory, path)
                 elif command.startswith("mv"):
                     _, old_path, new_path = command.split(" ", 2)
                     VCommands.mv(self.fs, old_path, new_path)
