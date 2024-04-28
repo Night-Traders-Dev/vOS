@@ -62,9 +62,17 @@ class VirtualFileSystem:
         self.root = Directory("")
         self.filesystem_data = self.load_file_system("file_system.json")
         self.current_directory = self.root
-        self.kernel.log_command(f"Setting Default Directory: {self.current_directory}")
+        self.kernel.log_command(f"Setting Default Directory: {self.current_directory.get_full_path()}")
         self.kernel.log_command("Loading OS and Placing OS files...")
         self.add_os_filesystem(self.filesystem_data)
+        self.users = {}
+
+    def get_current_directory_path(self):
+        """
+        Get the full path of the current directory.
+        """
+        return self.current_directory.get_full_path()
+
 
     def allowed_perms(self, user_perms, object_perms):
         """
