@@ -3,6 +3,7 @@ import os
 import gzip
 from virtualkernel import VirtualKernel
 
+
 class File:
     def __init__(self, name, content="", permissions=""):
         self.name = name
@@ -44,14 +45,26 @@ class Directory:
         del self.files[name]
 
     def get_full_path(self):
-        path = self.name
-        parent = self.parent
-        while parent:
-            if isinstance(parent.name, str):  # Check if parent directory name is a string
-                path = os.path.join(parent.name, path)
-            parent = parent.parent
-        return '/' + path if path else '/'
+        """                                                                                                          Get the full path of the directory.
+        """
+        # Initialize an empty list to store the components of the path
+        path_components = []
 
+        # Start from the current directory and traverse upwards until reaching the root
+        current_directory = self
+        while current_directory:                                                                                         # Add the name of the current directory to the list of components
+            path_components.append(current_directory.name)
+
+            # Move to the parent directory
+            current_directory = current_directory.parent
+
+        # Reverse the list of components to construct the path from root to current directory
+        path_components.reverse()
+
+        # Join the components with '/' to form the full path
+        full_path = '/'.join(path_components)
+
+        return full_path
 
 
 class VirtualFileSystem:
@@ -66,6 +79,7 @@ class VirtualFileSystem:
         self.kernel.log_command("Loading OS and Placing OS files...")
         self.add_os_filesystem(self.filesystem_data)
         self.users = {}
+
 
     def get_current_directory_path(self):
         """
@@ -289,11 +303,6 @@ class VirtualFileSystem:
         if elevated_permissions is None:
             elevated_permissions = self.permissions
 
-        # Parse permission string
-        owner_perms = file_permissions[0:3]
-        group_perms = file_permissions[3:6]
-        other_perms = file_permissions[6:]
-
         # Define operation mapping
         operation_map = {
             "read": 0,
@@ -301,33 +310,25 @@ class VirtualFileSystem:
             "execute": 2
         }
 
+        # Define numeric values for permissions
+        permission_values = {
+            'r': 4,
+            'w': 2,
+            'x': 1,
+            '-': 0
+        }
+
         # Determine which permissions to check based on the operation
-        if operation == "read":
-            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
-        elif operation == "write":
-            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
-        elif operation == "execute":
-            perms_to_check = owner_perms[operation_map[operation]] + group_perms[operation_map[operation]]
-        else:
-            raise ValueError("Invalid operation")
+        perms_to_check = file_permissions[operation_map[operation]]
+        elevated_perm = elevated_permissions[operation_map[operation]]
+        # Convert permissions to numeric values
+        perms_to_check_value = permission_values.get(perms_to_check, 0)
+        elevated_perm_value = permission_values.get(elevated_perm, 0)
 
-        # Check if the operation is permitted based on elevated permissions
-        if elevated_permissions[0] == "r":
-            owner_perm = "r"
-        else:
-            owner_perm = "-"
-        if elevated_permissions[1] == "w":
-            group_perm = "w"
-        else:
-            group_perm = "-"
-        if elevated_permissions[2] == "x":
-            other_perm = "x"
-        else:
-            other_perm = "-"
+        # Check if the operation is permitted based on numeric permissions
+        return elevated_perm_value >= perms_to_check_value
 
-        elevated_perms_to_check = owner_perm + group_perm + other_perm
 
-        return perms_to_check == elevated_perms_to_check
 
     def get_permissions(self, path):
         # Find the directory or file based on the provided path
