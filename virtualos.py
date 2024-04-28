@@ -16,9 +16,9 @@ class VirtualOS:
             uid=1000,
             gid=1000,
             home_dir="/home/admin",
-            shell="/bin/bash"
+            shell="/bin/qshell"
         )
-#        self.passwordtools = PasswordFile()
+        self.passwordtools = PasswordFile("passwd")
         VCommands.clear_screen()
         self.kernel.log_command("Logging component version numbers...")
         self.kernel.log_command("Component Version Numbers:\n")
@@ -196,19 +196,22 @@ class VirtualOS:
 
                 elif command.startswith("adduser"):
                     _, username, password = command.split(" ", 2)
-                    self.usertools.add_user(self.fs, username, password)
+                    self.passwordtools.add_user(self.fs, username, password)
+                    path = "/home/" + username
+                    VCommands.mkdir(self.fs, path)
+                    self.fs.save_file_system("file_system.json")  # Save filesystem
 
                 elif command.startswith("deluser"):
                     _, username = command.split(" ", 1)
-                    self.usertools.delete_user(self.fs, username)
+                    self.passwordtools.delete_user(self.fs, username)
 
                 elif command.startswith("updateuser"):
                     _, username, new_password = command.split(" ", 2)
-                    self.usertools.update_user(self.fs, username, new_password)
+                    self.passwdtools.update_user(self.fs, username, new_password)
 
                 elif command.startswith("readuser"):
                     _, username = command.split(" ", 1)
-                    self.usertools.read_user(self.fs, username)
+                    self.passwdtools.read_user(self.fs, username)
 
                 elif command.startswith("help"):
                     parts = command.split(" ")

@@ -3,7 +3,6 @@ import os
 import gzip
 from virtualkernel import VirtualKernel
 
-
 class File:
     def __init__(self, name, content="", permissions=""):
         self.name = name

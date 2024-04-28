@@ -3,6 +3,7 @@ import hashlib
 import base64
 from datetime import datetime
 import traceback
+import uuid
 
 class UserAccount:
     def __init__(self, username, password, uid, gid, home_dir, shell):
@@ -11,7 +12,7 @@ class UserAccount:
         self.uid = uid
         self.gid = gid
         self.home_dir = home_dir
-        self.shell = shell
+        self.shell = "/bin/qshell"
 
     def encrypt_password(self, password):
         # Use SHA-256 hashing algorithm for password encryption
@@ -27,10 +28,21 @@ class PasswordFile:
     def __init__(self, file_path):
         self.file_path = file_path
 
-    def add_user(self, user):
+    @staticmethod
+    def generate_random_id():
+        return uuid.uuid4().int & (1<<32)-1
+
+    def add_user(self, fs, user, password):
+        # Generate random uid and gid if not provided
+        uid = self.generate_random_id()
+        gid = self.generate_random_id()
+        userdir = "/home/" + user
+        shell = "/bin/qshell"
+
         # Write the user account information to the password file
         with open(self.file_path, 'a') as file:
-            file.write(f"{user.username}:{user.password}:{user.uid}:{user.gid}:{user.home_dir}:{user.shell}\n")
+            file.write(f"{user}:{password}:{uid}:{gid}:{userdir}:{shell}\n")
+
 
     def remove_user(self, username):
         # Read all lines from the password file, excluding the user to be removed
