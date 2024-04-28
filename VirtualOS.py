@@ -9,6 +9,13 @@ class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
         VCommands.clear_screen()
+        self.kernel.log_command("Logging component version numbers...")
+        self.kernel.log_command("Component Version Numbers:\n")
+        self.kernel.log_command("VirtualKernel Version: V0.0.1")
+        self.kernel.log_command("VirtualOS Version: V0.0.1")
+        self.kernel.log_command("VirtualFS Version: V0.0.1")
+        self.kernel.log_command("VirtualMachine Version: V0.0.1")
+        self.kernel.log_command(f"Python Version: {sys.version}")
         self.kernel.log_command("Initializing Kernel...")
         self.kernel.log_command("Booting up VirtualOS...")
         self.kernel.log_command("Initializing VirtualFileSystem...")
@@ -34,22 +41,16 @@ class VirtualOS:
 
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
-        self.kernel.log_command("Logging component version numbers...")
-        self.kernel.log_command("Component Version Numbers:\n")
-        self.kernel.log_command("VirtualKernel Version: V0.0.1")
-        self.kernel.log_command("VirtualOS Version: V0.0.1")
-        self.kernel.log_command("VirtualFS Version: V0.0.1")
-        self.kernel.log_command("VirtualMachine Version: V0.0.1")
-        self.kernel.log_command(f"Python Version: {sys.version}")
         self.kernel.log_command(f"Permissions: {self.current_directory.permissions}")
 
         try:
             self.kernel.boot_verbose()
+            self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
         except Exception as e:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
 
     def load_with_loading_circle(self):
-        self.kernel.log_command("Loading with loading circle...")
+        self.kernel.log_command("Boot Animation Loaded...")
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
         for _ in range(10):  # Repeat the animation 10 times
             for char in loading_animation:
@@ -82,7 +83,7 @@ class VirtualOS:
                 elif command.startswith("su"):
                     parts = command.split(" ", 1)
                     permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
-                    VCommands.su(self.fs, self.current_directory, permissions)
+                    VCommands.su(self, self.fs, self.current_directory, permissions)
 
 
 
@@ -113,11 +114,12 @@ class VirtualOS:
                         _, path = parts
                     else:
                         path = None
+                    self.kernel.log_command(f"ls debug: {self.current_directory} and {path}")
                     VCommands.ls(self.fs, self.current_directory, path)
 
                 elif command.startswith("cd"):
                     _, path = command.split(" ", 1)
-                    self.current_directory = VCommands.cd(self.fs, self.current_directory, path)
+                    self.current_directory = VCommands.cd(self, self.fs, self.current_directory, path)
                 elif command.startswith("cat"):
                     try:
                         _, path = command.split(" ", 1)
