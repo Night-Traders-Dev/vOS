@@ -37,7 +37,8 @@ class VirtualOS:
                 self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
         else:
             self.kernel.log_command("Home directory not found. Creating...")
-            self.fs.create_directory("/home")                                                                            self.fs.create_directory("/home/user")
+            self.fs.create_directory("/home")
+            self.fs.create_directory("/home/user")
             self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
 
         self.kernel.log_command("Initializing VirtualMachine...")
@@ -49,7 +50,8 @@ class VirtualOS:
             self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
         except Exception as e:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
-                                                                                                                 def load_with_loading_circle(self):
+
+    def load_with_loading_circle(self):
         self.kernel.log_command("Boot Animation Loaded...")
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
         for _ in range(10):  # Repeat the animation 10 times

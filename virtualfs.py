@@ -45,16 +45,18 @@ class Directory:
         del self.files[name]
 
     def get_full_path(self):
-        """                                                                                                          Get the full path of the directory.
+        """
+        Get the full path of the directory.
         """
         # Initialize an empty list to store the components of the path
         path_components = []
 
         # Start from the current directory and traverse upwards until reaching the root
         current_directory = self
-        while current_directory:                                                                                         # Add the name of the current directory to the list of components
+        while current_directory:
+            # Add the name of the current directory to the list of components
             path_components.append(current_directory.name)
-
+            
             # Move to the parent directory
             current_directory = current_directory.parent
 
@@ -91,11 +93,11 @@ class VirtualFileSystem:
     def allowed_perms(self, user_perms, object_perms):
         """
         Compare user's permissions with object's permissions.
-
+        
         Parameters:
             user_perms (str): Permissions of the user (e.g., 'rwx').
             object_perms (str): Permissions of the file or directory being accessed.
-
+        
         Returns:
             bool: True if the user's permissions are sufficient, False otherwise.
         """
@@ -110,7 +112,7 @@ class VirtualFileSystem:
         for operation, index in operation_map.items():
             if user_perms[index] < object_perms[index]:
                 return False  # User's permissions are insufficient for this operation
-
+        
         return True  # User's permissions are sufficient for all operations
 
 
@@ -120,7 +122,7 @@ class VirtualFileSystem:
         """
         # Split the path into directory components
         components = path.strip("/").split("/")
-
+        
         # Start from the root directory
         current_directory = self.root
 
@@ -333,12 +335,12 @@ class VirtualFileSystem:
     def get_permissions(self, path):
         # Find the directory or file based on the provided path
         item = self.find_item(path)
-
+    
         # Check if the item exists
         if item:
             # Check permissions for the item
             permissions = item.permissions
-
+        
             # Return the permissions
             return permissions
         else:
