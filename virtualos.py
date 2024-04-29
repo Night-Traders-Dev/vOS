@@ -14,6 +14,8 @@ class VirtualOS:
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
         self.kernel.log_command("Kernel Loaded...")
+        self.kernel.get_checksum_file()
+        self.kernel.compare_checksums()
         VCommands.clear_screen()
         self.kernel.log_command("Booting up VirtualOS...")
         self.kernel.log_command("Component Version Numbers:\n")

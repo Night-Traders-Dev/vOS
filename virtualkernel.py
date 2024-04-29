@@ -223,6 +223,56 @@ class VirtualKernel:
         self.password_file = PasswordFile("passwd")  # Initialize password file
         self.qshell_interpreter = QShellInterpreter()
 
+
+    def get_checksum_file(self):
+        checksums = {}
+        try:
+            # Define the paths to the OS components
+            component_paths = [
+                "virtualos.py",
+                "virtualfs.py",
+                "vcommands.py",
+                "virtualkernel.py",
+                "virtualmachine.py"
+            ]
+
+            # Calculate checksum for each component
+            for component_path in component_paths:
+                with open(component_path, "rb") as file:
+                    checksum = hashlib.sha256(file.read()).hexdigest()
+                    checksums[component_path] = checksum
+
+            # Write the checksums to a checksum file
+            with open("checksums.txt", "w") as checksum_file:
+                for component_path, checksum in checksums.items():
+                    checksum_file.write(f"{component_path}: {checksum}\n")
+
+            print("Checksum file created successfully.")
+        except Exception as e:
+            print(f"Error creating checksum file: {e}")
+
+    def compare_checksums(self):
+        try:
+            # Read the checksum file
+            stored_checksums = {}
+            with open("checksums.txt", "r") as checksum_file:
+                for line in checksum_file:
+                    component, checksum = line.strip().split(": ")
+                    stored_checksums[component] = checksum
+
+            # Calculate checksum for each component and compare with stored checksum
+            for component, stored_checksum in stored_checksums.items():
+                with open(component, "rb") as file:
+                    current_checksum = hashlib.sha256(file.read()).hexdigest()
+                if current_checksum == stored_checksum:
+                    print(f"{component}: OK")
+                else:
+                    print(f"{component}: Checksum mismatch!")
+
+        except Exception as e:
+            print(f"Error comparing checksums: {e}")
+
+
     def update_vos(self):
         # Specify the GitHub repository URL
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
