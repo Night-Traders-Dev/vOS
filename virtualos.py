@@ -28,6 +28,7 @@ class VirtualOS:
         self.active_user = self.passwordtools.online_user()
         self.user_dir = "/home/" + self.active_user
         self.user_perms = "rwxr-xr-x"
+        self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
 
         # Check if 'home' directory exists
@@ -68,6 +69,15 @@ class VirtualOS:
         sys.stdout.flush()
         self.kernel.log_command("File system loaded successfully.")
 
+    def su_check(self, command):
+            if not self.su:
+                print(f"{command} requires su permission")
+                self.kernel.log_command(f"[!!]su_check: {self.active_user} invalid permissions for {command}")
+                return False
+            else:
+                return True
+
+
     def run_shell(self):
         while True:
             try:
@@ -78,19 +88,12 @@ class VirtualOS:
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     break
-                elif command.startswith("sudo "):  # Check if the command starts with 'sudo'
-                    parts = command.split(" ")
-                    sudo_command = parts[1]  # Extract the command after 'sudo'
-                    # Extract permissions if provided
-                    permissions = parts[2] if len(parts) > 2 else ""
-                    # Capture the entire command including path and file
-                    sudo_args = ' '.join(parts[1:])
-                    VCommands.sudo(self, self.fs, self.current_directory, sudo_args)
-
                 elif command.startswith("su"):
-                    parts = command.split(" ", 1)
-                    permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
-                    VCommands.su(self, self.fs, self.current_directory, permissions)
+                    auth = self.passwordtools.su_prompt()
+                    if auth:
+                        parts = command.split(" ", 1)
+                        permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
+                        VCommands.su(self, self.fs, self.current_directory, permissions)
 
                 elif command.startswith("reboot"):
                     confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
@@ -153,7 +156,8 @@ class VirtualOS:
                     self.vm.run()
 
                 elif command == "dmesg":  # Command to print virtual dmesg
-                    self.kernel.print_dmesg()
+                    if self.su_check(command):
+                        self.kernel.print_dmesg()
 
                 elif command == "toggle_fs_monitoring":  # Command to toggle filesystem monitoring
                     self.kernel.toggle_filesystem_monitoring()

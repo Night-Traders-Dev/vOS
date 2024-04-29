@@ -129,6 +129,20 @@ class PasswordFile:
                 break
             else:
                 print("Invalid username or password. Please try again.")
+
+    def su_prompt(self):
+            while True:
+                password = getpass.getpass("Password: ")
+                username = self.active_user
+                if self.authenticate(username, password):
+                    return True
+                    break
+                else:
+                    print("Invalid password. su cancelled")
+                    return False
+                    break
+
+
     def logout(self):
        os.system('cls' if os.name == 'nt' else 'clear')
        self.active_user = None

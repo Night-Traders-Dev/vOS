@@ -54,13 +54,11 @@ class VCommands:
             current_directory.permissions = permissions
             fs.permissions = permissions
 
-            print(f"Permissions elevated to: {permissions}")
 
             # Run a subshell with elevated privileges
             while True:
                 command = input(f"{current_directory.get_full_path()} # ").strip()
                 if command == "exit":
-                    print("Exiting su...")
                     break
 
                 # Execute the command with elevated privileges
@@ -80,38 +78,8 @@ class VCommands:
             # Restore the original permissions
             current_directory.permissions = original_permissions
             fs.permissions = original_permissions
-            print(f"Permissions restored to: {original_permissions}")
 
 
-
-    @staticmethod
-    def sudo(self, fs, current_directory, sudo_command, permissions=None):
-        """
-        sudo: Elevate privileges for a command\nUsage: sudo [command]
-        """
-        try:
-            # Store the original permissions
-            original_permissions = current_directory.permissions
-
-            # Temporarily change permissions to allow all operations
-            current_directory.permissions = "rwxrwxrwx"
-
-            # Check if the command exists and is callable
-            if hasattr(VCommands, sudo_command):
-                method = getattr(VCommands, sudo_command)
-                if callable(method):
-                    # Execute the command with elevated privileges
-                    method(fs, current_directory)
-                else:
-                    print(f"Error: '{sudo_command}' is not callable.")
-            else:
-                print(f"Error: Command '{sudo_command}' not found.")
-
-            # Restore the original permissions
-            current_directory.permissions = original_permissions
-
-        except Exception as e:
-            print(f"Error: {e}")
 
 
     @staticmethod
