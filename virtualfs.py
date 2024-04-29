@@ -156,7 +156,7 @@ class VirtualFileSystem:
                 "boot": {"name": "boot", "files": {"kernel": "Dummy kernel file", "initrd": "Dummy initrd file", "config": "Dummy config file"}, "subdirectories": {}},
                 "dev": {"name": "dev", "files": {}, "subdirectories": {}},
                 "etc": {"name": "etc", "files": {}, "subdirectories": {}},
-                "home": {"name": "home", "files": {}, "subdirectories": {"user": {"name": "user", "files": {}, "subdirectories": {}}}},
+                "home": {"name": "home", "files": {}, "subdirectories": {}},
                 "lib": {"name": "lib", "files": {}, "subdirectories": {}},
                 "mnt": {"name": "mnt", "files": {}, "subdirectories": {}},
                 "opt": {"name": "opt", "files": {}, "subdirectories": {}},

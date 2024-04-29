@@ -10,14 +10,6 @@ from virtualkernel import PasswordFile
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
-        self.usertools = UserAccount(
-            username="admin",
-            password="admin",
-            uid=1000,
-            gid=1000,
-            home_dir="/home/admin",
-            shell="/bin/qshell"
-        )
         self.passwordtools = PasswordFile("passwd")
         VCommands.clear_screen()
         self.kernel.log_command("Logging component version numbers...")
@@ -35,22 +27,25 @@ class VirtualOS:
         self.load_with_loading_circle()  # Call method to load with loading circle
         self.user_perms = "rwxr-xr-x"
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
+        self.passwordtools.check_passwd_file(self.fs)
+        self.active_user = self.passwordtools.online_user()
+        self.user_dir = "/home/" + self.active_user
 
         # Check if 'home' directory exists
         if "home" in self.fs.root.subdirectories:
             # Check if 'user' directory exists
-            if "user" in self.fs.root.subdirectories["home"].subdirectories:
+            if self.active_user in self.fs.root.subdirectories["home"].subdirectories:
                 # Set default starting directory to /home/user
-                self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
+                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
             else:
                 self.kernel.log_command("User directory not found. Creating...")
-                self.fs.create_directory("/home/user")
-                self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
+                self.fs.create_directory(self.user_dir)
+                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
         else:
             self.kernel.log_command("Home directory not found. Creating...")
             self.fs.create_directory("/home")
-            self.fs.create_directory("/home/user")
-            self.current_directory = self.fs.root.subdirectories["home"].subdirectories["user"]
+            self.fs.create_directory(self.user_dir)
+            self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
 
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance

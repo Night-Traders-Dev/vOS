@@ -14,6 +14,7 @@ class UserAccount:
         self.home_dir = home_dir
         self.shell = "/bin/qshell"
 
+
     def encrypt_password(self, password):
         # Use SHA-256 hashing algorithm for password encryption
         hashed_password = hashlib.sha256(password.encode()).digest()
@@ -27,22 +28,53 @@ class UserAccount:
 class PasswordFile:
     def __init__(self, file_path):
         self.file_path = file_path
-
+        self.dmesg_file = "dmesg"
+        self.active_user = None
     @staticmethod
     def generate_random_id():
         return uuid.uuid4().int & (1<<32)-1
+    def online_user(self):
+        return self.active_user
 
-    def add_user(self, fs, user, password):
+    def check_passwd_file(self, fs):
+        """
+        Check if the passwd file exists and if it's empty.
+        If it doesn't exist or it's empty, prompt to create a new user.
+        """
+        if os.path.isfile(self.file_path):
+            # Check if the file is empty
+            if os.path.getsize(self.file_path) == 0:
+                print("First Boot Account Setup")
+                self.create_new_user(fs)
+            else:
+                self.login_prompt()
+        else:
+            print("First Boot Account Setup")
+            self.create_new_user(fs)
+
+    def create_new_user(self, fs):
+        """
+        Prompt to create a new user account.
+        """
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        self.add_user(fs, username, password)
+        self.login_prompt()
+
+    def add_user(self, fs, username, password):
         # Generate random uid and gid if not provided
         uid = self.generate_random_id()
         gid = self.generate_random_id()
-        userdir = "/home/" + user
+        user_dir = "/home/" + username
         shell = "/bin/qshell"
+
+        # Create a UserAccount instance
+        user_account = UserAccount(username, password, uid, gid, user_dir, shell)
 
         # Write the user account information to the password file
         with open(self.file_path, 'a') as file:
-            file.write(f"{user}:{password}:{uid}:{gid}:{userdir}:{shell}\n")
-
+            file.write(f"{user_account.username}:{user_account.password}:{user_account.uid}:"
+                       f"{user_account.gid}:{user_account.home_dir}:{user_account.shell}\n")
 
     def remove_user(self, username):
         # Read all lines from the password file, excluding the user to be removed
@@ -67,18 +99,18 @@ class PasswordFile:
                     file.write(line)
 
     def get_user(self, username):
-        # Read all lines from the password file, searching for the specified user
         with open(self.file_path, 'r') as file:
             for line in file:
                 parts = line.strip().split(':')
                 if parts[0] == username:
-                    return UserAccount(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5])
+                    return [parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]]
         return None
 
     def authenticate(self, username, password):
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        stored_password = self.users.get(username)
-        if stored_password and stored_password == hashed_password:
+        user = self.get_user(username)
+        user_account = UserAccount(username, password, user[2], user[3], user[4], user[5])
+        VirtualKernel.log_command(self, f"auth: {user[1]} and {user_account.password}")
+        if user[1] == user_account.password:
             return True
         else:
             return False
@@ -89,6 +121,7 @@ class PasswordFile:
             password = input("Password: ")
             if self.authenticate(username, password):
                 print("Login successful!")
+                self.active_user = username
                 break
             else:
                 print("Invalid username or password. Please try again.")
