@@ -184,7 +184,7 @@ class VirtualFileSystem:
             "virtualos.py": {"name": "boot/virtualos.py"},  # Place virtualos.py in /boot
             "virtualfs.py": {"name": "boot/virtualfs.py"},  # Place virtualfs.py in /boot
             "virtualmachine.py": {"name": "sbin/virtualmachine.py"},  # Place virtualmachine.py in /sbin
-            "checksum.txt": {"name": "etc/checksum"}
+            "checksums.txt": {"name": "etc/checksum"}
         }
 
         for file_name, file_data in provided_files.items():
