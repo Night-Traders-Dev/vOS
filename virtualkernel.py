@@ -59,6 +59,7 @@ class PasswordFile:
         username = input("Enter username: ")
         password = input("Enter password: ")
         self.add_user(fs, username, password)
+        os.system('cls' if os.name == 'nt' else 'clear')
         self.login_prompt()
 
     def add_user(self, fs, username, password):
@@ -116,12 +117,14 @@ class PasswordFile:
             return False
 
     def login_prompt(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
         while True:
             username = input("Username: ")
             password = input("Password: ")
             if self.authenticate(username, password):
                 print("Login successful!")
                 self.active_user = username
+                os.system('cls' if os.name == 'nt' else 'clear')
                 break
             else:
                 print("Invalid username or password. Please try again.")
@@ -145,7 +148,7 @@ class VirtualKernel:
         self.log_command("[!!]Rebooting vOS...")
         self.processes = []  # Reset the list of processes
         print("Virtual operating system rebooted successfully.")
-        self.print_dmesg()
+        self.password_file.login_prompt()
 
     def create_process(self, program):
         new_process = VirtualProcess(program)
