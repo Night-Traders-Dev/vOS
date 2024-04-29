@@ -4,6 +4,7 @@ import base64
 from datetime import datetime
 import traceback
 import uuid
+import getpass
 
 class UserAccount:
     def __init__(self, username, password, uid, gid, home_dir, shell):
@@ -57,7 +58,7 @@ class PasswordFile:
         Prompt to create a new user account.
         """
         username = input("Enter username: ")
-        password = input("Enter password: ")
+        password = getpass.getpass("Enter password: ")
         self.add_user(fs, username, password)
         os.system('cls' if os.name == 'nt' else 'clear')
         self.login_prompt()
@@ -120,7 +121,7 @@ class PasswordFile:
         os.system('cls' if os.name == 'nt' else 'clear')
         while True:
             username = input("Username: ")
-            password = input("Password: ")
+            password = getpass.getpass("Password: ")
             if self.authenticate(username, password):
                 print("Login successful!")
                 self.active_user = username
@@ -128,7 +129,10 @@ class PasswordFile:
                 break
             else:
                 print("Invalid username or password. Please try again.")
-
+    def logout(self):
+       os.system('cls' if os.name == 'nt' else 'clear')
+       self.active_user = None
+       self.login_prompt()
 
 class VirtualKernel:
     def __init__(self):

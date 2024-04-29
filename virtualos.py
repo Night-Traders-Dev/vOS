@@ -11,25 +11,24 @@ class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.passwordtools = PasswordFile("passwd")
+        self.kernel.log_command("Kernel Loaded...")
         VCommands.clear_screen()
-        self.kernel.log_command("Logging component version numbers...")
+        self.kernel.log_command("Booting up VirtualOS...")
         self.kernel.log_command("Component Version Numbers:\n")
         self.kernel.log_command("VirtualKernel Version: V0.0.1")
         self.kernel.log_command("VirtualOS Version: V0.0.1")
         self.kernel.log_command("VirtualFS Version: V0.0.1")
         self.kernel.log_command("VirtualMachine Version: V0.0.1")
         self.kernel.log_command(f"Python Version: {sys.version}")
-        self.kernel.log_command("Initializing Kernel...")
-        self.kernel.log_command("Booting up VirtualOS...")
         self.kernel.log_command("Initializing VirtualFileSystem...")
         self.fs = VirtualFileSystem()  # Initialize the filesystem
-        self.kernel.log_command("Loading VirtualFileSystem...")
+        self.kernel.log_command("VirtualFileSystem Loaded...")
         self.load_with_loading_circle()  # Call method to load with loading circle
-        self.user_perms = "rwxr-xr-x"
-        self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
         self.passwordtools.check_passwd_file(self.fs)
         self.active_user = self.passwordtools.online_user()
         self.user_dir = "/home/" + self.active_user
+        self.user_perms = "rwxr-xr-x"
+        self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
 
         # Check if 'home' directory exists
         if "home" in self.fs.root.subdirectories:
@@ -74,8 +73,8 @@ class VirtualOS:
             try:
                 command = input(f"{self.current_directory.get_full_path()} $ ").strip()
                 self.kernel.log_command(command)  # Log the command
-                if command == "exit":
-                    print("Exiting VirtualOS...")
+                if command == "exit" or command == "shutdown":
+                    print("Shutting Down VirtualOS...")
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     break
@@ -188,6 +187,9 @@ class VirtualOS:
                 elif command.startswith("echo"):
                     _, *args = command.split(" ")
                     VCommands.echo(*args)
+
+                elif command.startswith("logout"):
+                    self.passwordtools.logout()
 
                 elif command.startswith("adduser"):
                     _, username, password = command.split(" ", 2)
