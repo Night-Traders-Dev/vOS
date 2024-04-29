@@ -5,11 +5,13 @@ from virtualfs import File
 from virtualfs import Directory
 from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
+from virtualkernel import QShellInterpreter
 
 class VCommands:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.vfs = VirtualFileSystem()
+        self.qshell = QShellInterpreter()
     @staticmethod
     def help(command=None):
         """

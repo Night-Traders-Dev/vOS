@@ -6,6 +6,44 @@ import traceback
 import uuid
 import getpass
 
+class QShellInterpreter:
+    def __init__(self):
+        self.ext = ".qs"
+
+    def execute_script(self, script):
+        # Split the script into individual lines
+        lines = script.split('\n')
+        for line in lines:
+            # Execute each line of the script
+            self.execute_line(line)
+
+    def execute_line(self, line):
+        # Parse and execute the individual line of qShell script
+        # Example: parse the line and execute corresponding action
+        if line.startswith("#"):
+            pass
+        elif line.startswith("mkdir"):
+            self.execute_mkdir(line)
+        elif line.startswith("rm"):
+            self.execute_rm(line)
+        elif line.startswith("echo"):
+            self.execute_echo(line)
+        # Add more command handlers as needed
+
+    def execute_echo(self, line):
+        # Implement logic to execute 'echo' command
+        print(f"{line}\n")
+
+    def execute_mkdir(self, line):
+        # Implement logic to execute 'mkdir' command
+        pass
+
+    def execute_rm(self, line):
+        # Implement logic to execute 'rm' command
+        pass
+
+
+
 class UserAccount:
     def __init__(self, username, password, uid, gid, home_dir, shell):
         self.username = username
@@ -155,6 +193,12 @@ class VirtualKernel:
         self.filesystem_monitoring_enabled = True
         self.last_error = None
         self.password_file = PasswordFile("passwd")  # Initialize password file
+        self.qshell_interpreter = QShellInterpreter()
+
+    def execute_qshell_script(self, script):
+        # Execute a qShell script using the qShell interpreter
+        self.qshell_interpreter.execute_script(script)
+
 
     def reboot_os(self):
         """Reboots the virtual operating system."""

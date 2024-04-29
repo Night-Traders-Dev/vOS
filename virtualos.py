@@ -6,11 +6,13 @@ from virtualmachine import VirtualMachine
 from virtualkernel import VirtualKernel
 from virtualkernel import UserAccount
 from virtualkernel import PasswordFile
+from virtualkernel import QShellInterpreter
 
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.passwordtools = PasswordFile("passwd")
+        self.qshell = QShellInterpreter()
         self.kernel.log_command("Kernel Loaded...")
         VCommands.clear_screen()
         self.kernel.log_command("Booting up VirtualOS...")
@@ -111,6 +113,15 @@ class VirtualOS:
                     _, path = command.split(" ", 1)
                     VCommands.mkdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
+
+                elif command.startswith("qshell"):
+                    _, path = command.split(" ", 1)
+                    filepath = self.current_directory.get_full_path() + "/" + path
+                    self.kernel.log_command(f"qshell: {filepath}")
+                    if self.fs.file_exists(filepath):
+                        self.qshell.execute_script(path)
+                    else:
+                        print(f"{path} not found")
 
                 elif command.startswith("ls"):
                     parts = command.split(" ")
