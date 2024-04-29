@@ -226,42 +226,36 @@ class VirtualKernel:
     def update_vos(self):
         # Specify the GitHub repository URL
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
-        self.log_command(f"vOS update started")
 
         try:
-            # Download the repository zip file
+            # Get the file size of the repository zip file
             with urllib.request.urlopen(repo_url) as response:
-                # Read the entire file into memory
-                buffer = BytesIO(response.read())
+                total_size = int(response.headers.get('Content-Length', 0))
 
-            # Check if the downloaded file is empty
-            if not buffer.getvalue():
-                print("Error: Failed to fetch repository contents from GitHub. No data received.")
-                self.log_command("Failed to fetch repository contents from GitHub. No data received.")
-                return
-
-            # Get the total size of the downloaded file
-            total_size = len(buffer.getvalue())
+                # Download the repository zip file
+                buffer = BytesIO()
+                bytes_read = 0
+                block_size = 1024
+                while True:
+                    data = response.read(block_size)
+                    if not data:
+                        break
+                    buffer.write(data)
+                    bytes_read += len(data)
+                    self.print_progress(bytes_read, total_size)
 
             # Check if the downloaded file is a zip file
             if not is_zipfile(buffer):
                 print("Error: Failed to fetch repository contents from GitHub. File is not a zip file.")
-                print("Printing buffer contents:")
-                print(buffer.getvalue())
-                self.log_command("Failed to fetch repository contents from GitHub. File is not a zip file.")
                 return
 
             # Extract to a temporary directory
-            self.log_command(f"Extracting update")
-            print("Extracting update")
             buffer.seek(0)
             with ZipFile(buffer, 'r') as zip_ref:
                 temp_dir = os.path.join(os.getcwd(), "temp")
                 zip_ref.extractall(temp_dir)
 
                 # Move the contents of the temporary directory to vOS directory
-                self.log_command(f"Copying update")
-                print("Copying update")
                 repo_dir = os.path.join(temp_dir, "vOS-main")
                 self.move_files(repo_dir, os.getcwd())
 
@@ -269,7 +263,6 @@ class VirtualKernel:
                 shutil.rmtree(temp_dir)
 
             print("vOS updated successfully!")
-            self.log_command("vOS updated successfully")
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
