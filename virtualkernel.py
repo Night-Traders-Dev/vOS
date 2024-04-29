@@ -229,28 +229,19 @@ class VirtualKernel:
         self.log_command(f"vOS update started")
 
         try:
-            # Get the file size of the repository zip file
-            with urllib.request.urlopen(repo_url) as response:
-                total_size = int(response.headers.get('Content-Length', 0))
-                print(f"Total size of the file: {total_size} bytes")
-
             # Download the repository zip file
-            buffer = BytesIO()
-            bytes_read = 0
-            block_size = 1024
-            while True:
-                data = response.read(block_size)
-                if not data:
-                    break
-                buffer.write(data)
-                bytes_read += len(data)
-                print(f"Bytes read: {bytes_read}")
+            with urllib.request.urlopen(repo_url) as response:
+                # Read the entire file into memory
+                buffer = BytesIO(response.read())
 
             # Check if the downloaded file is empty
             if not buffer.getvalue():
                 print("Error: Failed to fetch repository contents from GitHub. No data received.")
                 self.log_command("Failed to fetch repository contents from GitHub. No data received.")
                 return
+
+            # Get the total size of the downloaded file
+            total_size = len(buffer.getvalue())
 
             # Check if the downloaded file is a zip file
             if not is_zipfile(buffer):
