@@ -1,0 +1,6 @@
+{
+  "VirtualOS": "V0.1.1",
+  "VirtualFS": "V0.1.0",
+  "VirtualKernel": "V0.1.8",
+  "VirtualMachine": "V0.0.1"
+}

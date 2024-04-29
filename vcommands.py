@@ -249,14 +249,12 @@ class VCommands:
 
 
     @staticmethod
-    def version():
+    def version(self):
         """
         version: Show version information
         """
-        print("VOS Version: V0.0.1")
+        self.kernel.print_component_versions(True)
         print(f"Python Version: {sys.version}")
-        print("VirtualFS Version: V0.0.1")
-        print("VirtualMachine Version: V0.0.1")
 
     @staticmethod
     def clear_screen():

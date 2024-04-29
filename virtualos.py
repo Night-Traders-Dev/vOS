@@ -17,10 +17,7 @@ class VirtualOS:
         VCommands.clear_screen()
         self.kernel.log_command("Booting up VirtualOS...")
         self.kernel.log_command("Component Version Numbers:\n")
-        self.kernel.log_command("VirtualKernel Version: V0.0.1")
-        self.kernel.log_command("VirtualOS Version: V0.0.1")
-        self.kernel.log_command("VirtualFS Version: V0.0.1")
-        self.kernel.log_command("VirtualMachine Version: V0.0.1")
+        self.kernel.print_component_versions(False)
         self.kernel.log_command(f"Python Version: {sys.version}")
         self.kernel.log_command("Initializing VirtualFileSystem...")
         self.fs = VirtualFileSystem()  # Initialize the filesystem
@@ -119,7 +116,8 @@ class VirtualOS:
                     filepath = self.current_directory.get_full_path() + "/" + path
                     self.kernel.log_command(f"qshell: {filepath}")
                     if self.fs.file_exists(filepath):
-                        self.qshell.execute_script(path)
+                        qshell_command = self.qshell.execute_script(path)
+                        print(f"{qshell_command}")
                     else:
                         print(f"{path} not found")
 
@@ -158,7 +156,7 @@ class VirtualOS:
                     VCommands.nano(self.fs, self.current_directory, path)
 
                 elif command.startswith("version"):
-                    VCommands.version()
+                    VCommands.version(self)
 
                 elif command == "clear":
                     VCommands.clear_screen()
