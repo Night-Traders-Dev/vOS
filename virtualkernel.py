@@ -226,6 +226,7 @@ class VirtualKernel:
 
     def update_vos(self):
         # Specify the GitHub repository URL
+        self.log_command(f"vOS update started")
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
 
         try:
@@ -247,11 +248,15 @@ class VirtualKernel:
                         pbar.update(len(data))
 
                     # Extract to a temporary directory
+                    self.log_command(f"extracting update")
+                    print("extracting update")
                     with ZipFile(buffer, 'r') as zip_ref:
                         temp_dir = os.path.join(os.getcwd(), "temp")
                         zip_ref.extractall(temp_dir)
 
                         # Move the contents of the temporary directory to vOS directory
+                        self.log_command(f"copying update")
+                        print("copying update")
                         repo_dir = os.path.join(temp_dir, "vOS-main")
                         self.move_files(repo_dir, os.getcwd())
 
@@ -259,6 +264,7 @@ class VirtualKernel:
                         shutil.rmtree(temp_dir)
 
                     print("vOS updated successfully!")
+                    self.log_command("vOS updated successfully")
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
