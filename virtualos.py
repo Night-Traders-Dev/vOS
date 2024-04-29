@@ -170,6 +170,12 @@ class VirtualOS:
                     if self.su_check(command):
                         self.kernel.print_dmesg()
 
+
+                elif command == "update": 
+                    if self.su_check(command):
+                        self.kernel.update_vos()
+
+
                 elif command == "toggle_fs_monitoring":  # Command to toggle filesystem monitoring
                     self.kernel.toggle_filesystem_monitoring()
 

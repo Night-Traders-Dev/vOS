@@ -6,6 +6,10 @@ import traceback
 import uuid
 import getpass
 import json
+import shutil
+import urllib.request
+from zipfile import ZipFile
+from io import BytesIO
 
 class QShellInterpreter:
     def __init__(self):
@@ -217,6 +221,41 @@ class VirtualKernel:
         self.last_error = None
         self.password_file = PasswordFile("passwd")  # Initialize password file
         self.qshell_interpreter = QShellInterpreter()
+
+    def update_vos(self):
+        # Specify the GitHub repository URL
+        repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
+
+        try:
+            # Download the repository zip file
+            with urllib.request.urlopen(repo_url) as response:
+                with ZipFile(BytesIO(response.read()), 'r') as zip_ref:
+                    # Extract to a temporary directory
+                    temp_dir = os.path.join(os.getcwd(), "temp")
+                    zip_ref.extractall(temp_dir)
+
+                    # Move the contents of the temporary directory to vOS directory
+                    repo_dir = os.path.join(temp_dir, "vOS-main")
+                    self.move_files(repo_dir, os.getcwd())
+
+                    # Clean up: Remove the temporary directory
+                    shutil.rmtree(temp_dir)
+
+                print("vOS updated successfully!")
+        except Exception as e:
+            print("Failed to fetch repository contents from GitHub:", e)
+
+    def move_files(self, src_dir, dest_dir):
+        # Move files and directories from source directory to destination directory
+        for item in os.listdir(src_dir):
+            src_item = os.path.join(src_dir, item)
+            dest_item = os.path.join(dest_dir, item)
+            if os.path.isdir(src_item):
+                shutil.move(src_item, dest_item)
+            else:
+                shutil.copy(src_item, dest_item)
+                os.remove(src_item)
+
 
     def print_component_versions(self, verbose):
         try:
