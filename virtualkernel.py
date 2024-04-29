@@ -245,6 +245,13 @@ class VirtualKernel:
                 bytes_read += len(data)
                 self.print_progress(bytes_read, total_size)
 
+            # Check if the downloaded file is a zip file
+            if not is_zipfile(buffer):
+                print("Error: Failed to fetch repository contents from GitHub. File is not a zip file.")
+                self.log_command("Failed to fetch repository contents from GitHub. File is not a zip file.")
+                return
+
+
             # Extract to a temporary directory
             self.log_command(f"extracting update")
             print("extracting update")
