@@ -116,11 +116,13 @@ class VirtualOS:
                     filepath = self.current_directory.get_full_path() + "/" + path
                     self.kernel.log_command(f"qshell: {filepath}")
                     if self.fs.file_exists(filepath):
-                        qshell_command = self.qshell.execute_script(path)
-                        print(f"{qshell_command}")
+                        qshell_commands = self.qshell.execute_script(path)
+                        for qshell_command in qshell_commands:
+                            if qshell_command:
+                                # Execute the parsed qShell command using the appropriate method from vcommands
+                                self.execute_vcommand(qshell_command)
                     else:
                         print(f"{path} not found")
-
                 elif command.startswith("ls"):
                     parts = command.split(" ")
                     if len(parts) > 1:

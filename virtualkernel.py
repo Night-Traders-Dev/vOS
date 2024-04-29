@@ -10,6 +10,7 @@ import json
 class QShellInterpreter:
     def __init__(self):
         self.ext = ".qs"
+        self.variables = {}  # Dictionary to store variables
 
     def execute_script(self, script):
         if script.endswith(self.ext):
@@ -17,24 +18,54 @@ class QShellInterpreter:
             lines = script.split('\n')
             for line in lines:
                 # Execute each line of the script
-                self.execute_line(line)
+                command = self.parse_line(line)
+                if command:
+                    yield command
         else:
-            print(f"{script} must be {self.ext} extension")
+            print(f"{script} must have {self.ext} extension")
 
-    def execute_line(self, line):
-        # Parse and execute the individual line of qShell script
-        # Example: parse the line and execute corresponding action
+    def parse_line(self, line):
+        # Parse and return the individual command from the qShell script line
         if line.startswith("#"):
-            pass  # Ignore comments
+            return None  # Ignore comments
         elif "#" in line:
             command, _ = line.split("#", 1)  # Split at the first #
-            command = command.strip()  # Remove any trailing whitespace
-            self.execute_command(command)
+            return command.strip()  # Remove any trailing whitespace and return the command
         else:
-            command = line.strip()  # Remove any leading/trailing whitespace
-            return command
+            command_parts = line.split(" ")  # Split the line into parts
+            command = command_parts[0]  # Extract the command
 
+            if command == "if":
+                condition = " ".join(command_parts[1:])  # Extract the condition
+                return self.execute_if(condition)
+            elif command == "for":
+                variables = command_parts[1].split(",")  # Extract the variable(s)
+                iterable = command_parts[3]  # Extract the iterable
+                return self.execute_for(variables, iterable)
+            elif command == "while":
+                condition = " ".join(command_parts[1:])  # Extract the condition
+                return self.execute_while(condition)
+            else:
+                return line.strip()  # Remove any leading/trailing whitespace and return the command
 
+    def execute_if(self, condition):
+        # Execute the if statement based on the condition
+        if condition:
+            return True
+        else:
+            return False
+
+    def execute_for(self, variables, iterable):
+        # Execute the for loop using the provided variables and iterable
+        for variable in variables:
+            self.variables[variable] = iterable
+        return True
+
+    def execute_while(self, condition):
+        # Execute the while loop based on the condition
+        while condition:
+            return True
+        return False
 
 class UserAccount:
     def __init__(self, username, password, uid, gid, home_dir, shell):
