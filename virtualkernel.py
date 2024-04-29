@@ -8,7 +8,7 @@ import getpass
 import json
 import shutil
 import urllib.request
-from zipfile import ZipFile
+from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 
 
