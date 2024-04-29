@@ -249,6 +249,8 @@ class VirtualKernel:
             if not is_zipfile(buffer):
                 print("Error: Failed to fetch repository contents from GitHub. File is not a zip file.")
                 self.log_command("Failed to fetch repository contents from GitHub. File is not a zip file.")
+                print("Printing buffer contents")
+                print(buffer.getvalue())
                 return
 
 
