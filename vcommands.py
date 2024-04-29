@@ -67,6 +67,8 @@ class VCommands:
                 try:
                     if command == "dmesg":
                         self.kernel.print_dmesg()
+                    elif: command == "update":
+                        self.kernel.update_vos()
                     else:
                         parts = command.split(" ")
                         cmd = parts[0]
