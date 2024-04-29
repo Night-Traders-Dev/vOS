@@ -232,8 +232,9 @@ class VirtualKernel:
             # Get the file size of the repository zip file
             with urllib.request.urlopen(repo_url) as response:
                 total_size = int(response.headers.get('Content-Length', 0))
+                print(f"Total size of the file: {total_size} bytes")
 
-            # Download the repository zip file with progress bar
+            # Download the repository zip file
             buffer = BytesIO()
             bytes_read = 0
             block_size = 1024
@@ -243,7 +244,7 @@ class VirtualKernel:
                     break
                 buffer.write(data)
                 bytes_read += len(data)
-                self.print_progress(bytes_read, total_size)
+                print(f"Bytes read: {bytes_read}")
 
             # Check if the downloaded file is empty
             if not buffer.getvalue():
@@ -281,7 +282,6 @@ class VirtualKernel:
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
-
 
     def print_progress(self, bytes_read, total_size):
         progress = bytes_read / total_size * 100
