@@ -10,7 +10,6 @@ import shutil
 import urllib.request
 from zipfile import ZipFile
 from io import BytesIO
-from tqdm import tqdm
 
 
 class QShellInterpreter:
@@ -233,42 +232,46 @@ class VirtualKernel:
             # Get the file size of the repository zip file
             with urllib.request.urlopen(repo_url) as response:
                 total_size = int(response.headers.get('Content-Length', 0))
-            
+
             # Download the repository zip file with progress bar
-            with urllib.request.urlopen(repo_url) as response:
-                with tqdm(total=total_size, unit='B', unit_scale=True, desc='Downloading vOS') as pbar:
-                    buffer = BytesIO()
-                    bytes_read = 0
-                    while True:
-                        data = response.read(1024)
-                        if not data:
-                            break
-                        buffer.write(data)
-                        bytes_read += len(data)
-                        pbar.update(len(data))
+            buffer = BytesIO()
+            bytes_read = 0
+            block_size = 1024
+            while True:
+                data = response.read(block_size)
+                if not data:
+                    break
+                buffer.write(data)
+                bytes_read += len(data)
+                self.print_progress(bytes_read, total_size)
 
-                    # Extract to a temporary directory
-                    self.log_command(f"extracting update")
-                    print("extracting update")
-                    with ZipFile(buffer, 'r') as zip_ref:
-                        temp_dir = os.path.join(os.getcwd(), "temp")
-                        zip_ref.extractall(temp_dir)
+            # Extract to a temporary directory
+            self.log_command(f"extracting update")
+            print("extracting update")
+            buffer.seek(0)
+            with ZipFile(buffer, 'r') as zip_ref:
+                temp_dir = os.path.join(os.getcwd(), "temp")
+                zip_ref.extractall(temp_dir)
 
-                        # Move the contents of the temporary directory to vOS directory
-                        self.log_command(f"copying update")
-                        print("copying update")
-                        repo_dir = os.path.join(temp_dir, "vOS-main")
-                        self.move_files(repo_dir, os.getcwd())
+                # Move the contents of the temporary directory to vOS directory
+                self.log_command(f"copying update")
+                print("copying update")
+                repo_dir = os.path.join(temp_dir, "vOS-main")
+                self.move_files(repo_dir, os.getcwd())
 
-                        # Clean up: Remove the temporary directory
-                        shutil.rmtree(temp_dir)
+                # Clean up: Remove the temporary directory
+                shutil.rmtree(temp_dir)
 
-                    print("vOS updated successfully!")
-                    self.log_command("vOS updated successfully")
+            print("vOS updated successfully!")
+            self.log_command("vOS updated successfully")
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
 
+    def print_progress(self, bytes_read, total_size):
+        progress = bytes_read / total_size * 100
+        status = f"{progress:.2f}%"
+        print(f"Downloading vOS: {status}", end="\r")
 
 
     def move_files(self, src_dir, dest_dir):
