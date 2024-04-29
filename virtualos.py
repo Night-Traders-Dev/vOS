@@ -196,19 +196,22 @@ class VirtualOS:
                     self.passwordtools.logout()
 
                 elif command.startswith("adduser"):
-                    _, username, password = command.split(" ", 2)
-                    self.passwordtools.add_user(self.fs, username, password)
-                    path = "/home/" + username
-                    VCommands.mkdir(self.fs, path)
-                    self.fs.save_file_system("file_system.json")  # Save filesystem
+                    if self.su_check(command):
+                         _, username, password = command.split(" ", 2)
+                         self.passwordtools.add_user(self.fs, username, password)
+                         path = "/home/" + username
+                         VCommands.mkdir(self.fs, path)
+                         self.fs.save_file_system("file_system.json")  # Save filesystem
 
                 elif command.startswith("deluser"):
-                    _, username = command.split(" ", 1)
-                    self.passwordtools.delete_user(self.fs, username)
+                    if self.su_check(command):
+                         _, username = command.split(" ", 1)
+                         self.passwordtools.delete_user(self.fs, username)
 
                 elif command.startswith("updateuser"):
-                    _, username, new_password = command.split(" ", 2)
-                    self.passwdtools.update_user(self.fs, username, new_password)
+                    if self.su_check(command):
+                        _, username, new_password = command.split(" ", 2)
+                        self.passwdtools.update_user(self.fs, username, new_password)
 
                 elif command.startswith("readuser"):
                     _, username = command.split(" ", 1)
