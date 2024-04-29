@@ -10,6 +10,8 @@ import shutil
 import urllib.request
 from zipfile import ZipFile
 from io import BytesIO
+from tqdm import tqdm
+
 
 class QShellInterpreter:
     def __init__(self):
@@ -227,23 +229,41 @@ class VirtualKernel:
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
 
         try:
-            # Download the repository zip file
+            # Get the file size of the repository zip file
             with urllib.request.urlopen(repo_url) as response:
-                with ZipFile(BytesIO(response.read()), 'r') as zip_ref:
+                total_size = int(response.headers.get('Content-Length', 0))
+            
+            # Download the repository zip file with progress bar
+            with urllib.request.urlopen(repo_url) as response:
+                with tqdm(total=total_size, unit='B', unit_scale=True, desc='Downloading vOS') as pbar:
+                    buffer = BytesIO()
+                    bytes_read = 0
+                    while True:
+                        data = response.read(1024)
+                        if not data:
+                            break
+                        buffer.write(data)
+                        bytes_read += len(data)
+                        pbar.update(len(data))
+
                     # Extract to a temporary directory
-                    temp_dir = os.path.join(os.getcwd(), "temp")
-                    zip_ref.extractall(temp_dir)
+                    with ZipFile(buffer, 'r') as zip_ref:
+                        temp_dir = os.path.join(os.getcwd(), "temp")
+                        zip_ref.extractall(temp_dir)
 
-                    # Move the contents of the temporary directory to vOS directory
-                    repo_dir = os.path.join(temp_dir, "vOS-main")
-                    self.move_files(repo_dir, os.getcwd())
+                        # Move the contents of the temporary directory to vOS directory
+                        repo_dir = os.path.join(temp_dir, "vOS-main")
+                        self.move_files(repo_dir, os.getcwd())
 
-                    # Clean up: Remove the temporary directory
-                    shutil.rmtree(temp_dir)
+                        # Clean up: Remove the temporary directory
+                        shutil.rmtree(temp_dir)
 
-                print("vOS updated successfully!")
+                    print("vOS updated successfully!")
+
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
+
+
 
     def move_files(self, src_dir, dest_dir):
         # Move files and directories from source directory to destination directory
@@ -255,7 +275,6 @@ class VirtualKernel:
             else:
                 shutil.copy(src_item, dest_item)
                 os.remove(src_item)
-
 
     def print_component_versions(self, verbose):
         try:
