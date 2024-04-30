@@ -32,7 +32,3 @@ To use vOS, follow these steps:
 ## Contributing
 
 Contributions to vOS are welcome! If you have ideas for improvements or new features, feel free to open an issue or submit a pull request on the GitHub repository.
-
----
-
-Feel free to customize the README.md based on your specific implementation details and requirements.
