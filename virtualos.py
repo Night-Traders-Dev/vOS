@@ -177,6 +177,9 @@ class VirtualOS:
                     if self.su_check(command):
                         self.kernel.update_vos()
 
+                elif command == "reset_fs":
+                    if self.su_check(command):
+                        self.fs.reset_fs()
 
                 elif command == "toggle_fs_monitoring":  # Command to toggle filesystem monitoring
                     self.kernel.toggle_filesystem_monitoring()

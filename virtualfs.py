@@ -23,7 +23,6 @@ class Directory:
         self.parent = parent
         self.permissions = permissions if permissions else "rwxr-xr-x"  # Default permissions: rwxr-xr-x
 
-
     def startswith(self, prefix):
         return self.name.startswith(prefix)
 
@@ -42,6 +41,21 @@ class Directory:
 
     def remove_file(self, name):
         del self.files[name]
+
+    def get_subdirectory(self, name):
+        """
+        Get a subdirectory by name.
+        """
+        return self.subdirectories.get(name, None)
+
+    def add_subdirectory(self, directory, permissions=""):
+        """
+        Add a subdirectory.
+        """
+        self.subdirectories[directory.name] = directory
+        directory.parent = self
+        directory.permissions = permissions if permissions else "rwxr-xr-x"  # Default permissions: rwxr-xr-x
+
 
     def get_full_path(self):
         """
@@ -153,7 +167,7 @@ class VirtualFileSystem:
             "files": {},
             "subdirectories": {
                 "bin": {"name": "bin", "files": {}, "subdirectories": {}},
-                "boot": {"name": "boot", "files": {"kernel": "Dummy kernel file", "initrd": "Dummy initrd file", "config": "Dummy config file"}, "subdirectories": {}},
+                "boot": {"name": "boot", "files": {}, "subdirectories": {}},
                 "dev": {"name": "dev", "files": {}, "subdirectories": {}},
                 "etc": {"name": "etc", "files": {}, "subdirectories": {}},
                 "home": {"name": "home", "files": {}, "subdirectories": {}},
@@ -163,7 +177,7 @@ class VirtualFileSystem:
                 "proc": {"name": "proc", "files": {}, "subdirectories": {}},
                 "root": {"name": "root", "files": {}, "subdirectories": {}},
                 "run": {"name": "run", "files": {}, "subdirectories": {}},
-                "sbin": {"name": "sbin", "files": {"init": "Dummy init file", "mount": "Dummy mount file", "fsck": "Dummy fsck file"}, "subdirectories": {}},
+                "sbin": {"name": "sbin", "files": {}, "subdirectories": {}},
                 "srv": {"name": "srv", "files": {}, "subdirectories": {}},
                 "sys": {"name": "sys", "files": {}, "subdirectories": {}},
                 "tmp": {"name": "tmp", "files": {}, "subdirectories": {}},
@@ -175,6 +189,18 @@ class VirtualFileSystem:
         default_directory = self._decode_directory(default_filesystem_data)
         self.root = default_directory
 
+
+    def reset_filesystem(self):
+        # Backup the /home directory
+        home_directory = self.root.get_subdirectory("home")
+
+        # Reset the filesystem to its default state
+        self.add_default_filesystem()
+
+        # Restore the /home directory
+        if home_directory:
+            self.root.add_subdirectory(home_directory)
+            self.add_os_filesystem(self.filesystem_data)
 
     def add_os_filesystem(self, filesystem_data):
         # Add provided files to their relevant locations

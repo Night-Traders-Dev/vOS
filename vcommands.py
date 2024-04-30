@@ -69,6 +69,8 @@ class VCommands:
                         self.kernel.print_dmesg()
                     elif command == "update":
                         self.kernel.update_vos()
+                    elif command == "reset_fs":
+                        self.fs.reset_filesystem()
                     else:
                         parts = command.split(" ")
                         cmd = parts[0]
