@@ -67,6 +67,8 @@ class VCommands:
                 try:
                     if command == "dmesg":
                         self.kernel.print_dmesg()
+                    elif command == "uptime":
+                        self.kernel.get_uptime()
                     elif command == "update":
                         self.kernel.update_vos()
                     elif command == "reset_fs":
