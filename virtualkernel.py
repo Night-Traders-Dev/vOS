@@ -260,18 +260,29 @@ class VirtualKernel:
                     component, checksum = line.strip().split(": ")
                     stored_checksums[component] = checksum
 
-            # Calculate checksum for each component and compare with stored checksum
+            # Initialize a flag to track if all checksums are matching
+            all_checksums_match = True
+
+            # Calculate checksum for each component and compare with stored checksums
             for component, stored_checksum in stored_checksums.items():
                 with open(component, "rb") as file:
                     current_checksum = hashlib.sha256(file.read()).hexdigest()
                 if current_checksum == stored_checksum:
-                    print(f"{component}: OK")
+                    self.log_command(f"{component}: OK")
                 else:
-                    print(f"{component}: Checksum mismatch!")
+                    self.log_command(f"{component}: Checksum mismatch!")
+                    # Update flag if any checksum doesn't match
+                    all_checksums_match = False
+
+            # Print overall result based on the flag
+            if all_checksums_match:
+                self.log_command("All checksums passed successfully!")
+            else:
+                self.log_command("Some checksums failed. Checksum verification failed!")
+                self.update_vos()
 
         except Exception as e:
             print(f"Error comparing checksums: {e}")
-
 
     def update_vos(self):
         # Specify the GitHub repository URL
