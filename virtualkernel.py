@@ -8,6 +8,7 @@ import getpass
 import json
 import shutil
 import urllib.request
+import time
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 
@@ -222,7 +223,14 @@ class VirtualKernel:
         self.last_error = None
         self.password_file = PasswordFile("passwd")  # Initialize password file
         self.qshell_interpreter = QShellInterpreter()
+        self.start_time = time.time()  # Store the start time
 
+    def get_uptime(self):
+        """
+        Get the uptime of the virtual operating system.
+        """
+        uptime_seconds = int(time.time() - self.start_time)
+        return f"{uptime_seconds // 3600} hours, {(uptime_seconds % 3600) // 60} minutes, {uptime_seconds % 60} seconds"
 
     def get_checksum_file(self):
         checksums = {}

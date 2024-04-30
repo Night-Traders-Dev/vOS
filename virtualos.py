@@ -172,6 +172,10 @@ class VirtualOS:
                     if self.su_check(command):
                         self.kernel.print_dmesg()
 
+                elif command == "uptime":
+                    uptime = self.kernel.get_uptime()
+                    print(f"vOS uptime: {uptime}")
+
 
                 elif command == "update": 
                     if self.su_check(command):
