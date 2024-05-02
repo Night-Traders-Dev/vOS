@@ -484,12 +484,13 @@ class VirtualProcess:
         pass
 
     @staticmethod
-    def kill_process(self, process_name):
+    def kill_process(self, process_name, verbose = False):
         KernelMessage.log_process(f"[!]Killing Process {process_name}...")
         for process in ProcessList.running_processes[:]:  # Iterate over a copy of the list
             if process.program == process_name:
                 ProcessList.running_processes.remove(process)
-                print(f"Process '{process_name}' has been killed.")
+                if verbose:
+                    print(f"Process '{process_name}' has been killed.")
                 KernelMessage.log_process(f"Process '{process_name}' has been killed.")
                 return
         print(f"Process '{process_name}' not found.")
