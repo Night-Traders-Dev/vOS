@@ -240,8 +240,9 @@ class VirtualKernel:
         """
         Get the uptime of the virtual operating system.
         """
-        uptime_seconds = int(time.time() - self.start_time)
-        return f"{uptime_seconds // 3600} hours, {(uptime_seconds % 3600) // 60} minutes, {uptime_seconds % 60} seconds"
+        uptime = int(time.time() - self.start_time)
+        formatted_uptime = KernelMessage.format_uptime(uptime)
+        return formatted_uptime
 
     def get_checksum_file(self):
         checksums = {}
@@ -409,7 +410,7 @@ class VirtualKernel:
         # Check if the process is already running
         if any(process.program == program for process in ProcessList.running_processes):
             if not allow_multiple:
-                self.log_command(f"[%%] Can't run multiple instances of {program}")
+#                self.log_command(f"[%%] Can't run multiple instances of {program}")
                 return
 
         # If not running or allowing multiple instances, create a new process instance
@@ -457,8 +458,9 @@ class VirtualKernel:
 
     def handle_error(self, error):
         self.last_error = error
-        traceback.print_exc()  # Print the traceback
+        traceback = traceback.print_exc()  # Print the traceback
         self.log_command(f"Error occurred: {str(error)}")
+        self.log_command("Stack Trace: {str(traceback)}")
 
     def recover_from_error(self):
         if self.processes:
@@ -488,13 +490,13 @@ class KernelMessage:
         minutes, seconds = divmod(minutes, 60)
 
         if weeks > 0:
-            return f"{weeks} weeks, {days} days"
+            return f"{weeks:,.0f} weeks, {days:,.0f} days"
         elif days > 0:
-            return f"{days} days, {hours} hours"
+            return f"{days:,.0f} days, {hours:,.0f} hours"
         elif hours > 0:
-            return f"{hours} hours, {minutes} minutes"
+            return f"{hours:,.0f} hours, {minutes:,.0f} minutes"
         elif minutes > 0:
-            return f"{minutes} minutes, {seconds:,.4f} seconds"
+            return f"{minutes:,.0f} minutes, {seconds:,.4f} seconds"
         else:
             return f"{seconds:,.4f} seconds"
 
@@ -550,6 +552,7 @@ class VirtualProcess:
                     formatted_uptime = KernelMessage.format_uptime(uptime)
                     print(f"{process.program}\t\t{formatted_uptime}")
 
+                print("Use ctrl + c to exit sysmon")
                 time.sleep(1)  # Update the process list every second
         except KeyboardInterrupt:
             print("\nExiting process monitor.")
