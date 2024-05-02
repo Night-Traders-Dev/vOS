@@ -82,6 +82,55 @@ class Directory:
 
         return full_path
 
+    def create_snapshot(self, directory_path, snapshot_name):
+        """
+        Create a snapshot of a directory.
+        """
+        directory = self.get_directory(directory_path)
+        if directory:
+            # Create a copy of the directory and its contents
+            snapshot = copy.deepcopy(directory)
+            snapshot.name = snapshot_name
+
+            # Store the snapshot in a separate directory or data structure
+            self.snapshots[snapshot_name] = snapshot
+            return True
+        else:
+            return False
+
+    def restore_snapshot(self, snapshot_name, restore_path):
+        """
+        Restore a directory from a snapshot.
+        """
+        if snapshot_name in self.snapshots:
+            # Get the snapshot and restore it to the specified path
+            snapshot = self.snapshots[snapshot_name]
+            directory_path = os.path.join(restore_path, snapshot_name)
+            self.create_directory(directory_path)
+            self.copy_directory(snapshot, directory_path)
+            return True
+        else:
+            return False
+
+    def copy_on_write(self, source_path, destination_path):
+        """
+        Perform copy-on-write operation.
+        """
+        source_directory = self.get_directory(source_path)
+        destination_directory = self.get_directory(destination_path)
+        if source_directory and destination_directory:
+            # Copy the contents of source directory to destination directory using copy-on-write
+            for subdirectory_name, subdirectory in source_directory.subdirectories.items():
+                if subdirectory_name not in destination_directory.subdirectories:
+                    # Copy subdirectory to destination if it doesn't exist
+                    destination_directory.subdirectories[subdirectory_name] = subdirectory
+                else:
+                    # Perform copy-on-write for existing subdirectories
+                    self.copy_on_write(subdirectory, destination_directory.subdirectories[subdirectory_name])
+            return True
+        else:
+            return False
+
 
 class VirtualFileSystem:
     def __init__(self, permissions=""):
