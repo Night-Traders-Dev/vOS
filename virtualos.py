@@ -7,10 +7,12 @@ from virtualkernel import VirtualKernel
 from virtualkernel import UserAccount
 from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
+from virtualkernel import VirtualProcess
 
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
+        self.vproc = VirtualProcess("vprocd")
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
         self.kernel.log_command("Kernel Loaded...")
@@ -23,6 +25,7 @@ class VirtualOS:
         self.kernel.log_command(f"Python Version: {sys.version}")
         self.kernel.log_command("Initializing VirtualFileSystem...")
         self.fs = VirtualFileSystem()  # Initialize the filesystem
+        self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
         self.load_with_loading_circle()  # Call method to load with loading circle
         self.passwordtools.check_passwd_file(self.fs)
@@ -112,6 +115,9 @@ class VirtualOS:
                     _, path = command.split(" ", 1)
                     VCommands.mkdir(self.fs, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
+
+                elif command.startswith("sysmon"):
+                    self.vproc.monitor_processes(self)
 
                 elif command.startswith("qshell"):
                     _, path = command.split(" ", 1)

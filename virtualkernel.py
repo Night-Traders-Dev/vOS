@@ -1,4 +1,5 @@
 import signal
+import sys
 import os
 import hashlib
 import base64
@@ -218,7 +219,7 @@ class PasswordFile:
 
 class VirtualKernel:
     def __init__(self):
-        self.processes = []
+        self.processes = ProcessList.running_processes
         self.dmesg_file = "dmesg"
         self.create_process("dmesgd")
         self.filesystem_monitoring_enabled = True
@@ -396,8 +397,6 @@ class VirtualKernel:
 
     def create_process(self, program):
         new_process = VirtualProcess(program)
-        self.processes.append(new_process)
-        self.log_command(f"[*]Starting {program}...")
 
     def schedule_processes(self):
         for process in self.processes:
@@ -450,28 +449,52 @@ class VirtualKernel:
         else:
             print("No processes left to recover from error.")
             self.reboot_os()
+class ProcessList:
+    running_processes = []
+
+class KernelMessage:
+    dmesg_file = "dmesg"
+
+    @classmethod
+    def log_process(cls, program):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(cls.dmesg_file, "a") as f:
+            f.write(f"[{timestamp}] {program}\n")
 
 class VirtualProcess:
     def __init__(self, program):
         self.program = program
         self.start_time = time.time()  # Record the start time when the process is initialized
 
+        # Add the process to the running_processes list
+        ProcessList.running_processes.append(self)
+        KernelMessage.log_process(f"[*]Starting {program}...")
+
+
+
+
     def get_elapsed_time(self):
         """Get the elapsed time since the process started."""
         return time.time() - self.start_time
+
     def execute(self):
         pass
 
-    def kill_process(processes, process_name):
-        for process in processes:
+    @staticmethod
+    def kill_process(self, process_name):
+        KernelMessage.log_process(f"[!]Killing Process {process_name}...")
+        for process in ProcessList.running_processes[:]:  # Iterate over a copy of the list
             if process.program == process_name:
-                processes.remove(process)
+                ProcessList.running_processes.remove(process)
                 print(f"Process '{process_name}' has been killed.")
+                KernelMessage.log_process(f"Process '{process_name}' has been killed.")
                 return
         print(f"Process '{process_name}' not found.")
 
+    @staticmethod
+    def monitor_processes(self):
+        VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
 
-    def monitor_processes(processes):
         try:
             while True:
                 # Clear the screen
@@ -480,12 +503,12 @@ class VirtualProcess:
                 print("----------------")
                 print("Process Name\t\tUptime")
                 print("----------------\t\t------")
-            
-                for process in processes:
+
+                for process in ProcessList.running_processes:
                     uptime = process.get_elapsed_time()
                     print(f"{process.program}\t\t{uptime:.2f} seconds")
-            
+
                 time.sleep(1)  # Update the process list every second
         except KeyboardInterrupt:
             print("\nExiting process monitor.")
-            sys.exit(0)
+            VirtualProcess.kill_process(self, "sysmon")
