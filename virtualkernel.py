@@ -14,6 +14,7 @@ import urllib.request
 import time
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
+import threading
 
 class QShellInterpreter:
     def __init__(self):
@@ -118,6 +119,8 @@ class PasswordFile:
                 self.create_new_user(fs)
             else:
                 self.login_prompt()
+                # Create and run the login prompt
+                #self.run()
         else:
             print("First Boot Account Setup")
             self.create_new_user(fs)
@@ -190,24 +193,19 @@ class PasswordFile:
         else:
             return False
 
-    def login_prompt(self):
-        try:
-            # Initialize curses
-            stdscr = curses.initscr()
-            curses.curs_set(1)  # Show cursor
-            stdscr.clear()
-
-            # Get terminal dimensions
-            terminal_height, terminal_width = stdscr.getmaxyx()
-
-
-            stdscr.border()
-            # Display vOS in upper left corner
-            stdscr.addstr(0, 0, "vOS")
-
-            # Display current time and date on the right side
+    def update_clock(self, stdscr):
+        while True:
             current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
+            stdscr.addstr(0, curses.COLS - len(current_datetime) - 1, current_datetime)
+            stdscr.refresh()
+            time.sleep(1)
+
+    def display_login_screen(self, stdscr):
+        try:
+            # Initialize login screen
+            stdscr.clear()
+            stdscr.border()
+            stdscr.addstr(0, 2, "vOS")
 
             # Draw username box
             username_box = curses.newwin(3, 30, 2, 2)
@@ -235,13 +233,105 @@ class PasswordFile:
                 stdscr.addstr(0, 0, "Login successful!")
                 stdscr.refresh()
                 self.active_user = username
-                curses.napms(1000)  # Wait for 1 second before clearing the screen
+                time.sleep(1)  # Wait for 1 second before clearing the screen
             else:
                 stdscr.addstr(8, 0, "Invalid username or password. Please try again.")
                 stdscr.refresh()
-                curses.napms(2000)  # Wait for 2 seconds before clearing the screen
+                time.sleep(2)  # Wait for 2 seconds before clearing the screen
         except KeyboardInterrupt:
             stdscr.addstr(9, 0, "Shutting Down VirtualOS...")
+            stdscr.refresh()
+            time.sleep(2)  # Wait for 2 seconds before exiting
+        finally:
+            curses.endwin()  # End curses session
+
+
+    def run(self):
+        try:
+            # Initialize curses
+            stdscr = curses.initscr()
+            curses.curs_set(1)  # Show cursor
+            stdscr.clear()
+
+            # Start clock update thread
+            clock_thread = threading.Thread(target=self.update_clock, args=(stdscr,))
+            clock_thread.daemon = True
+            clock_thread.start()
+
+            # Display login screen
+            self.display_login_screen(stdscr)
+
+        finally:
+            curses.endwin()  # End curses session
+
+
+    def login_prompt(self):
+        try:
+        # Initialize curses
+            stdscr = curses.initscr()
+            curses.curs_set(1)  # Show cursor
+            stdscr.clear()
+
+            # Get terminal dimensions
+            terminal_height, terminal_width = stdscr.getmaxyx()
+
+
+            stdscr.border()
+            # Display vOS in upper left corner
+            stdscr.addstr(0, 2, "vOS")
+
+            # Display current time and date on the right side
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
+            stdscr.refresh()
+            # Draw border around username box
+            username_box = curses.newwin(5, 30, 2, 2)
+            username_box.box()
+            username_box.addstr(1, 2, "Username: ")
+
+            username_box.refresh()
+
+            # Get username input
+            username = username_box.getstr(2, 12).decode()
+
+            # Draw border around password box
+            password_box = curses.newwin(5, 30, 8, 2)
+            password_box.box()
+            password_box.addstr(1, 2, "Password: ")
+            password_box.refresh()
+
+            # Get password input (hidden)
+            curses.noecho()  # Hide user input
+            password = password_box.getstr(2, 12).decode()
+            curses.echo()  # Show user input
+
+            stdscr.clear()
+            # Display vOS in upper left corner
+            stdscr.addstr(0, 2, "vOS")
+
+            # Display current time and date on the right side
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
+            stdscr.refresh()
+
+            # Check authentication
+            if self.authenticate(username, password):
+                stdscr.clear()
+                stdscr.addstr(0, 0, "Login successful!")
+                stdscr.refresh()
+                self.active_user = username
+                curses.napms(1000)  # Wait for 1 second before clearing the screen
+            else:
+                stdscr.addstr(12, 0, "Invalid username or password. Please try again.")
+                stdscr.refresh()
+                curses.napms(2000)  # Wait for 2 seconds before clearing the screen
+
+            # Move cursor to bottom right corner
+            stdscr.move(terminal_height - 1, terminal_width - 1)
+            stdscr.refresh()
+
+        except KeyboardInterrupt:
+            stdscr.addstr(13, 0, "Shutting Down VirtualOS...")
             stdscr.refresh()
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
             curses.napms(2000)  # Wait for 2 seconds before exiting
@@ -249,7 +339,6 @@ class PasswordFile:
             sys.exit(0)
         finally:
             curses.endwin()  # End curses session
-
 
     def su_prompt(self):
             while True:
