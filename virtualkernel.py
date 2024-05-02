@@ -597,8 +597,9 @@ class ProcessList:
     def add_process(cls, name, pid, cache):
         if not cls.running_processes:
             cls.next_pid = 0
-        cls.running_processes[pid] = {'name': name, 'cache': cache}
-        KernelMessage.log_process(f"name: {name}, pid: {pid},  cache: {cache}")
+        start_time = time.time()
+        cls.running_processes[pid] = {'name': name, 'cache': cache, 'start_time': {start_time}}
+        KernelMessage.log_process(f"name: {name}, pid: {pid},  cache: {cache}, start_time: {start_time}")
 
     @classmethod
     def remove_process(cls, pid):
@@ -625,8 +626,7 @@ class VirtualProcess:
         self.pid = pid
         self.cache = 1
         KernelMessage.log_process(f"[*]Starting {program}...")
-        ProcessList.add_process(program, pid, self.cache)
-        self.start_time = time.time()  # Record the start time when the process is initialized
+        ProcessList.add_process(self.program, self.pid, self.cache)
 
 
     def get_elapsed_time(self):
@@ -702,10 +702,11 @@ class VirtualProcess:
                     process_name = process_info['name']
                     cache = process_info['cache']
                     process_instance = ProcessList.running_processes[pid]  # Get the VirtualProcess instance
-                    KernelMessage.log_process(f"{process_instance} and {process_name}")
-#                    uptime = process_name.get_elapsed_time()  # Calculate uptime using the instance
-#                    formatted_uptime = KernelMessage.format_uptime(uptime)
-                    process_info = f"{process_name}\t\t{pid}\t{cache}\t0"
+                    start_time = float(next(iter(process_info['start_time'])))  # Get the process start time
+                    elapsed_time = time.time() - start_time  # Calculate elapsed time
+#                   uptime = process_name.get_elapsed_time()  # Calculate uptime using the instance
+                    formatted_uptime = KernelMessage.format_uptime(elapsed_time)
+                    process_info = f"{process_name}\t\t{pid}\t{cache}\t{formatted_uptime}"
                     stdscr.addstr(6 + i, 0, "|" + process_info.ljust(terminal_width - 2) + "")
 
                 # Print bottom border and control instructions
