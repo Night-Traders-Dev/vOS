@@ -131,6 +131,59 @@ class Directory:
         else:
             return False
 
+    def modify_permissions(self, path, new_permissions):
+        """
+        Modify the permissions of the file or directory at the specified path.
+    
+        Parameters:
+            path (str): The path to the file or directory.
+            new_permissions (str): The new permissions to be set (e.g., 'rwxr-xr-x').
+    
+        Returns:
+            bool: True if the permissions were successfully modified, False otherwise.
+        """
+        item = self.find_item(path)
+        if item:
+            item.permissions = new_permissions
+            return True
+        else:
+            return False
+
+
+    def check_permissions(self, path, operation, user_permissions):
+        """
+        Check if the user has the necessary permissions for the operation on the specified path.
+    
+        Parameters:
+            path (str): The path to the file or directory.
+            operation (str): The operation to be performed (e.g., 'read', 'write', 'execute').
+            user_permissions (str): The permissions of the user (e.g., 'rwx').
+    
+        Returns:
+            bool: True if the user has sufficient permissions, False otherwise.
+        """
+        item = self.find_item(path)
+        if item:
+            item_permissions = item.permissions
+            return self.allowed_perms(user_permissions, item_permissions)
+        else:
+            return False
+
+    def enforce_permissions(self, path, operation, user_permissions):
+        """
+        Enforce permissions for the specified operation on the specified path.
+    
+        Parameters:
+            path (str): The path to the file or directory.
+            operation (str): The operation to be performed (e.g., 'read', 'write', 'execute').
+            user_permissions (str): The permissions of the user (e.g., 'rwx').
+    
+        Raises:
+            PermissionError: If the user does not have sufficient permissions for the operation.
+            FileNotFoundError: If the file or directory does not exist.
+        """
+        if not self.check_permissions(path, operation, user_permissions):
+            raise PermissionError("Permission denied: Insufficient permissions for operation")
 
 class VirtualFileSystem:
     def __init__(self, permissions=""):
