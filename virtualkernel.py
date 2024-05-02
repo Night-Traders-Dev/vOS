@@ -401,13 +401,12 @@ class VirtualKernel:
 
     def create_process(self, program, allow_multiple=False):
         # Check if the process is already running
-        if any(process.program == program for process in self.processes):
+        if any(process.program == program for process in ProcessList.running_processes):
             if not allow_multiple:
                 return
 
         # If not running or allowing multiple instances, create a new process instance
         new_process = VirtualProcess(program)
-        self.processes.append(new_process)
 
 
     def schedule_processes(self):
