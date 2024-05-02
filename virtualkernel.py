@@ -396,6 +396,7 @@ class VirtualKernel:
     def create_process(self, program):
         new_process = VirtualProcess(program)
         self.processes.append(new_process)
+        self.log_command(f"[*]Starting {program}...")
 
     def schedule_processes(self):
         for process in self.processes:
