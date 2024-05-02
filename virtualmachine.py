@@ -3,7 +3,9 @@
 import hashlib
 import time
 import sys
-import curses
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 class Transaction:
     def __init__(self, sender, recipient, amount):
@@ -82,48 +84,37 @@ class Wallet:
         self.balance = QSE_balance
 
 
+
     def view_wallet(self):
         try:
-            # Initialize curses
-            stdscr = curses.initscr()
-            curses.start_color()
-            curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Border color
-            curses.curs_set(0)  # Hide cursor
-            stdscr.clear()
-
-            # Get terminal dimensions
-            terminal_height, terminal_width = stdscr.getmaxyx()
-
-            # Create a window for the wallet UI
-            wallet_window = curses.newwin(terminal_height, terminal_width, 0, 0)
+            # Initialize console
+            console = Console()
 
             # Define wallet data
             user_address = self.address
             qse_balance = self.balance  # Example balance, replace with actual balance
             tabs = ["Wallet", "NFTs", "Apps", "Swap"]
 
-            # Display wallet UI
-            wallet_window.addstr(1, 1, "Crypto Wallet", curses.A_BOLD)
-            wallet_window.addstr(3, 1, "Address:", curses.A_BOLD)
-            wallet_window.addstr(3, 12, user_address)
-            wallet_window.addstr(5, 1, "QSE Balance:", curses.A_BOLD)
-            wallet_window.addstr(5, 15, f"{qse_balance}")
-            wallet_window.addstr(7, 1, "Tabs:", curses.A_BOLD)
-            for i, tab in enumerate(tabs):
-                tab_position = 9 + i * 2
-                if i == 0:  # Highlight the first tab
-                    wallet_window.addstr(tab_position, 1, tab, curses.A_BOLD | curses.color_pair(1))
-                else:
-                    wallet_window.addstr(tab_position, 1, tab)
+            # Create table for wallet information
+            table = Table(title="Crypto Wallet")
+            table.add_column("Field", justify="right", style="cyan", no_wrap=True)
+            table.add_column("Value", justify="left", style="magenta")
 
-            # Refresh the wallet window to display changes
-            wallet_window.refresh()
+            table.add_row("Address:", user_address)
+            table.add_row("QSE Balance:", str(qse_balance))
+            table.add_row("Tabs:", ", ".join(tabs))
+
+            # Create a panel to display the table
+            panel = Panel(table, expand=False)
+
+            # Render the panel
+            console.print(panel)
 
             # Wait for user input
-            wallet_window.getch()
+            console.input("Press Enter to continue...")
 
         except KeyboardInterrupt:
-            curses.endwin()  # End curses session
+            console.print("\nExiting wallet view.")
 
 class VirtualMachine:
     def __init__(self, virtual_os, filesystem):  # Pass VirtualOS instance as an argument

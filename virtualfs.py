@@ -3,7 +3,6 @@ import os
 import gzip
 import sys
 from virtualkernel import VirtualKernel
-import curses
 
 class File:
     def __init__(self, name, content="", permissions=""):

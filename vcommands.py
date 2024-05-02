@@ -7,7 +7,6 @@ from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
-import curses
 
 class VCommands:
     def __init__(self):

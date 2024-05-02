@@ -11,10 +11,17 @@ import json
 import shutil
 import urllib.request
 import time
+import keyboard
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 import threading
-import curses
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.text import Text
+from rich.progress import Progress
+from rich.progress import SpinnerColumn
+from rich.table import Table
+
 
 class QShellInterpreter:
     def __init__(self):
@@ -118,7 +125,7 @@ class PasswordFile:
                 print("First Boot Account Setup")
                 self.create_new_user(fs)
             else:
-                self.login_prompt()
+                self.login_prompt_rich()
                 # Create and run the login prompt
                 #self.run()
         else:
@@ -193,152 +200,41 @@ class PasswordFile:
         else:
             return False
 
-    def update_clock(self, stdscr):
-        while True:
-            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            stdscr.addstr(0, curses.COLS - len(current_datetime) - 1, current_datetime)
-            stdscr.refresh()
-            time.sleep(1)
 
-    def display_login_screen(self, stdscr):
+    def login_prompt_rich(self):
+        console = Console()
+
         try:
-            # Initialize login screen
-            stdscr.clear()
-            stdscr.border()
-            stdscr.addstr(0, 2, "vOS")
+            console.clear()
 
-            # Draw username box
-            username_box = curses.newwin(3, 30, 2, 2)
-            username_box.box()
-            username_box.addstr(1, 2, "Username: ")
-            username_box.refresh()
+            # Display vOS in upper left corner
+            console.print("[bold]vOS[/bold]")
 
-            # Get username input
-            username = username_box.getstr(1, 12).decode()
+            # Display current time and date on the right side
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            console.print(Text(current_datetime, style="bold"), justify="right")
 
-            # Draw password box
-            password_box = curses.newwin(3, 30, 6, 2)
-            password_box.box()
-            password_box.addstr(1, 2, "Password: ")
-            password_box.refresh()
-
-            # Get password input (hidden)
-            curses.noecho()  # Hide user input
-            password = password_box.getstr(1, 12).decode()
-            curses.echo()  # Show user input
+            # Get username and password
+            username = Prompt.ask("Username:")
+            password = Prompt.ask("Password:", password=True)
 
             # Check authentication
             if self.authenticate(username, password):
-                stdscr.clear()
-                stdscr.addstr(0, 0, "Login successful!")
-                stdscr.refresh()
+                console.clear()
+                console.print("Login successful!")
                 self.active_user = username
                 time.sleep(1)  # Wait for 1 second before clearing the screen
             else:
-                stdscr.addstr(8, 0, "Invalid username or password. Please try again.")
-                stdscr.refresh()
+                console.print("Invalid username or password. Please try again.")
                 time.sleep(2)  # Wait for 2 seconds before clearing the screen
-        except KeyboardInterrupt:
-            stdscr.addstr(9, 0, "Shutting Down VirtualOS...")
-            stdscr.refresh()
-            time.sleep(2)  # Wait for 2 seconds before exiting
-        finally:
-            curses.endwin()  # End curses session
-
-
-    def run(self):
-        try:
-            # Initialize curses
-            stdscr = initscr()
-            curs_set(1)  # Show cursor
-            stdscr.clear()
-
-            # Start clock update thread
-            clock_thread = threading.Thread(target=self.update_clock, args=(stdscr,))
-            clock_thread.daemon = True
-            clock_thread.start()
-
-            # Display login screen
-            self.display_login_screen(stdscr)
-
-        finally:
-            curses.endwin()  # End curses session
-
-
-    def login_prompt(self):
-        try:
-        # Initialize curses
-            stdscr = curses.initscr()
-            curses.curs_set(1)  # Show cursor
-            stdscr.clear()
-
-            # Get terminal dimensions
-            terminal_height, terminal_width = stdscr.getmaxyx()
-
-
-            stdscr.border()
-            # Display vOS in upper left corner
-            stdscr.addstr(0, 2, "vOS")
-
-            # Display current time and date on the right side
-            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
-            stdscr.refresh()
-            # Draw border around username box
-            username_box = curses.newwin(5, 30, 2, 2)
-            username_box.box()
-            username_box.addstr(1, 2, "Username: ")
-
-            username_box.refresh()
-
-            # Get username input
-            username = username_box.getstr(2, 12).decode()
-
-            # Draw border around password box
-            password_box = curses.newwin(5, 30, 8, 2)
-            password_box.box()
-            password_box.addstr(1, 2, "Password: ")
-            password_box.refresh()
-
-            # Get password input (hidden)
-            curses.noecho()  # Hide user input
-            password = password_box.getstr(2, 12).decode()
-            curses.echo()  # Show user input
-
-            stdscr.clear()
-            # Display vOS in upper left corner
-            stdscr.addstr(0, 2, "vOS")
-
-            # Display current time and date on the right side
-            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
-            stdscr.refresh()
-
-            # Check authentication
-            if self.authenticate(username, password):
-                stdscr.clear()
-                stdscr.addstr(0, 0, "Login successful!")
-                stdscr.refresh()
-                self.active_user = username
-                curses.napms(1000)  # Wait for 1 second before clearing the screen
-            else:
-                stdscr.addstr(12, 0, "Invalid username or password. Please try again.")
-                stdscr.refresh()
-                curses.napms(2000)  # Wait for 2 seconds before clearing the screen
-
-            # Move cursor to bottom right corner
-            stdscr.move(terminal_height - 1, terminal_width - 1)
-            stdscr.refresh()
 
         except KeyboardInterrupt:
-            stdscr.addstr(13, 0, "Shutting Down VirtualOS...")
-            stdscr.refresh()
+            console.print("Shutting Down VirtualOS...")
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
-            curses.napms(2000)  # Wait for 2 seconds before exiting
-            curses.endwin()
+            time.sleep(2)  # Wait for 2 seconds before exiting
             sys.exit(0)
-        finally:
-            curses.endwin()  # End curses session
+
+
 
     def su_prompt(self):
             while True:
@@ -362,76 +258,42 @@ class PasswordFile:
 
 class Animations:
     @classmethod
-    def boot_animation(cls):
-        stdscr = curses.initscr()
-        stdscr.clear()
-        loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
+    def boot_animation_rich(cls):
+        console = Console()
 
-        try:
-            stdscr.border()
+        with Progress(
+            SpinnerColumn(spinner_name="dots"), "{task.description}", transient=True
+        ) as progress:
+            task = progress.add_task("Booting vOS...", total=10)
+            for _ in range(10):
+                progress.update(task, advance=1)
+                time.sleep(0.1)
 
-            for _ in range(10):  # Repeat the animation 10 times
-                for char in loading_animation:
-                    stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, f"Booting vOS... {char}")
-                    stdscr.refresh()
-                    time.sleep(0.1)  # Add a short delay to control the speed of the animation
-
-            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Welcome to vOS")
-            stdscr.refresh()
-            time.sleep(2)  # Display success message for 2 seconds
-        finally:
-            stdscr.clear()
-            curses.curs_set(1)
-            curses.endwin()
+        console.print("Welcome to vOS")
 
     @classmethod
     def reboot_animation(cls):
-        try:
-            stdscr = curses.initscr()
-            curses.curs_set(0)  # Hide the cursor
-            stdscr.clear()
-            stdscr.border()
+        console = Console()
 
-            # Reboot animation
-            reboot_text = "Rebooting vOS"
+        with Progress() as progress:
+            task = progress.add_task("[cyan]Rebooting vOS...", total=20)
             for i in range(20):
-                stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, reboot_text + " " + "." * i)
-                stdscr.refresh()
+                progress.update(task, advance=1)
                 time.sleep(0.1)
 
-            # End of animation message
-            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Reboot complete. Goodbye!")
-            stdscr.refresh()
-            time.sleep(2)
-        finally:
-            stdscr.clear()
-            curses.endwin()
-            os.system('cls' if os.name == 'nt' else 'clear')
-            Animations.boot_animation()
+        console.print("[green]Reboot complete. Goodbye!")
 
     @classmethod
     def shutdown_animation(cls):
-        try:
-            stdscr = curses.initscr()
-            curses.curs_set(0)  # Hide the cursor
-            stdscr.clear()
-            stdscr.border()
+        console = Console()
 
-            # Shutdown animation
-            shutdown_text = "Shutting down vOS"
+        with Progress() as progress:
+            task = progress.add_task("[cyan]Shutting down vOS...", total=20)
             for i in range(20):
-                stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, shutdown_text + " " + "." * i)
-                stdscr.refresh()
+                progress.update(task, advance=1)
                 time.sleep(0.1)
 
-            # End of animation message
-            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Shutdown complete. Goodbye!")
-            stdscr.refresh()
-            time.sleep(2)
-        finally:
-            curses.endwin()
-            os.system('cls' if os.name == 'nt' else 'clear')
-
+        console.print("[green]Shutdown complete. Goodbye!")
 class KernelMessage:
     dmesg_file = "dmesg"
 
@@ -652,7 +514,7 @@ class VirtualKernel:
         self.start_time = time.time()
         Animations.reboot_animation()
         self.log_command("Virtual operating system rebooted successfully.")
-        self.password_file.login_prompt()
+        self.password_file.login_prompt_rich()
 
 
     def create_process(self, program, allow_multiple=False):
@@ -810,70 +672,56 @@ class VirtualProcess:
     def monitor_processes(self):
         sysmon_pid = VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
 
-        try:
-            stdscr = curses.initscr()
-            curses.curs_set(0)  # Hide the cursor
-            stdscr.clear()
+        console = Console()
 
-            # Initialize highlighted index
+        try:
             highlighted_index = 0
 
             while True:
-                # Get terminal size
-                terminal_height, terminal_width = stdscr.getmaxyx()
+                terminal_width = console.width
+                terminal_height = console.height
 
-                # Clear the screen
-                stdscr.clear()
+                table = Table(title="Process Monitor")
+                table.add_column("Process Name", justify="left")
+                table.add_column("PID", justify="left")
+                table.add_column("Cache", justify="left")
+                table.add_column("Uptime", justify="left")
 
-                # Print bordered window
-                stdscr.addstr(0, 0, "+" + "-" * (terminal_width - 2) + "+")
-                stdscr.addstr(1, 0, "|" + " " * (terminal_width - 2) + "|")
-                stdscr.addstr(2, 0, "|" + " Process Monitor ".center(terminal_width - 2) + "|")
-                stdscr.addstr(3, 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(4, 0, "|" + " Process Name\t\tPID\tCache\t\tUptime ".ljust(terminal_width - 2) + "|")
-                stdscr.addstr(5, 0, "|" + "-" * (terminal_width - 2) + "|")
-
-                # Find the longest process name to adjust column width dynamically
-                longest_name_length = max(len(process_info['name']) for process_info in ProcessList.running_processes.values())
-
-                # Print process information
-                for i, (pid, process_info) in enumerate(ProcessList.running_processes.items()):
+                # Populate the table with process information
+                for pid, process_info in ProcessList.running_processes.items():
                     process_name = process_info['name']
                     cache = process_info['cache']
-                    process_instance = ProcessList.running_processes[pid]  # Get the VirtualProcess instance
-                    start_time = float(next(iter(process_info['start_time'])))  # Get the process start time
-                    elapsed_time = time.time() - start_time  # Calculate elapsed time
+                    start_time = float(next(iter(process_info['start_time'])))
+                    elapsed_time = time.time() - start_time
                     formatted_uptime = KernelMessage.format_uptime(elapsed_time)
-                    process_info_str = f"{process_name.ljust(longest_name_length)}\t\t{pid}\t{cache}\t{formatted_uptime}"
+                    table.add_row(process_name, str(pid), str(cache), formatted_uptime)
 
-                    # Highlight the current process
-                    if i == highlighted_index:
-                        stdscr.addstr(6 + i, 0, "|" + process_info_str.ljust(terminal_width - 2) + "", curses.A_REVERSE)
-                    else:
-                        stdscr.addstr(6 + i, 0, "|" + process_info_str.ljust(terminal_width - 2) + "")
+                # Highlight the current process
+                table.highlighted = highlighted_index
 
-                # Print bottom border and control instructions
-                stdscr.addstr(6 + len(ProcessList.running_processes), 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use arrow keys to navigate, and press Enter to select a process".center(terminal_width - 2) + "|")
-                stdscr.addstr(8 + len(ProcessList.running_processes), 0, "+" + "-" * (terminal_width - 2) + "")
+                # Render the table
+                console.clear()
+                console.print(table)
 
-                stdscr.refresh()
+                # Print control instructions
+                console.print("Use arrow keys to navigate, and press Enter to select a process", justify="center")
 
-                # Get user input
-                key = stdscr.getch()
+                # Wait for user input
+                time.sleep(1)
 
-                # Handle arrow key input
-                if key == curses.KEY_DOWN or key == 258:
-                    highlighted_index = min(highlighted_index + 1, len(ProcessList.running_processes) - 1)
-                elif key == curses.KEY_UP or key == 259:
-                    highlighted_index = max(highlighted_index - 1, 0)
-                elif key == curses.KEY_ENTER or key in [10, 13]:
-                    # Process selection logic goes here
-                    pass
-
-                time.sleep(1)  # Update the process list every second
+                # Handle user input
+                event = keyboard.read_event(suppress=True)
+                if event.event_type == "down":
+                    if event.name == "down":
+                        highlighted_index = min(highlighted_index + 1, len(ProcessList.running_processes) - 1)
+                    elif event.name == "up":
+                        highlighted_index = max(highlighted_index - 1, 0)
+                    elif event.name == "enter":
+                        # Process selection logic goes here
+                        pass
 
         except KeyboardInterrupt:
-            curses.endwin()
-            print("\nExiting process monitor.")
+            console.print("\nExiting process monitor.")
             VirtualProcess.kill_process(self, sysmon_pid)
+        except Exception as e:
+            console.print("\nError gaining keyboard perms")

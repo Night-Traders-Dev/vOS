@@ -12,7 +12,6 @@ from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
 from virtualkernel import Animations
-import curses
 
 class VirtualOS:
     def __init__(self):
@@ -34,7 +33,7 @@ class VirtualOS:
         self.fs = VirtualFileSystem()  # Initialize the filesystem
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
-        self.animations.boot_animation()
+        self.animations.boot_animation_rich()
         self.passwordtools.check_passwd_file(self.fs)
         self.active_user = self.passwordtools.online_user()
         self.user_dir = "/home/" + self.active_user
