@@ -1,3 +1,4 @@
+import signal
 import os
 import hashlib
 import base64
@@ -460,3 +461,31 @@ class VirtualProcess:
         return time.time() - self.start_time
     def execute(self):
         pass
+
+    def kill_process(processes, process_name):
+        for process in processes:
+            if process.program == process_name:
+                processes.remove(process)
+                print(f"Process '{process_name}' has been killed.")
+                return
+        print(f"Process '{process_name}' not found.")
+
+
+    def monitor_processes(processes):
+        try:
+            while True:
+                # Clear the screen
+                print("\033[H\033[J")
+                print("Process Monitor")
+                print("----------------")
+                print("Process Name\t\tUptime")
+                print("----------------\t\t------")
+            
+                for process in processes:
+                    uptime = process.get_elapsed_time()
+                    print(f"{process.program}\t\t{uptime:.2f} seconds")
+            
+                time.sleep(1)  # Update the process list every second
+        except KeyboardInterrupt:
+            print("\nExiting process monitor.")
+            sys.exit(0)
