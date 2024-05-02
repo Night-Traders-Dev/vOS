@@ -219,10 +219,13 @@ class VirtualKernel:
     def __init__(self):
         self.processes = []
         self.dmesg_file = "dmesg"
+        self.create_process("dmesgd")
         self.filesystem_monitoring_enabled = True
         self.last_error = None
         self.password_file = PasswordFile("passwd")  # Initialize password file
+        self.create_process("passwd")
         self.qshell_interpreter = QShellInterpreter()
+        self.create_process("uptimed")
         self.start_time = time.time()  # Store the start time
 
     def get_uptime(self):
@@ -356,7 +359,7 @@ class VirtualKernel:
             src_item = os.path.join(src_dir, item)
             dest_item = os.path.join(dest_dir, item)
             if os.path.isdir(src_item):
-                shutil.move(src_item, dest_item)
+                shutil.move(src_item1, dest_item)
             else:
                 shutil.copy(src_item, dest_item)
                 os.remove(src_item)
@@ -449,6 +452,10 @@ class VirtualKernel:
 class VirtualProcess:
     def __init__(self, program):
         self.program = program
+        self.start_time = time.time()  # Record the start time when the process is initialized
 
+    def get_elapsed_time(self):
+        """Get the elapsed time since the process started."""
+        return time.time() - self.start_time
     def execute(self):
         pass
