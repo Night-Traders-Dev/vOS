@@ -180,7 +180,10 @@ class PasswordFile:
 
     def authenticate(self, username, password):
         user = self.get_user(username)
-        user_account = UserAccount(username, password, user[2], user[3], user[4], user[5])
+        try:
+            user_account = UserAccount(username, password, user[2], user[3], user[4], user[5])
+        except Exception as e:
+            return False
         VirtualKernel.log_command(self, f"auth: {user[1]} and {user_account.password}")
         if user[1] == user_account.password:
             return True
