@@ -216,29 +216,28 @@ class VirtualFileSystem:
             "name": "",
             "files": {},
             "subdirectories": {
-                "bin": {"name": "bin", "files": {}, "subdirectories": {}},
-                "boot": {"name": "boot", "files": {}, "subdirectories": {}},
-                "dev": {"name": "dev", "files": {}, "subdirectories": {}},
-                "etc": {"name": "etc", "files": {}, "subdirectories": {}},
-                "home": {"name": "home", "files": {}, "subdirectories": {}},
-                "lib": {"name": "lib", "files": {}, "subdirectories": {}},
-                "mnt": {"name": "mnt", "files": {}, "subdirectories": {}},
-                "opt": {"name": "opt", "files": {}, "subdirectories": {}},
-                "proc": {"name": "proc", "files": {}, "subdirectories": {}},
-                "root": {"name": "root", "files": {}, "subdirectories": {}},
-                "run": {"name": "run", "files": {}, "subdirectories": {}},
-                "sbin": {"name": "sbin", "files": {}, "subdirectories": {}},
-                "srv": {"name": "srv", "files": {}, "subdirectories": {}},
-                "sys": {"name": "sys", "files": {}, "subdirectories": {}},
-                "tmp": {"name": "tmp", "files": {}, "subdirectories": {}},
-                "usr": {"name": "usr", "files": {}, "subdirectories": {}},
-                "var": {"name": "var", "files": {}, "subdirectories": {}}
+                "bin": {"name": "bin", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "boot": {"name": "boot", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "dev": {"name": "dev", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "etc": {"name": "etc", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "home": {"name": "home", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "lib": {"name": "lib", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "mnt": {"name": "mnt", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "opt": {"name": "opt", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "proc": {"name": "proc", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "root": {"name": "root", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "run": {"name": "run", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "sbin": {"name": "sbin", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "srv": {"name": "srv", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "sys": {"name": "sys", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "tmp": {"name": "tmp", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "usr": {"name": "usr", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"},
+                "var": {"name": "var", "files": {}, "subdirectories": {}, "permissions": "rwxr-xr-x"}
             }
         }
 
         default_directory = self._decode_directory(default_filesystem_data)
         self.root = default_directory
-
 
     def reset_filesystem(self):
         # Backup the /home directory
