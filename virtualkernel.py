@@ -540,19 +540,34 @@ class VirtualProcess:
 
         try:
             while True:
+                # Get terminal size
+                terminal_size = os.get_terminal_size()
+                terminal_width = terminal_size.columns
+                terminal_height = terminal_size.lines
+
                 # Clear the screen
                 print("\033[H\033[J")
-                print("Process Monitor")
-                print("----------------")
-                print("Process Name\t\tUptime")
-                print("----------------\t\t------")
 
+                # Print bordered window
+                print("+" + "-" * (terminal_width - 2) + "+")
+                print("|" + " " * (terminal_width - 2) + "|")
+                print("|" + " Process Monitor ".center(terminal_width - 2) + "|")
+                print("|" + "-" * (terminal_width - 2) + "|")
+                print("|" + " Process Name\t\tUptime ".ljust(terminal_width - 2) + "|")
+                print("|" + "-" * (terminal_width - 2) + "|")
+
+                # Print process information
                 for process in ProcessList.running_processes:
                     uptime = process.get_elapsed_time()
                     formatted_uptime = KernelMessage.format_uptime(uptime)
-                    print(f"{process.program}\t\t{formatted_uptime}")
+                    process_info = f"{process.program}\t\t{formatted_uptime}"
+                    print("|" + process_info.ljust(terminal_width - 2) + "")
 
-                print("Use ctrl + c to exit sysmon")
+                # Print bottom border and control instructions
+                print("|" + "-" * (terminal_width - 2) + "|")
+                print("|" + "Use ctrl + c to exit sysmon".center(terminal_width - 2) + "|")
+                print("+" + "-" * (terminal_width - 2) + "+")
+            
                 time.sleep(1)  # Update the process list every second
         except KeyboardInterrupt:
             print("\nExiting process monitor.")
