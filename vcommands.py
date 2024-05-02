@@ -86,6 +86,8 @@ class VCommands:
                         args = " ".join(parts[1:])
                         method = getattr(VCommands, cmd)
                         method(fs, current_directory, args)
+#                except KeyboardInterrupt:
+#                    break
                 except Exception as e:
                     print(f"Error: {e}")
 

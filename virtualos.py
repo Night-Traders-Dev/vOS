@@ -89,6 +89,7 @@ class VirtualOS:
                 self.kernel.log_command(command)  # Log the command
                 if command == "exit" or command == "shutdown":
                     print("Shutting Down VirtualOS...")
+                    self.vproc.shutdown_vproc(self)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     break
@@ -268,8 +269,15 @@ class VirtualOS:
                 else:
                     print("Command not found. Type 'help' to see available commands.")
                     self.kernel.log_command(f"[!] Command '{command}' not found.")
+            except KeyboardInterrupt:
+                print("Shutting Down VirtualOS...")
+                self.vproc.shutdown_vproc(self)
+                self.fs.save_file_system("file_system.json")  # Save filesystem
+                self.kernel.delete_dmesg()  # Delete dmesg file on exit
+                sys.exit(0)
             except Exception as e:
                 self.kernel.handle_error(e)
+
 
 if __name__ == "__main__":
     virtual_os = VirtualOS()

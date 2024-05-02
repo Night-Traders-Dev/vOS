@@ -401,8 +401,18 @@ class VirtualKernel:
         # Reset kernel state or perform any necessary actions to reboot the OS
         print("Rebooting the virtual operating system...")
         self.log_command("[!!]Rebooting vOS...")
-        self.processes = []  # Reset the list of processes
-        print("Virtual operating system rebooted successfully.")
+        VirtualProcess.shutdown_vproc(self)
+        self.processes = ProcessList.running_processes
+        self.dmesg_file = "dmesg"
+        self.create_process("dmesgd")
+        self.filesystem_monitoring_enabled = True
+        self.last_error = None
+        self.password_file = PasswordFile("passwd")
+        self.create_process("passwd")
+        self.qshell_interpreter = QShellInterpreter()
+        self.create_process("uptimed")
+        self.start_time = time.time()
+        self.log_command("Virtual operating system rebooted successfully.")
         self.password_file.login_prompt()
 
 
@@ -460,7 +470,7 @@ class VirtualKernel:
         self.last_error = error
         traceback = traceback.print_exc()  # Print the traceback
         self.log_command(f"Error occurred: {str(error)}")
-        self.log_command("Stack Trace: {str(traceback)}")
+        self.log_command("Stack Trace: {traceback}")
 
     def recover_from_error(self):
         if self.processes:
@@ -482,6 +492,8 @@ class KernelMessage:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(cls.dmesg_file, "a") as f:
             f.write(f"[{timestamp}] {program}\n")
+
+
     @classmethod
     def format_uptime(cls, uptime):
         weeks, days = divmod(uptime, 60 * 60 * 24 * 7)
@@ -533,6 +545,13 @@ class VirtualProcess:
                 KernelMessage.log_process(f"Process '{process_name}' has been killed.")
                 return
         print(f"Process '{process_name}' not found.")
+
+
+    @staticmethod
+    def shutdown_vproc(self):
+        for process in ProcessList.running_processes:
+            VirtualProcess.kill_process(self, process.program)
+
 
     @staticmethod
     def monitor_processes(self):
