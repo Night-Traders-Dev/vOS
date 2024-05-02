@@ -472,6 +472,24 @@ class KernelMessage:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(cls.dmesg_file, "a") as f:
             f.write(f"[{timestamp}] {program}\n")
+    @classmethod
+    def format_uptime(cls, uptime):
+        weeks, days = divmod(uptime, 60 * 60 * 24 * 7)
+        days, hours = divmod(days, 60 * 60 * 24)
+        hours, minutes = divmod(hours, 60 * 60)
+        minutes, seconds = divmod(minutes, 60)
+
+        if weeks > 0:
+            return f"{weeks} weeks, {days} days"
+        elif days > 0:
+            return f"{days} days, {hours} hours"
+        elif hours > 0:
+            return f"{hours} hours, {minutes} minutes"
+        elif minutes > 0:
+            return f"{minutes} minutes, {seconds:,.4f} seconds"
+        else:
+            return f"{seconds:,.4f} seconds"
+
 
 class VirtualProcess:
     def __init__(self, program):
@@ -491,6 +509,8 @@ class VirtualProcess:
 
     def execute(self):
         pass
+
+
 
     @staticmethod
     def kill_process(self, process_name, verbose = False):
@@ -519,7 +539,8 @@ class VirtualProcess:
 
                 for process in ProcessList.running_processes:
                     uptime = process.get_elapsed_time()
-                    print(f"{process.program}\t\t{uptime:.2f} seconds")
+                    formatted_uptime = KernelMessage.format_uptime(uptime)
+                    print(f"{process.program}\t\t{formatted_uptime}")
 
                 time.sleep(1)  # Update the process list every second
         except KeyboardInterrupt:
