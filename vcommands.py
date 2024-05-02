@@ -13,7 +13,7 @@ class VCommands:
         self.kernel = VirtualKernel()
         self.vfs = VirtualFileSystem()
         self.qshell = QShellInterpreter()
-        self.vproc = VirtualProcess("vprocd")
+        self.vproc = VirtualProcess("vprocd", 1)
 
     @staticmethod
     def help(command=None):
@@ -52,7 +52,7 @@ class VCommands:
         su: Temporarily elevate privileges for all commands\nUsage: su [permissions]
         """
         try:
-            fs.kernel.create_process("su")
+            pid = fs.kernel.create_process("su")
             # Store the original permissions
             original_permissions = current_directory.permissions
 
@@ -103,7 +103,7 @@ class VCommands:
             # Restore the original permissions
             current_directory.permissions = original_permissions
             fs.permissions = original_permissions
-            self.vproc.kill_process(self, "su")
+            self.vproc.kill_process(self, pid)
 
 
 
@@ -181,7 +181,6 @@ class VCommands:
         else:
             try:
                 new_directory = fs.find_directory(current_directory, path)
-                self.kernel.log_command(f"cd Debug: {current_directory}\n{path}\n{new_directory}")
                 return new_directory
             except FileNotFoundError:
                 print(f"Directory '{path}' not found.")
@@ -232,7 +231,7 @@ class VCommands:
         """
         nano: Open a file in a nano-like text editor\nUsage: nano [file_path]                         If no file path is provided, prompts the user to enter a file name and creates a new file in the current directory.
         """
-        fs.kernel.create_process("nano")
+        pid = fs.kernel.create_process("nano")
         if not path:
             filename = input("Enter filename: ")
             if not filename.strip():
@@ -264,7 +263,7 @@ class VCommands:
             line = input()
             if line == ":w":
                 fs.create_file(path, nano_file)
-                self.vproc.kill_process(self, "nano")
+                self.vproc.kill_process(self, pid)
                 break
             nano_file += line + "\n"
 

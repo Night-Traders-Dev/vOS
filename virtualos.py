@@ -17,7 +17,7 @@ class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.animations = Animations()
-        self.vproc = VirtualProcess("vprocd")
+        self.vproc = VirtualProcess("Kernel", 0)
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
         self.kernel.log_command("Kernel Loaded...")

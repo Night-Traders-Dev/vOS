@@ -186,6 +186,7 @@ class PasswordFile:
             return False
         VirtualKernel.log_command(self, f"auth: {user[1]} and {user_account.password}")
         if user[1] == user_account.password:
+            VirtualKernel.create_process(self, "qShell", True)
             return True
         else:
             return False
@@ -300,9 +301,38 @@ class Animations:
             curses.endwin()
             os.system('cls' if os.name == 'nt' else 'clear')
 
+class KernelMessage:
+    dmesg_file = "dmesg"
+
+    @classmethod
+    def log_process(cls, program):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(cls.dmesg_file, "a") as f:
+            f.write(f"[{timestamp}] {program}\n")
+
+
+    @classmethod
+    def format_uptime(cls, uptime):
+        weeks, days = divmod(uptime, 60 * 60 * 24 * 7)
+        days, hours = divmod(days, 60 * 60 * 24)
+        hours, minutes = divmod(hours, 60 * 60)
+        minutes, seconds = divmod(minutes, 60)
+
+        if weeks > 0:
+            return f"{weeks:,.0f} weeks, {days:,.0f} days"
+        elif days > 0:
+            return f"{days:,.0f} days, {hours:,.0f} hours"
+        elif hours > 0:
+            return f"{hours:,.0f} hours, {minutes:,.0f} minutes"
+        elif minutes > 0:
+            return f"{minutes:,.0f} minutes, {seconds:,.4f} seconds"
+        else:
+            return f"{seconds:,.4f} seconds"
+
 class VirtualKernel:
     def __init__(self):
         self.processes = ProcessList.running_processes
+        self.create_process("VirtualKernel")
         self.dmesg_file = "dmesg"
         self.create_process("dmesgd")
         self.filesystem_monitoring_enabled = True
@@ -496,14 +526,15 @@ class VirtualKernel:
 
     def create_process(self, program, allow_multiple=False):
         # Check if the process is already running
-        if any(process.program == program for process in ProcessList.running_processes):
-            if not allow_multiple:
-#                self.log_command(f"[%%] Can't run multiple instances of {program}")
-                return
+        for pid, process_info in ProcessList.running_processes.items():
+            if process_info['name'] == program:
+                if not allow_multiple:
+                    return None
 
         # If not running or allowing multiple instances, create a new process instance
-        new_process = VirtualProcess(program)
-
+        pid = ProcessList.get_next_pid()
+        new_process = VirtualProcess(program, pid)
+        return pid
 
     def schedule_processes(self):
         for process in self.processes:
@@ -548,7 +579,7 @@ class VirtualKernel:
         self.last_error = error
         traceback = traceback.print_exc()  # Print the traceback
         self.log_command(f"Error occurred: {str(error)}")
-        self.log_command("Stack Trace: {traceback}")
+#        self.log_command("Stack Trace: {traceback}")
 
     def recover_from_error(self):
         if self.processes:
@@ -560,47 +591,42 @@ class VirtualKernel:
 
 
 class ProcessList:
-    running_processes = []
-
-class KernelMessage:
-    dmesg_file = "dmesg"
+    running_processes = {}
 
     @classmethod
-    def log_process(cls, program):
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(cls.dmesg_file, "a") as f:
-            f.write(f"[{timestamp}] {program}\n")
-
+    def add_process(cls, name, pid, cache):
+        if not cls.running_processes:
+            cls.next_pid = 0
+        cls.running_processes[pid] = {'name': name, 'cache': cache}
+        KernelMessage.log_process(f"name: {name}, pid: {pid},  cache: {cache}")
 
     @classmethod
-    def format_uptime(cls, uptime):
-        weeks, days = divmod(uptime, 60 * 60 * 24 * 7)
-        days, hours = divmod(days, 60 * 60 * 24)
-        hours, minutes = divmod(hours, 60 * 60)
-        minutes, seconds = divmod(minutes, 60)
+    def remove_process(cls, pid):
+        if pid in cls.running_processes:
+            del cls.running_processes[pid]
 
-        if weeks > 0:
-            return f"{weeks:,.0f} weeks, {days:,.0f} days"
-        elif days > 0:
-            return f"{days:,.0f} days, {hours:,.0f} hours"
-        elif hours > 0:
-            return f"{hours:,.0f} hours, {minutes:,.0f} minutes"
-        elif minutes > 0:
-            return f"{minutes:,.0f} minutes, {seconds:,.4f} seconds"
+    @classmethod
+    def get_next_pid(cls):
+        if not cls.running_processes:
+            return 100
         else:
-            return f"{seconds:,.4f} seconds"
+            last_pid = max(cls.running_processes.keys())
+            return max(100, last_pid + 1)
+
+    @classmethod
+    def get_running_pids(cls):
+        return list(cls.running_processes.keys())
+
 
 
 class VirtualProcess:
-    def __init__(self, program):
+    def __init__(self, program, pid):
         self.program = program
-        self.start_time = time.time()  # Record the start time when the process is initialized
-
-        # Add the process to the running_processes list
-        ProcessList.running_processes.append(self)
+        self.pid = pid
+        self.cache = 1
         KernelMessage.log_process(f"[*]Starting {program}...")
-
-
+        ProcessList.add_process(program, pid, self.cache)
+        self.start_time = time.time()  # Record the start time when the process is initialized
 
 
     def get_elapsed_time(self):
@@ -613,27 +639,43 @@ class VirtualProcess:
 
 
     @staticmethod
-    def kill_process(self, process_name, verbose = False):
-        KernelMessage.log_process(f"[!]Killing Process {process_name}...")
-        for process in ProcessList.running_processes[:]:  # Iterate over a copy of the list
-            if process.program == process_name:
-                ProcessList.running_processes.remove(process)
-                if verbose:
-                    print(f"Process '{process_name}' has been killed.")
-                KernelMessage.log_process(f"Process '{process_name}' has been killed.")
-                return
-        print(f"Process '{process_name}' not found.")
+    def kill_process(self, pid, verbose=False):
+        if pid in ProcessList.running_processes:
+            process_info = ProcessList.running_processes[pid]
+            process_name = process_info['name']
+            del ProcessList.running_processes[pid]
+            if verbose:
+                print(f"Process '{process_name}' with PID {pid} has been killed.")
+            KernelMessage.log_process(f"Process '{process_name}' with PID {pid} has been killed.")
+        else:
+            print(f"Process with PID {pid} not found.")
+
+    @staticmethod
+    def kill_process_by_name(self, process_name, verbose=False):
+        pid_to_remove = None
+        for pid, process_info in ProcessList.running_processes.items():
+            if process_info['name'] == process_name:
+                pid_to_remove = pid
+                break
+
+        if pid_to_remove is not None:
+            VirtualProcess.kill_process(self, pid_to_remove, verbose)
+        else:
+            print(f"Process '{process_name}' not found.")
 
 
     @staticmethod
     def shutdown_vproc(self):
-        for process in ProcessList.running_processes:
-            VirtualProcess.kill_process(self, process.program)
+        # Create a copy of the dictionary to avoid modifying it during iteration
+        running_processes_copy = ProcessList.running_processes.copy()
+        for pid, process_info in running_processes_copy.items():
+            process_name = process_info['name']
+            VirtualProcess.kill_process(self, pid)
 
 
     @staticmethod
     def monitor_processes(self):
-        VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
+        sysmon_pid = VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
 
         try:
             stdscr = curses.initscr()
@@ -652,19 +694,23 @@ class VirtualProcess:
                 stdscr.addstr(1, 0, "|" + " " * (terminal_width - 2) + "|")
                 stdscr.addstr(2, 0, "|" + " Process Monitor ".center(terminal_width - 2) + "|")
                 stdscr.addstr(3, 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(4, 0, "|" + " Process Name\t\tUptime ".ljust(terminal_width - 2) + "|")
+                stdscr.addstr(4, 0, "|" + " Process Name\tPID\tCache\t\tUptime ".ljust(terminal_width - 2) + "|")
                 stdscr.addstr(5, 0, "|" + "-" * (terminal_width - 2) + "|")
 
                 # Print process information
-                for i, process in enumerate(ProcessList.running_processes):
-                    uptime = process.get_elapsed_time()
-                    formatted_uptime = KernelMessage.format_uptime(uptime)
-                    process_info = f"{process.program}\t\t{formatted_uptime}"
+                for i, (pid, process_info) in enumerate(ProcessList.running_processes.items()):
+                    process_name = process_info['name']
+                    cache = process_info['cache']
+                    process_instance = ProcessList.running_processes[pid]  # Get the VirtualProcess instance
+                    KernelMessage.log_process(f"{process_instance} and {process_name}")
+#                    uptime = process_name.get_elapsed_time()  # Calculate uptime using the instance
+#                    formatted_uptime = KernelMessage.format_uptime(uptime)
+                    process_info = f"{process_name}\t\t{pid}\t{cache}\t0"
                     stdscr.addstr(6 + i, 0, "|" + process_info.ljust(terminal_width - 2) + "")
 
                 # Print bottom border and control instructions
                 stdscr.addstr(6 + len(ProcessList.running_processes), 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use ctrl + c to exit sysmon".center(terminal_width - 2) + "|")
+                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use ctrl + c to exit".center(terminal_width - 2) + "|")
                 stdscr.addstr(8 + len(ProcessList.running_processes), 0, "+" + "-" * (terminal_width - 2) + "")
 
                 stdscr.refresh()
@@ -673,4 +719,4 @@ class VirtualProcess:
         except KeyboardInterrupt:
             curses.endwin()
             print("\nExiting process monitor.")
-            VirtualProcess.kill_process(self, "sysmon")
+            VirtualProcess.kill_process(self, sysmon_pid)
