@@ -21,7 +21,8 @@ from rich.text import Text
 from rich.progress import Progress
 from rich.progress import SpinnerColumn
 from rich.table import Table
-
+from rich.layout import Layout
+from rich.panel import Panel
 
 class QShellInterpreter:
     def __init__(self):
@@ -108,6 +109,16 @@ class PasswordFile:
         self.file_path = file_path
         self.dmesg_file = "dmesg"
         self.active_user = None
+        self.clock_thread = threading.Thread(target=self.update_clock, daemon=True)  # Create a daemon thread for the clock
+        self.clock_thread.start()  # Start the clock thread
+
+    def update_clock(self):
+        while True:
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            clock_panel = Panel(Text(current_datetime, style="bold white"), width=20)
+            self.console.print(Layout().update(self.console.options, {"upper-right": clock_panel}))
+            time.sleep(1)  # Update the clock every second
+
     @staticmethod
     def generate_random_id():
         return uuid.uuid4().int & (1<<32)-1
@@ -140,7 +151,7 @@ class PasswordFile:
         password = getpass.getpass("Enter password: ")
         self.add_user(fs, username, password)
         os.system('cls' if os.name == 'nt' else 'clear')
-        self.login_prompt()
+        self.login_prompt_rich()
 
     def add_user(self, fs, username, password):
         # Generate random uid and gid if not provided
@@ -207,33 +218,30 @@ class PasswordFile:
         try:
             console.clear()
 
-            # Display vOS in upper left corner
-            console.print("[bold]vOS[/bold]")
-
-            # Display current time and date on the right side
-            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            console.print(Text(current_datetime, style="bold"), justify="right")
+            # Display vOS with flair
+            console.print("[bold magenta]╔══════════════════════════╗")
+            console.print("[bold magenta]║        [green]vOS[/green]        ║")
+            console.print("[bold magenta]╚══════════════════════════╝")
 
             # Get username and password
-            username = Prompt.ask("Username:")
-            password = Prompt.ask("Password:", password=True)
+            username = Prompt.ask("[bold cyan]Username:[/bold cyan]")
+            password = Prompt.ask("[bold cyan]Password:[/bold cyan]", password=True)
 
             # Check authentication
             if self.authenticate(username, password):
                 console.clear()
-                console.print("Login successful!")
+                console.print("[bold green]Login successful![/bold green]")
                 self.active_user = username
                 time.sleep(1)  # Wait for 1 second before clearing the screen
             else:
-                console.print("Invalid username or password. Please try again.")
+                console.print("[bold red]Invalid username or password. Please try again.[/bold red]")
                 time.sleep(2)  # Wait for 2 seconds before clearing the screen
 
         except KeyboardInterrupt:
-            console.print("Shutting Down VirtualOS...")
+            console.print("[bold red]Shutting Down VirtualOS...[/bold red]")
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
             time.sleep(2)  # Wait for 2 seconds before exiting
             sys.exit(0)
-
 
 
     def su_prompt(self):
