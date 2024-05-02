@@ -345,11 +345,11 @@ class VirtualKernel:
 
             print("vOS updated successfully!")
             self.log_command("vOS updated successfully")
-            VirtualProcess.kill_process(self, "sysmon")
+            VirtualProcess.kill_process(self, "update_vos")
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
-            VirtualProcess.kill_process(self, "sysmon")
+            VirtualProcess.kill_process(self, "update_vos")
 
 
     def print_progress(self, bytes_read, total_size):
