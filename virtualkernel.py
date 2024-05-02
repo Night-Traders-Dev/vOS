@@ -403,6 +403,7 @@ class VirtualKernel:
         # Check if the process is already running
         if any(process.program == program for process in ProcessList.running_processes):
             if not allow_multiple:
+                self.log_command(f"[%%] Can't run multiple instances of {program}")
                 return
 
         # If not running or allowing multiple instances, create a new process instance
