@@ -84,6 +84,7 @@ class VCommands:
                         confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
                         if confirmation == "yes":
                             self.kernel.reboot_os()  # Call the reboot function from the kernel
+                            break
                         else:
                             print("Reboot cancelled.")
                             self.kernel.log_command(f"[!]Reboot cancelled")
