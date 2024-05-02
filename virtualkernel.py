@@ -15,7 +15,6 @@ import time
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 
-
 class QShellInterpreter:
     def __init__(self):
         self.ext = ".qs"
@@ -193,22 +192,64 @@ class PasswordFile:
 
     def login_prompt(self):
         try:
-            os.system('cls' if os.name == 'nt' else 'clear')
-            while True:
-                username = input("Username: ")
-                password = getpass.getpass("Password: ")
-                if self.authenticate(username, password):
-                    print("Login successful!")
-                    self.active_user = username
-                    os.system('cls' if os.name == 'nt' else 'clear')
-                    break
-                else:
-                    print("Invalid username or password. Please try again.")
+            # Initialize curses
+            stdscr = curses.initscr()
+            curses.curs_set(1)  # Show cursor
+            stdscr.clear()
+
+            # Get terminal dimensions
+            terminal_height, terminal_width = stdscr.getmaxyx()
+
+
+            stdscr.border()
+            # Display vOS in upper left corner
+            stdscr.addstr(0, 0, "vOS")
+
+            # Display current time and date on the right side
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            stdscr.addstr(0, terminal_width - len(current_datetime) - 1, current_datetime)
+
+            # Draw username box
+            username_box = curses.newwin(3, 30, 2, 2)
+            username_box.box()
+            username_box.addstr(1, 2, "Username: ")
+            username_box.refresh()
+
+            # Get username input
+            username = username_box.getstr(1, 12).decode()
+
+            # Draw password box
+            password_box = curses.newwin(3, 30, 6, 2)
+            password_box.box()
+            password_box.addstr(1, 2, "Password: ")
+            password_box.refresh()
+
+            # Get password input (hidden)
+            curses.noecho()  # Hide user input
+            password = password_box.getstr(1, 12).decode()
+            curses.echo()  # Show user input
+
+            # Check authentication
+            if self.authenticate(username, password):
+                stdscr.clear()
+                stdscr.addstr(0, 0, "Login successful!")
+                stdscr.refresh()
+                self.active_user = username
+                curses.napms(1000)  # Wait for 1 second before clearing the screen
+            else:
+                stdscr.addstr(8, 0, "Invalid username or password. Please try again.")
+                stdscr.refresh()
+                curses.napms(2000)  # Wait for 2 seconds before clearing the screen
         except KeyboardInterrupt:
-            print("Shutting Down VirtualOS...")
+            stdscr.addstr(9, 0, "Shutting Down VirtualOS...")
+            stdscr.refresh()
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
-            os.system('cls' if os.name == 'nt' else 'clear')
+            curses.napms(2000)  # Wait for 2 seconds before exiting
+            curses.endwin()
             sys.exit(0)
+        finally:
+            curses.endwin()  # End curses session
+
 
     def su_prompt(self):
             while True:
@@ -234,7 +275,7 @@ class Animations:
     @classmethod
     def boot_animation(cls):
         stdscr = curses.initscr()
-
+        stdscr.clear()
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
 
         try:
@@ -250,6 +291,7 @@ class Animations:
             stdscr.refresh()
             time.sleep(2)  # Display success message for 2 seconds
         finally:
+            stdscr.clear()
             curses.curs_set(1)
             curses.endwin()
 
