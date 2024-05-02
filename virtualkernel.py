@@ -202,7 +202,8 @@ class PasswordFile:
         except KeyboardInterrupt:
             print("Shutting Down VirtualOS...")
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
-            break
+            os.system('cls' if os.name == 'nt' else 'clear')
+            sys.exit(0)
 
     def su_prompt(self):
             while True:
