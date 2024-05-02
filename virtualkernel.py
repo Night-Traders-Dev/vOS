@@ -673,6 +673,8 @@ class VirtualProcess:
             VirtualProcess.kill_process(self, pid)
 
 
+
+
     @staticmethod
     def monitor_processes(self):
         sysmon_pid = VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
@@ -681,6 +683,9 @@ class VirtualProcess:
             stdscr = curses.initscr()
             curses.curs_set(0)  # Hide the cursor
             stdscr.clear()
+
+            # Initialize highlighted index
+            highlighted_index = 0
 
             while True:
                 # Get terminal size
@@ -708,15 +713,33 @@ class VirtualProcess:
                     start_time = float(next(iter(process_info['start_time'])))  # Get the process start time
                     elapsed_time = time.time() - start_time  # Calculate elapsed time
                     formatted_uptime = KernelMessage.format_uptime(elapsed_time)
-                    process_info = f"{process_name.ljust(longest_name_length)}\t\t{pid}\t{cache}\t{formatted_uptime}"
-                    stdscr.addstr(6 + i, 0, "|" + process_info.ljust(terminal_width - 2) + "")
+                    process_info_str = f"{process_name.ljust(longest_name_length)}\t\t{pid}\t{cache}\t{formatted_uptime}"
+
+                    # Highlight the current process
+                    if i == highlighted_index:
+                        stdscr.addstr(6 + i, 0, "|" + process_info_str.ljust(terminal_width - 2) + "", curses.A_REVERSE)
+                    else:
+                        stdscr.addstr(6 + i, 0, "|" + process_info_str.ljust(terminal_width - 2) + "")
 
                 # Print bottom border and control instructions
                 stdscr.addstr(6 + len(ProcessList.running_processes), 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use ctrl + c to exit".center(terminal_width - 2) + "|")
+                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use arrow keys to navigate, and press Enter to select a process".center(terminal_width - 2) + "|")
                 stdscr.addstr(8 + len(ProcessList.running_processes), 0, "+" + "-" * (terminal_width - 2) + "")
 
                 stdscr.refresh()
+
+                # Get user input
+                key = stdscr.getch()
+
+                # Handle arrow key input
+                if key == curses.KEY_DOWN or key == 258:
+                    highlighted_index = min(highlighted_index + 1, len(ProcessList.running_processes) - 1)
+                elif key == curses.KEY_UP or key == 259:
+                    highlighted_index = max(highlighted_index - 1, 0)
+                elif key == curses.KEY_ENTER or key in [10, 13]:
+                    # Process selection logic goes here
+                    pass
+
                 time.sleep(1)  # Update the process list every second
 
         except KeyboardInterrupt:
