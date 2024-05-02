@@ -1,5 +1,8 @@
 import sys
+import curses
 import time
+import datetime
+import asyncio
 from virtualfs import VirtualFileSystem
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
@@ -35,6 +38,8 @@ class VirtualOS:
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
 
+
+
         # Check if 'home' directory exists
         if "home" in self.fs.root.subdirectories:
             # Check if 'user' directory exists
@@ -62,16 +67,31 @@ class VirtualOS:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
 
     def load_with_loading_circle(self):
+        self.stdscr = curses.initscr()
         self.kernel.log_command("Boot Animation Loaded...")
+
         loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
-        for _ in range(10):  # Repeat the animation 10 times
-            for char in loading_animation:
-                sys.stdout.write('\r' + f"Booting vOS... {char}")  # Overwrite the same line with the loading animation
-                sys.stdout.flush()
-                time.sleep(0.1)  # Add a short delay to control the speed of the animation
-        sys.stdout.write('\r')  # Clear the loading animation line
-        sys.stdout.flush()
-        self.kernel.log_command("File system loaded successfully.")
+
+        try:
+            self.stdscr.clear()
+            self.stdscr.border()
+
+            for _ in range(10):  # Repeat the animation 10 times
+                for char in loading_animation:
+                    self.stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, f"Booting vOS... {char}")
+                    self.stdscr.refresh()
+                    time.sleep(0.1)  # Add a short delay to control the speed of the animation
+
+            self.stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Welcome to vOS")
+            self.stdscr.refresh()
+            time.sleep(2)  # Display success message for 2 seconds
+
+        except Exception as e:
+            self.kernel.handle_error(e)
+
+        finally:
+            curses.curs_set(1)
+            curses.endwin()
 
     def su_check(self, command):
             if not self.su:
@@ -81,10 +101,55 @@ class VirtualOS:
             else:
                 return True
 
-
-    def run_shell(self):
+    def draw_vui(self):
+        self.stdscr = curses.initscr()
+        curses.curs_set(0)  # Hide the cursor
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Border color
+        executed_commands = []
         while True:
             try:
+                self.stdscr.clear()
+
+                # Get current time
+                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Draw borders
+                self.stdscr.border()
+
+                # Print time in top right corner
+                self.stdscr.addstr(0, curses.COLS - len(current_time) - 1, current_time)
+
+                # Print vOS title in top left corner
+                self.stdscr.addstr(0, 1, "vOS")
+
+                # Display executed commands
+                executed_commands_window = curses.newwin(curses.LINES - 6, curses.COLS - 4, 2, 2)
+                for i, cmd in enumerate(executed_commands):
+                    executed_commands_window.addstr(i, 0, cmd)
+
+                # Get user input
+                self.stdscr.addstr(curses.LINES - 4, 1, self.current_directory.get_full_path() + " $ ")
+                command = self.stdscr.getstr(curses.LINES - 4, len(self.current_directory.get_full_path()) + 3).decode()
+
+            except KeyboardInterrupt:
+                self.stdscr.clear()
+                VCommands.clear_screen()
+                curses.curs_set(1)  # Hide the cursor
+                break
+
+            except Exception as e:
+                self.kernel.handle_error(e)
+
+            finally:
+                curses.endwin()
+
+
+    def run_shell(self):
+        # List to store executed commands
+        while True:
+            try:
+
                 command = input(f"{self.current_directory.get_full_path()} $ ").strip()
                 self.kernel.log_command(command)  # Log the command
                 if command == "exit" or command == "shutdown":
