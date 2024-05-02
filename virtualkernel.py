@@ -225,27 +225,54 @@ class PasswordFile:
        self.login_prompt()
 
 
+
 class Animations:
+    @classmethod
+    def boot_animation(cls):
+        stdscr = curses.initscr()
+
+        loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
+
+        try:
+            stdscr.border()
+
+            for _ in range(10):  # Repeat the animation 10 times
+                for char in loading_animation:
+                    stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, f"Booting vOS... {char}")
+                    stdscr.refresh()
+                    time.sleep(0.1)  # Add a short delay to control the speed of the animation
+
+            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Welcome to vOS")
+            stdscr.refresh()
+            time.sleep(2)  # Display success message for 2 seconds
+        finally:
+            curses.curs_set(1)
+            curses.endwin()
+
     @classmethod
     def reboot_animation(cls):
         try:
             stdscr = curses.initscr()
             curses.curs_set(0)  # Hide the cursor
             stdscr.clear()
+            stdscr.border()
 
             # Reboot animation
-            reboot_text = "Rebooting vOS..."
+            reboot_text = "Rebooting vOS"
             for i in range(20):
-                stdscr.addstr(0, 0, reboot_text + " " + "." * i)
+                stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, reboot_text + " " + "." * i)
                 stdscr.refresh()
                 time.sleep(0.1)
 
             # End of animation message
-            stdscr.addstr(1, 0, "Reboot complete. Goodbye!")
+            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Reboot complete. Goodbye!")
             stdscr.refresh()
             time.sleep(2)
         finally:
+            stdscr.clear()
             curses.endwin()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            Animations.boot_animation()
 
     @classmethod
     def shutdown_animation(cls):
@@ -253,21 +280,22 @@ class Animations:
             stdscr = curses.initscr()
             curses.curs_set(0)  # Hide the cursor
             stdscr.clear()
+            stdscr.border()
 
             # Shutdown animation
-            shutdown_text = "Shutting down vOS..."
+            shutdown_text = "Shutting down vOS"
             for i in range(20):
-                stdscr.addstr(0, 0, shutdown_text + " " + "." * i)
+                stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, shutdown_text + " " + "." * i)
                 stdscr.refresh()
                 time.sleep(0.1)
 
             # End of animation message
-            stdscr.addstr(1, 0, "Shutdown complete. Goodbye!")
+            stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Shutdown complete. Goodbye!")
             stdscr.refresh()
             time.sleep(2)
         finally:
             curses.endwin()
-
+            os.system('cls' if os.name == 'nt' else 'clear')
 
 class VirtualKernel:
     def __init__(self):

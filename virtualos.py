@@ -32,7 +32,7 @@ class VirtualOS:
         self.fs = VirtualFileSystem()  # Initialize the filesystem
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
-        self.load_with_loading_circle()  # Call method to load with loading circle
+        self.animations.boot_animation()
         self.passwordtools.check_passwd_file(self.fs)
         self.active_user = self.passwordtools.online_user()
         self.user_dir = "/home/" + self.active_user
@@ -67,33 +67,6 @@ class VirtualOS:
             self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
         except Exception as e:
             self.kernel.log_command(f"Error during kernel boot: {str(e)}")
-
-    def load_with_loading_circle(self):
-        self.stdscr = curses.initscr()
-        self.kernel.log_command("Boot Animation Loaded...")
-
-        loading_animation = ['|', '/', '-', '\\']  # ASCII characters for the loading animation
-
-        try:
-            self.stdscr.clear()
-            self.stdscr.border()
-
-            for _ in range(10):  # Repeat the animation 10 times
-                for char in loading_animation:
-                    self.stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, f"Booting vOS... {char}")
-                    self.stdscr.refresh()
-                    time.sleep(0.1)  # Add a short delay to control the speed of the animation
-
-            self.stdscr.addstr(curses.LINES // 2, curses.COLS // 2 - 6, "Welcome to vOS")
-            self.stdscr.refresh()
-            time.sleep(2)  # Display success message for 2 seconds
-
-        except Exception as e:
-            self.kernel.handle_error(e)
-
-        finally:
-            curses.curs_set(1)
-            curses.endwin()
 
     def su_check(self, command):
             if not self.su:
