@@ -2,6 +2,7 @@
 
 import hashlib
 import time
+import curses
 
 class Transaction:
     def __init__(self, sender, recipient, amount):
@@ -73,6 +74,55 @@ class Blockchain:
                     balance += transaction.amount
         return balance
 
+
+class Wallet:
+    def __init__(self, P3Address, QSE_balance):
+        self.address = P3Address
+        self.balance = QSE_balance
+
+
+    def view_wallet(self):
+        try:
+            # Initialize curses
+            stdscr = curses.initscr()
+            curses.start_color()
+            curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Border color
+            curses.curs_set(0)  # Hide cursor
+            stdscr.clear()
+
+            # Get terminal dimensions
+            terminal_height, terminal_width = stdscr.getmaxyx()
+
+            # Create a window for the wallet UI
+            wallet_window = curses.newwin(terminal_height, terminal_width, 0, 0)
+
+            # Define wallet data
+            user_address = self.address
+            qse_balance = self.balance  # Example balance, replace with actual balance
+            tabs = ["Wallet", "NFTs", "Apps", "Swap"]
+
+            # Display wallet UI
+            wallet_window.addstr(1, 1, "Crypto Wallet", curses.A_BOLD)
+            wallet_window.addstr(3, 1, "Address:", curses.A_BOLD)
+            wallet_window.addstr(3, 12, user_address)
+            wallet_window.addstr(5, 1, "QSE Balance:", curses.A_BOLD)
+            wallet_window.addstr(5, 15, f"{qse_balance}")
+            wallet_window.addstr(7, 1, "Tabs:", curses.A_BOLD)
+            for i, tab in enumerate(tabs):
+                tab_position = 9 + i * 2
+                if i == 0:  # Highlight the first tab
+                    wallet_window.addstr(tab_position, 1, tab, curses.A_BOLD | curses.color_pair(1))
+                else:
+                    wallet_window.addstr(tab_position, 1, tab)
+
+            # Refresh the wallet window to display changes
+            wallet_window.refresh()
+
+            # Wait for user input
+            wallet_window.getch()
+
+        except KeyboardInterrupt:
+            curses.endwin()  # End curses session
 
 class VirtualMachine:
     def __init__(self, virtual_os, filesystem):  # Pass VirtualOS instance as an argument

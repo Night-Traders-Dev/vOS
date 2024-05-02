@@ -6,6 +6,7 @@ import asyncio
 from virtualfs import VirtualFileSystem
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
+from virtualmachine import Wallet
 from virtualkernel import VirtualKernel
 from virtualkernel import UserAccount
 from virtualkernel import PasswordFile
@@ -17,6 +18,7 @@ class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.animations = Animations()
+        self.wallet = Wallet("P3:b6c375b7be", "100000")
         self.vproc = VirtualProcess("Kernel", 0)
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
@@ -290,6 +292,10 @@ class VirtualOS:
                 elif command.startswith("readuser"):
                     _, username = command.split(" ", 1)
                     self.passwdtools.read_user(self.fs, username)
+
+                elif command.startswith("wallet"):
+                    print("This command is not setup")
+                    #self.wallet.view_wallet()
 
                 elif command.startswith("help"):
                     parts = command.split(" ")
