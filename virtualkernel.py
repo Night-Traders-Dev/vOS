@@ -187,17 +187,22 @@ class PasswordFile:
             return False
 
     def login_prompt(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        while True:
-            username = input("Username: ")
-            password = getpass.getpass("Password: ")
-            if self.authenticate(username, password):
-                print("Login successful!")
-                self.active_user = username
-                os.system('cls' if os.name == 'nt' else 'clear')
-                break
-            else:
-                print("Invalid username or password. Please try again.")
+        try:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            while True:
+                username = input("Username: ")
+                password = getpass.getpass("Password: ")
+                if self.authenticate(username, password):
+                    print("Login successful!")
+                    self.active_user = username
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    break
+                else:
+                    print("Invalid username or password. Please try again.")
+        except KeyboardInterrupt:
+            print("Shutting Down VirtualOS...")
+            VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
+            break
 
     def su_prompt(self):
             while True:
@@ -461,6 +466,8 @@ class VirtualKernel:
         else:
             print("No processes left to recover from error.")
             self.reboot_os()
+
+
 class ProcessList:
     running_processes = []
 
