@@ -104,6 +104,26 @@ class UserAccount:
         # Encrypt the provided password and compare with the stored encrypted password
         return self.password == self.encrypt_password(password)
 
+
+    def change_password(self, current_password, new_password):
+        """
+        Change the user's password.
+        
+        Parameters:
+            current_password (str): The current password of the user.
+            new_password (str): The new password to set.
+        
+        Returns:
+            bool: True if the password was successfully changed, False otherwise.
+        """
+        if self.check_password(current_password):
+            self.password = self.encrypt_password(new_password)
+            return True
+        else:
+            return False
+
+
+
 class PasswordFile:
     def __init__(self, file_path):
         self.file_path = file_path
