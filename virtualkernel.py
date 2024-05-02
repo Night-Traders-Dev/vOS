@@ -14,12 +14,7 @@ import time
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 import threading
-
-if sys.platform.startswith('win'):
-    import unicurses as curses
-else:
-    import curses
-
+import curses
 
 class QShellInterpreter:
     def __init__(self):
@@ -254,8 +249,8 @@ class PasswordFile:
     def run(self):
         try:
             # Initialize curses
-            stdscr = curses.initscr()
-            curses.curs_set(1)  # Show cursor
+            stdscr = initscr()
+            curs_set(1)  # Show cursor
             stdscr.clear()
 
             # Start clock update thread

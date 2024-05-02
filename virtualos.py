@@ -12,10 +12,7 @@ from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
 from virtualkernel import Animations
-if sys.platform.startswith('win'):
-    import unicurses as curses
-else:
-    import curses
+import curses
 
 class VirtualOS:
     def __init__(self):

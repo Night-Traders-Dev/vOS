@@ -3,11 +3,7 @@
 import hashlib
 import time
 import sys
-
-if sys.platform.startswith('win'):
-    import unicurses as curses
-else:
-    import curses
+import curses
 
 class Transaction:
     def __init__(self, sender, recipient, amount):

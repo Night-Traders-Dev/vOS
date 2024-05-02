@@ -7,12 +7,7 @@ from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
-
-if sys.platform.startswith('win'):
-    import unicurses as curses
-else:
-    import curses
-
+import curses
 
 class VCommands:
     def __init__(self):
