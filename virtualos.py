@@ -11,10 +11,12 @@ from virtualkernel import UserAccount
 from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
+from virtualkernel import Animations
 
 class VirtualOS:
     def __init__(self):
         self.kernel = VirtualKernel()
+        self.animations = Animations()
         self.vproc = VirtualProcess("vprocd")
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
@@ -157,6 +159,7 @@ class VirtualOS:
                     self.vproc.shutdown_vproc(self)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
+                    self.animations.shutdown_animation()
                     break
                 elif command.startswith("su"):
                     auth = self.passwordtools.su_prompt()

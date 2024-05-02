@@ -3,6 +3,7 @@ import sys
 import os
 import hashlib
 import base64
+import curses
 from datetime import datetime
 import traceback
 import uuid
@@ -223,6 +224,51 @@ class PasswordFile:
        self.active_user = None
        self.login_prompt()
 
+
+class Animations:
+    @classmethod
+    def reboot_animation(cls):
+        try:
+            stdscr = curses.initscr()
+            curses.curs_set(0)  # Hide the cursor
+            stdscr.clear()
+
+            # Reboot animation
+            reboot_text = "Rebooting vOS..."
+            for i in range(20):
+                stdscr.addstr(0, 0, reboot_text + " " + "." * i)
+                stdscr.refresh()
+                time.sleep(0.1)
+
+            # End of animation message
+            stdscr.addstr(1, 0, "Reboot complete. Goodbye!")
+            stdscr.refresh()
+            time.sleep(2)
+        finally:
+            curses.endwin()
+
+    @classmethod
+    def shutdown_animation(cls):
+        try:
+            stdscr = curses.initscr()
+            curses.curs_set(0)  # Hide the cursor
+            stdscr.clear()
+
+            # Shutdown animation
+            shutdown_text = "Shutting down vOS..."
+            for i in range(20):
+                stdscr.addstr(0, 0, shutdown_text + " " + "." * i)
+                stdscr.refresh()
+                time.sleep(0.1)
+
+            # End of animation message
+            stdscr.addstr(1, 0, "Shutdown complete. Goodbye!")
+            stdscr.refresh()
+            time.sleep(2)
+        finally:
+            curses.endwin()
+
+
 class VirtualKernel:
     def __init__(self):
         self.processes = ProcessList.running_processes
@@ -412,6 +458,7 @@ class VirtualKernel:
         self.qshell_interpreter = QShellInterpreter()
         self.create_process("uptimed")
         self.start_time = time.time()
+        Animations.reboot_animation()
         self.log_command("Virtual operating system rebooted successfully.")
         self.password_file.login_prompt()
 
@@ -558,36 +605,41 @@ class VirtualProcess:
         VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
 
         try:
+            stdscr = curses.initscr()
+            curses.curs_set(0)  # Hide the cursor
+            stdscr.clear()
+
             while True:
                 # Get terminal size
-                terminal_size = os.get_terminal_size()
-                terminal_width = terminal_size.columns
-                terminal_height = terminal_size.lines
+                terminal_height, terminal_width = stdscr.getmaxyx()
 
                 # Clear the screen
-                print("\033[H\033[J")
+                stdscr.clear()
 
                 # Print bordered window
-                print("+" + "-" * (terminal_width - 2) + "+")
-                print("|" + " " * (terminal_width - 2) + "|")
-                print("|" + " Process Monitor ".center(terminal_width - 2) + "|")
-                print("|" + "-" * (terminal_width - 2) + "|")
-                print("|" + " Process Name\t\tUptime ".ljust(terminal_width - 2) + "|")
-                print("|" + "-" * (terminal_width - 2) + "|")
+                stdscr.addstr(0, 0, "+" + "-" * (terminal_width - 2) + "+")
+                stdscr.addstr(1, 0, "|" + " " * (terminal_width - 2) + "|")
+                stdscr.addstr(2, 0, "|" + " Process Monitor ".center(terminal_width - 2) + "|")
+                stdscr.addstr(3, 0, "|" + "-" * (terminal_width - 2) + "|")
+                stdscr.addstr(4, 0, "|" + " Process Name\t\tUptime ".ljust(terminal_width - 2) + "|")
+                stdscr.addstr(5, 0, "|" + "-" * (terminal_width - 2) + "|")
 
                 # Print process information
-                for process in ProcessList.running_processes:
+                for i, process in enumerate(ProcessList.running_processes):
                     uptime = process.get_elapsed_time()
                     formatted_uptime = KernelMessage.format_uptime(uptime)
                     process_info = f"{process.program}\t\t{formatted_uptime}"
-                    print("|" + process_info.ljust(terminal_width - 2) + "")
+                    stdscr.addstr(6 + i, 0, "|" + process_info.ljust(terminal_width - 2) + "")
 
                 # Print bottom border and control instructions
-                print("|" + "-" * (terminal_width - 2) + "|")
-                print("|" + "Use ctrl + c to exit sysmon".center(terminal_width - 2) + "|")
-                print("+" + "-" * (terminal_width - 2) + "+")
-            
+                stdscr.addstr(6 + len(ProcessList.running_processes), 0, "|" + "-" * (terminal_width - 2) + "|")
+                stdscr.addstr(7 + len(ProcessList.running_processes), 0, "|" + "Use ctrl + c to exit sysmon".center(terminal_width - 2) + "|")
+                stdscr.addstr(8 + len(ProcessList.running_processes), 0, "+" + "-" * (terminal_width - 2) + "")
+
+                stdscr.refresh()
                 time.sleep(1)  # Update the process list every second
+
         except KeyboardInterrupt:
+            curses.endwin()
             print("\nExiting process monitor.")
             VirtualProcess.kill_process(self, "sysmon")
