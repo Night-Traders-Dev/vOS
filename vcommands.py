@@ -52,6 +52,7 @@ class VCommands:
         su: Temporarily elevate privileges for all commands\nUsage: su [permissions]
         """
         try:
+            fs.kernel.create_process("su")
             # Store the original permissions
             original_permissions = current_directory.permissions
 
@@ -92,6 +93,7 @@ class VCommands:
             # Restore the original permissions
             current_directory.permissions = original_permissions
             fs.permissions = original_permissions
+            self.vproc.kill_process(self, "su")
 
 
 
@@ -216,10 +218,11 @@ class VCommands:
 
 
     @staticmethod
-    def nano(fs, current_directory, path=None):
+    def nano(self, fs, current_directory, path=None):
         """
         nano: Open a file in a nano-like text editor\nUsage: nano [file_path]                         If no file path is provided, prompts the user to enter a file name and creates a new file in the current directory.
         """
+        fs.kernel.create_process("nano")
         if not path:
             filename = input("Enter filename: ")
             if not filename.strip():
@@ -233,10 +236,6 @@ class VCommands:
                 # If relative, make it relative to the current directory
                 path = os.path.join(current_directory.get_full_path(), path)
 
-        fs.kernel.log_command("[Nano] Full path: " + path)
-        fs.kernel.log_command("[Nano] Current directory: " + current_directory.get_full_path())
-        fs.kernel.log_command("[Nano] Existing files in the current directory: " + str(current_directory.files))
-        fs.kernel.log_command("[Nano] Existing subdirectories in the current directory: " + str(current_directory.subdirectories))
 
         print("Nano-like text editor. Press :w to save and exit.")
 
@@ -255,6 +254,7 @@ class VCommands:
             line = input()
             if line == ":w":
                 fs.create_file(path, nano_file)
+                self.vproc.kill_process(self, "nano")
                 break
             nano_file += line + "\n"
 

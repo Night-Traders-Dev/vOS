@@ -163,7 +163,7 @@ class VirtualOS:
                     except ValueError:
                         # If no path is specified, use the current directory
                         path = None
-                    VCommands.nano(self.fs, self.current_directory, path)
+                    VCommands.nano(self, self.fs, self.current_directory, path)
 
                 elif command.startswith("version"):
                     VCommands.version(self)
