@@ -7,6 +7,64 @@ from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
+from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.prompt import Prompt
+from rich.table import Table
+from rich import print
+
+
+class FancyTextEditor:
+    def __init__(self, fs, current_directory, theme="blue"):
+        self.console = Console()
+        self.fs = fs
+        self.current_directory = current_directory
+        self.theme = theme
+
+    def _create_editor_layout(self):
+        layout = Layout()
+        layout.split_row(Layout(name="header"), Layout(), Layout(size=3, name="editor"))
+        layout["header"].update(Panel(Text("🚀 Fancy Text Editor 🚀", style=f"bold {self.theme}")))
+        layout["editor"].update(Panel(""))
+        return layout
+
+    def _load_file_content(self, path):
+        if self.fs.file_exists(path):
+            try:
+                return self.fs.read_file(path)
+            except FileNotFoundError:
+                self.console.print(f"[bold red]File '{path}' not found.[/]")
+        return ""
+
+    def edit(self, path=None):
+        layout = self._create_editor_layout()
+        self.console.print(layout)
+
+        if not path:
+            filename = Prompt.ask("Enter filename: ")
+            if not filename.strip():
+                self.console.print("[bold red]Filename cannot be empty.[/]")
+                return
+            path = os.path.join(self.current_directory.get_full_path(), filename)
+        else:
+            # Check if the path is relative or absolute
+            if not path.startswith('/'):
+                # If relative, make it relative to the current directory
+                path = os.path.join(self.current_directory.get_full_path(), path)
+
+        editor_content = self._load_file_content(path)
+
+        while True:
+            line = Prompt.ask(">> ")
+            if line == ":w":
+                self.fs.create_file(path, layout["editor"].renderable.content)
+                break
+            editor_content += line + "\n"
+            layout["editor"].update(Panel(editor_content))
+
+        self.console.print(layout)
+
 
 class VCommands:
     def __init__(self):
@@ -45,6 +103,11 @@ class VCommands:
             print("cp - Copy a file or directory")
             print("echo - Display arguments")
 
+
+    @staticmethod
+    def text_edit(self, fs, current_directory, path = None):
+        editor = FancyTextEditor(fs, current_directory)
+        editor.edit()
 
     @staticmethod
     def su(self, fs, current_directory, permissions="rwxrwxrwx"):
@@ -228,15 +291,12 @@ class VCommands:
 
     @staticmethod
     def nano(self, fs, current_directory, path=None):
-        """
-        nano: Open a file in a nano-like text editor\nUsage: nano [file_path]                         If no file path is provided, prompts the user to enter a file name and creates a new file in the current directory.
-        """
-        pid = fs.kernel.create_process("nano")
+        console = Console()
+
         if not path:
-            filename = input("Enter filename: ")
+            filename = Prompt.ask("Enter filename: ")
             if not filename.strip():
-                fs.kernel.log_command("[Nano] Filename cannot be empty.")
-                print("Filename cannot be empty.")
+                console.print("[bold red]Filename cannot be empty.[/]")
                 return
             path = os.path.join(current_directory.get_full_path(), filename)
         else:
@@ -245,27 +305,33 @@ class VCommands:
                 # If relative, make it relative to the current directory
                 path = os.path.join(current_directory.get_full_path(), path)
 
+        layout = Layout()
+        layout.split_row(Layout(name="header"), Layout(), Layout(size=3, name="editor"))
+        layout["header"].update(Panel("[bold green]Nano-like text editor. Press :w to save and exit.[/]"))
+        layout["editor"].update(Panel(""))
 
-        print("Nano-like text editor. Press :w to save and exit.")
+        console.print(layout)
 
         # Load file content if the file exists
         if fs.file_exists(path):
             try:
                 nano_file = fs.read_file(path)
-                print(nano_file)  # Print existing content
+                layout["editor"].update(Panel(nano_file))  # Update editor panel with existing content
             except FileNotFoundError:
-                fs.kernel.log_command(f"[Nano] File '{path}' not found.")
+                console.print(f"[bold red]File '{path}' not found.[/]")
                 nano_file = ""
         else:
             nano_file = ""
 
         while True:
-            line = input()
+            line = Prompt.ask(">> ")
             if line == ":w":
-                fs.create_file(path, nano_file)
-                self.vproc.kill_process(self, pid)
+                fs.create_file(path, layout["editor"].renderable.content)
                 break
             nano_file += line + "\n"
+            layout["editor"].update(Panel(nano_file))
+
+        console.print(layout)
 
 
 
