@@ -6,12 +6,15 @@ from virtualfs import Directory
 from virtualfs import VirtualFileSystem
 from virtualkernel import VirtualKernel
 from virtualkernel import QShellInterpreter
+from virtualkernel import VirtualProcess
 
 class VCommands:
     def __init__(self):
         self.kernel = VirtualKernel()
         self.vfs = VirtualFileSystem()
         self.qshell = QShellInterpreter()
+        self.vproc = VirtualProcess("vprocd")
+
     @staticmethod
     def help(command=None):
         """
@@ -74,6 +77,8 @@ class VCommands:
                         self.kernel.update_vos()
                     elif command == "reset_fs":
                         self.fs.reset_filesystem()
+                    elif command == "sysmon":
+                        self.vproc.monitor_processes(self)
                     else:
                         parts = command.split(" ")
                         cmd = parts[0]
