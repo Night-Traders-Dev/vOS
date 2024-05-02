@@ -80,6 +80,13 @@ class VCommands:
                         self.fs.reset_filesystem()
                     elif command == "sysmon":
                         self.vproc.monitor_processes(self)
+                    elif command.startswith("reboot"):
+                        confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
+                        if confirmation == "yes":
+                            self.kernel.reboot_os()  # Call the reboot function from the kernel
+                        else:
+                            print("Reboot cancelled.")
+                            self.kernel.log_command(f"[!]Reboot cancelled")
                     else:
                         parts = command.split(" ")
                         cmd = parts[0]
