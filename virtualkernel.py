@@ -694,8 +694,11 @@ class VirtualProcess:
                 stdscr.addstr(1, 0, "|" + " " * (terminal_width - 2) + "|")
                 stdscr.addstr(2, 0, "|" + " Process Monitor ".center(terminal_width - 2) + "|")
                 stdscr.addstr(3, 0, "|" + "-" * (terminal_width - 2) + "|")
-                stdscr.addstr(4, 0, "|" + " Process Name\tPID\tCache\t\tUptime ".ljust(terminal_width - 2) + "|")
+                stdscr.addstr(4, 0, "|" + " Process Name\t\tPID\tCache\t\tUptime ".ljust(terminal_width - 2) + "|")
                 stdscr.addstr(5, 0, "|" + "-" * (terminal_width - 2) + "|")
+
+                # Find the longest process name to adjust column width dynamically
+                longest_name_length = max(len(process_info['name']) for process_info in ProcessList.running_processes.values())
 
                 # Print process information
                 for i, (pid, process_info) in enumerate(ProcessList.running_processes.items()):
@@ -704,9 +707,8 @@ class VirtualProcess:
                     process_instance = ProcessList.running_processes[pid]  # Get the VirtualProcess instance
                     start_time = float(next(iter(process_info['start_time'])))  # Get the process start time
                     elapsed_time = time.time() - start_time  # Calculate elapsed time
-#                   uptime = process_name.get_elapsed_time()  # Calculate uptime using the instance
                     formatted_uptime = KernelMessage.format_uptime(elapsed_time)
-                    process_info = f"{process_name}\t\t{pid}\t{cache}\t{formatted_uptime}"
+                    process_info = f"{process_name.ljust(longest_name_length)}\t\t{pid}\t{cache}\t{formatted_uptime}"
                     stdscr.addstr(6 + i, 0, "|" + process_info.ljust(terminal_width - 2) + "")
 
                 # Print bottom border and control instructions
