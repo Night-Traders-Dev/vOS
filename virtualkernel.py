@@ -399,7 +399,7 @@ class VirtualKernel:
         self.password_file.login_prompt()
 
 
-   def create_process(self, program, allow_multiple=False):
+    def create_process(self, program, allow_multiple=False):
         # Check if the process is already running
         if any(process.program == program for process in self.processes):
             if not allow_multiple:
