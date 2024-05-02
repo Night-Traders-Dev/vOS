@@ -1,7 +1,13 @@
 import json
 import os
 import gzip
+import sys
 from virtualkernel import VirtualKernel
+
+if sys.platform.startswith('win'):
+    import unicurses as curses
+else:
+    import curses
 
 class File:
     def __init__(self, name, content="", permissions=""):

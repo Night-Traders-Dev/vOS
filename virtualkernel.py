@@ -3,7 +3,6 @@ import sys
 import os
 import hashlib
 import base64
-import curses
 from datetime import datetime
 import traceback
 import uuid
@@ -15,6 +14,12 @@ import time
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 import threading
+
+if sys.platform.startswith('win'):
+    import unicurses as curses
+else:
+    import curses
+
 
 class QShellInterpreter:
     def __init__(self):
