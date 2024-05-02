@@ -398,8 +398,17 @@ class VirtualKernel:
         print("Virtual operating system rebooted successfully.")
         self.password_file.login_prompt()
 
-    def create_process(self, program):
+
+   def create_process(self, program, allow_multiple=False):
+        # Check if the process is already running
+        if any(process.program == program for process in self.processes):
+            if not allow_multiple:
+                return
+
+        # If not running or allowing multiple instances, create a new process instance
         new_process = VirtualProcess(program)
+        self.processes.append(new_process)
+
 
     def schedule_processes(self):
         for process in self.processes:
