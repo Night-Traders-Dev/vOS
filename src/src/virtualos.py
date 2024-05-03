@@ -20,7 +20,7 @@ class VirtualOS:
         self.kernel = VirtualKernel()
         self.animations = Animations()
         self.wallet = Wallet("P3:b6c375b7be", "100000")
-        self.vproc = VirtualProcess("Kernel", 0, "Kernel")
+        self.vproc = VirtualProcess("Kernel", 0)
         self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
         self.kernel.log_command("Kernel Loaded...")

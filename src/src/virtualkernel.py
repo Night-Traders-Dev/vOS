@@ -363,7 +363,6 @@ class VirtualKernel:
         self.qshell_interpreter = QShellInterpreter()
         self.create_process("uptimed")
         self.start_time = time.time()  # Store the start time
-        self.active_user = self.password_file.online_user()
 
     def get_uptime(self):
         """
@@ -434,7 +433,7 @@ class VirtualKernel:
             print(f"Error comparing checksums: {e}")
 
     def update_vos(self):
-        pid = self.create_process("update_vos", self.active_user)
+        pid = self.create_process("update_vos")
         # Specify the GitHub repository URL
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
         self.log_command(f"vOS update started")
@@ -541,7 +540,7 @@ class VirtualKernel:
         self.password_file.login_prompt_rich()
 
 
-    def create_process(self, program, allow_multiple=False, user=None):
+    def create_process(self, program, allow_multiple=False):
         # Check if the process is already running
         for pid, process_info in ProcessList.running_processes.items():
             if process_info['name'] == program:
@@ -550,14 +549,7 @@ class VirtualKernel:
 
         # If not running or allowing multiple instances, create a new process instance
         pid = ProcessList.get_next_pid()
-        if not user:
-            user = "Root"
-        else:
-            if user == "Kernel":
-                pass
-            else:
-                user = self.active_user
-        new_process = VirtualProcess(program, pid, user)
+        new_process = VirtualProcess(program, pid)
         return pid
 
     def schedule_processes(self):
@@ -618,12 +610,12 @@ class ProcessList:
     running_processes = {}
 
     @classmethod
-    def add_process(cls, name, pid, cache, user):
+    def add_process(cls, name, pid, cache):
         if not cls.running_processes:
             cls.next_pid = 0
         start_time = time.time()
-        cls.running_processes[pid] = {'name': name, 'cache': cache, 'start_time': {start_time}, 'user': user}
-        KernelMessage.log_process(f"name: {name}, pid: {pid},  cache: {cache}, start_time: {start_time}, user: {user}")
+        cls.running_processes[pid] = {'name': name, 'cache': cache, 'start_time': {start_time}}
+        KernelMessage.log_process(f"name: {name}, pid: {pid},  cache: {cache}, start_time: {start_time}")
 
     @classmethod
     def remove_process(cls, pid):
@@ -645,12 +637,12 @@ class ProcessList:
 
 
 class VirtualProcess:
-    def __init__(self, program, pid, user):
+    def __init__(self, program, pid):
         self.program = program
         self.pid = pid
         self.cache = 1
         KernelMessage.log_process(f"[*]Starting {program}...")
-        ProcessList.add_process(self.program, self.pid, self.cache, user)
+        ProcessList.add_process(self.program, self.pid, self.cache)
 
 
     def get_elapsed_time(self):
@@ -701,7 +693,7 @@ class VirtualProcess:
 
     @staticmethod
     def monitor_processes(self):
-        sysmon_pid = VirtualKernel.create_process(self, "sysmon", self.active_user)  # Start the sysmonitor process
+        sysmon_pid = VirtualKernel.create_process(self, "sysmon")  # Start the sysmonitor process
 
         console = Console()
 
@@ -713,11 +705,10 @@ class VirtualProcess:
                 terminal_height = console.height
 
                 table = Table(title="Process Monitor")
-                table.add_column("Process Name", justify="center")
-                table.add_column("PID", justify="center")
-                table.add_column("Cache", justify="center")
-                table.add_column("User", justify="center")
-                table.add_column("Uptime", justify="center")
+                table.add_column("Process Name", justify="left")
+                table.add_column("PID", justify="left")
+                table.add_column("Cache", justify="left")
+                table.add_column("Uptime", justify="left")
 
                 # Populate the table with process information
                 for pid, process_info in ProcessList.running_processes.items():
@@ -726,8 +717,7 @@ class VirtualProcess:
                     start_time = float(next(iter(process_info['start_time'])))
                     elapsed_time = time.time() - start_time
                     formatted_uptime = KernelMessage.format_uptime(elapsed_time)
-                    user = process_info['user']
-                    table.add_row(process_name, str(pid), str(cache), user, formatted_uptime)
+                    table.add_row(process_name, str(pid), str(cache), formatted_uptime)
 
                 # Highlight the current process
                 table.highlighted = highlighted_index
@@ -737,8 +727,8 @@ class VirtualProcess:
                 console.print(table)
 
                 # Print control instructions
-                console.print("Use arrow keys to navigate, and press Enter to select a process", justify="left")
-                console.print("Press CTRL + C to exit", justify="left")
+                console.print("Use arrow keys to navigate, and press Enter to select a process", justify="center")
+
                 # Wait for user input
                 time.sleep(1)
 
