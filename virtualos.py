@@ -171,7 +171,7 @@ class VirtualOS:
 
                 elif command.startswith("diff"):
                     _, path1, path2 = command.split(" ", 2)
-                    VCommands.diff(self.fs, self.current_directory, path1, path2)
+                    VCommands.diff(self, self.fs, self.current_directory, path1, path2)
 
                 elif command.startswith("cmp"):
                     _, path1, path2 = command.split(" ", 2)

@@ -289,6 +289,50 @@ class VirtualFileSystem:
         # Return the final item
         return current_directory
 
+    def compare_directories(self, path1, path2):
+        """
+        Compare contents of two directories recursively.
+
+        Parameters:
+            path1 (str): Path to the first directory.
+            path2 (str): Path to the second directory.
+
+        Returns:
+            dict: A dictionary containing the differences between the two directories.
+        """
+        diff = {}
+        dir1_contents = os.listdir(path1)
+        dir2_contents = os.listdir(path2)
+
+        # Files present in dir1 but not in dir2
+        diff['only_in_dir1'] = [f for f in dir1_contents if f not in dir2_contents]
+
+        # Files present in dir2 but not in dir1
+        diff['only_in_dir2'] = [f for f in dir2_contents if f not in dir1_contents]
+
+        # Common files present in both directories
+        common_files = set(dir1_contents).intersection(dir2_contents)
+        for file in common_files:
+            file_path1 = os.path.join(path1, file)
+            file_path2 = os.path.join(path2, file)
+            if os.path.isdir(file_path1) and os.path.isdir(file_path2):
+                # Recursively compare subdirectories
+                sub_diff = self.compare_directories(file_path1, file_path2)
+                if sub_diff:
+                    diff[file] = sub_diff
+            elif os.path.isfile(file_path1) and os.path.isfile(file_path2):
+                # Compare file contents
+                with open(file_path1, 'r') as f1, open(file_path2, 'r') as f2:
+                    content1 = f1.read()
+                    content2 = f2.read()
+                    if content1 != content2:
+                        diff[file] = "Files are different"
+            else:
+                # One is a file and the other is a directory
+                diff[file] = "File and directory with the same name"
+
+        return diff
+
 
     def directory_exists(self, path):
         try:
