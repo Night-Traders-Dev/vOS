@@ -433,7 +433,7 @@ class VirtualKernel:
             print(f"Error comparing checksums: {e}")
 
     def update_vos(self):
-        self.create_process("update_vos")
+        pid = self.create_process("update_vos")
         # Specify the GitHub repository URL
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
         self.log_command(f"vOS update started")
@@ -480,11 +480,11 @@ class VirtualKernel:
 
             print("vOS updated successfully!")
             self.log_command("vOS updated successfully")
-            VirtualProcess.kill_process(self, "update_vos")
+            VirtualProcess.kill_process(self, pid)
 
         except Exception as e:
             print("Failed to fetch repository contents from GitHub:", e)
-            VirtualProcess.kill_process(self, "update_vos")
+            VirtualProcess.kill_process(self, pid)
 
 
     def print_progress(self, bytes_read, total_size):
