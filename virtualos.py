@@ -169,6 +169,15 @@ class VirtualOS:
                 elif command.startswith("sysmon"):
                     self.vproc.monitor_processes(self)
 
+                elif command.startswith("diff"):
+                    _, path1, path2 = command.split(" ", 2)
+                    VCommands.diff(self.fs, self.current_directory, path1, path2)
+
+                elif command.startswith("cmp"):
+                    _, path1, path2 = command.split(" ", 2)
+                    VCommands.CMP(self.fs, self.current_directory, path1, path2)
+
+
                 elif command.startswith("qshell"):
                     _, path = command.split(" ", 1)
                     filepath = self.current_directory.get_full_path() + "/" + path
