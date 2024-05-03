@@ -487,11 +487,6 @@ class VirtualKernel:
             VirtualProcess.kill_process(self, pid)
 
 
-    def print_progress(self, bytes_read, total_size):
-        progress = bytes_read / total_size * 100
-        status = f"{progress:.2f}%"
-        print(f"Downloading vOS: {status}", end="\r")
-
 
     def move_files(self, src_dir, dest_dir):
         # Move files and directories from source directory to destination directory
@@ -499,7 +494,7 @@ class VirtualKernel:
             src_item = os.path.join(src_dir, item)
             dest_item = os.path.join(dest_dir, item)
             if os.path.isdir(src_item):
-                shutil.move(src_item1, dest_item)
+                shutil.move(src_item, dest_item)
             else:
                 shutil.copy(src_item, dest_item)
                 os.remove(src_item)
