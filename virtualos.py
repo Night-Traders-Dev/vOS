@@ -41,11 +41,11 @@ class VirtualOS:
         self.user_perms = "rwxr-xr-x"
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
-        my_directory = Directory("/")
-        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        snapshot_name = f"snapshot_{snapstamp}"
-        snapshot = my_directory.create_snapshot(snapshot_name)
-        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
+#        my_directory = Directory("/")
+#        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+#        snapshot_name = f"snapshot_{snapstamp}"
+#        snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)
+#        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
 
 
 
@@ -260,7 +260,7 @@ class VirtualOS:
                     VCommands.pwd(self.current_directory)  # Pass the current directory
 
                 elif command.startswith("snapshot"):
-                    VCommands.snapshot(self)
+                    VCommands.snapshot(self, self.fs)
 
                 elif command.startswith("touch"):
                     try:

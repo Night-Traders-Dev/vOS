@@ -17,6 +17,14 @@ class File:
     def write(self, content):
         self.content = content
 
+class DirectoryEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Directory):
+            return obj.__dict__  # Serialize directory attributes
+        elif isinstance(obj, File):
+            return obj.__dict__  # Serialize file attributes
+        return json.JSONEncoder.default(self, obj)
+
 class Directory:
     def __init__(self, name, parent=None, permissions=""):
         self.name = name
@@ -118,13 +126,24 @@ class Directory:
         
         return new_directory
 
-    def create_snapshot(self, snapshot_name):
+    def create_snapshot(self, fs, current_directory, path, snapshot_name):
         """
         Create a snapshot of the directory and its contents.
         """
-        snapshot = self.deepcopy()  # Deep copy the directory
+        snapshot = current_directory.deepcopy()  # Deep copy the current directory
         snapshot.name = snapshot_name
+
+        # Get the full path where the snapshot will be saved
+        snapshot_path = os.path.join(path, f"{snapshot_name}.json")
+
+        # Serialize the snapshot object
+        serialized_snapshot = json.dumps(snapshot, cls=DirectoryEncoder)
+
+        # Save the serialized snapshot to a file
+        fs.create_file(snapshot_path, content=serialized_snapshot, permissions="rwxr--r--")
+
         return snapshot
+
 
     def restore_snapshot(self, snapshot):
         """
