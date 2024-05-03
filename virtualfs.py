@@ -2,6 +2,7 @@ import json
 import os
 import gzip
 import sys
+import copy
 from virtualkernel import VirtualKernel
 
 class File:
@@ -82,35 +83,56 @@ class Directory:
 
         return full_path
 
-    def create_snapshot(self, directory_path, snapshot_name):
+    def deepcopy(self, copied_directories=None):
         """
-        Create a snapshot of a directory.
+        Create a deepcopy of the directory and its contents.
+        
+        Parameters:
+            copied_directories (dict): A dictionary to keep track of copied directories.
+        
+        Returns:
+            Directory: The deepcopy of the directory.
         """
-        directory = self.get_directory(directory_path)
-        if directory:
-            # Create a copy of the directory and its contents
-            snapshot = copy.deepcopy(directory)
-            snapshot.name = snapshot_name
+        if copied_directories is None:
+            copied_directories = {}
 
-            # Store the snapshot in a separate directory or data structure
-            self.snapshots[snapshot_name] = snapshot
-            return True
-        else:
-            return False
+        # Check if the directory has already been copied
+        if self in copied_directories:
+            return copied_directories[self]
 
-    def restore_snapshot(self, snapshot_name, restore_path):
+        # Create a new directory with the same name and permissions
+        new_directory = Directory(self.name, permissions=self.permissions)
+        
+        # Add the new directory to the copied directories dictionary
+        copied_directories[self] = new_directory
+        
+        # Recursively deepcopy subdirectories
+        for subdirectory_name, subdirectory in self.subdirectories.items():
+            new_subdirectory = subdirectory.deepcopy(copied_directories)
+            new_directory.add_subdirectory(new_subdirectory)
+        
+        # Copy files to the new directory
+        for file_name, file in self.files.items():
+            new_file = File(file_name, content=file.content, permissions=file.permissions)
+            new_directory.add_file(new_file)
+        
+        return new_directory
+
+    def create_snapshot(self, snapshot_name):
         """
-        Restore a directory from a snapshot.
+        Create a snapshot of the directory and its contents.
         """
-        if snapshot_name in self.snapshots:
-            # Get the snapshot and restore it to the specified path
-            snapshot = self.snapshots[snapshot_name]
-            directory_path = os.path.join(restore_path, snapshot_name)
-            self.create_directory(directory_path)
-            self.copy_directory(snapshot, directory_path)
-            return True
-        else:
-            return False
+        snapshot = self.deepcopy()  # Deep copy the directory
+        snapshot.name = snapshot_name
+        return snapshot
+
+    def restore_snapshot(self, snapshot):
+        """
+        Restore the directory from a snapshot.
+        """
+        self.subdirectories = snapshot.subdirectories
+        self.files = snapshot.files
+
 
     def copy_on_write(self, source_path, destination_path):
         """

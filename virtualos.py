@@ -3,6 +3,7 @@ import time
 import datetime
 import asyncio
 from virtualfs import VirtualFileSystem
+from virtualfs import Directory
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
 from virtualmachine import Wallet
@@ -40,6 +41,12 @@ class VirtualOS:
         self.user_perms = "rwxr-xr-x"
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
+        my_directory = Directory("/")
+        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        snapshot_name = f"snapshot_{snapstamp}"
+        snapshot = my_directory.create_snapshot(snapshot_name)
+        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
+
 
 
 
@@ -242,6 +249,9 @@ class VirtualOS:
 
                 elif command == "pwd":  # Corrected call to pwd method
                     VCommands.pwd(self.current_directory)  # Pass the current directory
+
+                elif command.startswith("snapshot"):
+                    VCommands.snapshot(self)
 
                 elif command.startswith("touch"):
                     try:

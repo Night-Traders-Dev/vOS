@@ -11,7 +11,7 @@ import json
 import shutil
 import urllib.request
 import time
-import keyboard
+#import keyboard
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 import threading
@@ -738,15 +738,15 @@ class VirtualProcess:
                 time.sleep(1)
 
                 # Handle user input
-                event = keyboard.read_event(suppress=True)
-                if event.event_type == "down":
-                    if event.name == "down":
-                        highlighted_index = min(highlighted_index + 1, len(ProcessList.running_processes) - 1)
-                    elif event.name == "up":
-                        highlighted_index = max(highlighted_index - 1, 0)
-                    elif event.name == "enter":
+ #               event = keyboard.read_event(suppress=True)
+ #               if event.event_type == "down":
+ #                   if event.name == "down":
+ #                       highlighted_index = min(highlighted_index + 1, len(ProcessList.running_processes) - 1)
+ #                   elif event.name == "up":
+ #                       highlighted_index = max(highlighted_index - 1, 0)
+ #                   elif event.name == "enter":
                         # Process selection logic goes here
-                        pass
+#                        pass
 
         except KeyboardInterrupt:
             console.print("\nExiting process monitor.")
