@@ -2,3 +2,6 @@ file_system.json
 __pycache__
 passwd
 dmesg
+src/filesystem.json
+src/dmesg
+src/passwd
