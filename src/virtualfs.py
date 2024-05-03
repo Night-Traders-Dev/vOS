@@ -413,7 +413,8 @@ class VirtualFileSystem:
 
         for file_name, file_data in provided_files.items():
             file_path = os.path.join(os.path.dirname(__file__), file_name)
-            with open(file_path, 'r') as file:
+
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
                 content = file.read()
 
             # Get the parent directory name from the file data
