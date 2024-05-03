@@ -287,6 +287,9 @@ class VirtualOS:
                     args = parts[1:-1]  # Extract arguments
                     file = parts[-1]  # Extract filename
                     self.kernel.log_command(f"Parts: {parts} Args: {args} File: {file}")
+                    if ">>" not in command and ">" not in command:
+                        file = None
+                        args = parts[1:]
                     VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
                 elif command.startswith("logout"):

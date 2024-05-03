@@ -544,21 +544,20 @@ class VCommands:
         if file:
             if ">>" in text:
                 parts = text.split(">>")
-                file_path = parts[-1].strip()
                 content = ">>".join(parts[:-1]).strip()
                 try:
-                    existing_content = fs.read_file(os.path.join(current_directory.get_full_path(), file_path))
+                    existing_content = fs.read_file(os.path.join(current_directory.get_full_path(), file))
                 except FileNotFoundError:
                     existing_content = ""
                 content = existing_content + "\n" + content
+                fs.write_file(os.path.join(current_directory.get_full_path(), file), content)
+                fs.kernel.log_command(f"Appended content to file: {file}")
             elif ">" in text:
                 parts = text.split(">")
-                file_path = parts[-1].strip()
                 content = ">".join(parts[:-1]).strip()
+                fs.create_file(os.path.join(current_directory.get_full_path(), file), content=content)
+                fs.kernel.log_command(f"Created/overwritten file: {file}")
             else:
-                file_path = file.strip()
-                content = text.strip()
-            fs.create_file(os.path.join(current_directory.get_full_path(), file), content=content)
-            fs.kernel.log_command(f"Created file: {file_path}")
+                print(text)
         else:
             print(text)

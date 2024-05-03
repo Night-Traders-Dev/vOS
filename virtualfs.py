@@ -496,6 +496,21 @@ class VirtualFileSystem:
         else:
             raise FileNotFoundError("File not found")
 
+    def write_file(self, path, content):
+        directory_path, filename = os.path.split(path)
+        parent_directory = self.find_directory(self.root, directory_path)
+    
+        # Check if the file already exists
+        if filename in parent_directory.files:
+            # Append content to the existing file
+            parent_directory.files[filename].content += content
+            self.kernel.log_command(f"Appended content to file: {os.path.join(parent_directory.get_full_path(), filename)}")
+        else:
+            # Create a new file with the given content
+            new_file = File(filename, content)
+            parent_directory.add_file(new_file)
+            self.kernel.log_command(f"Created file: {os.path.join(parent_directory.get_full_path(), filename)}")
+
     def remove_file(self, path):
         directory_path, filename = os.path.split(path)
         parent_directory = self.find_directory(self.root, directory_path)
