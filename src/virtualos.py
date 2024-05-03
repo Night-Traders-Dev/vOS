@@ -13,6 +13,7 @@ from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
 from virtualkernel import VirtualProcess
 from virtualkernel import Animations
+from virtualinput import TerminalInput
 
 class VirtualOS:
     def __init__(self):
@@ -41,6 +42,7 @@ class VirtualOS:
         self.user_perms = "rwxr-xr-x"
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
+        self.history = []
 #        my_directory = Directory("/")
 #        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 #        snapshot_name = f"snapshot_{snapstamp}"
@@ -134,6 +136,7 @@ class VirtualOS:
             try:
 
                 command = input(f"{self.current_directory.get_full_path()} $ ").strip()
+                self.history.append(command)
                 self.kernel.log_command(command)  # Log the command
                 if command == "exit" or command == "shutdown":
                     print("Shutting Down VirtualOS...")
@@ -148,6 +151,15 @@ class VirtualOS:
                         parts = command.split(" ", 1)
                         permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
                         VCommands.su(self, self.fs, self.current_directory, permissions)
+
+                elif command.startswith("history"):
+                    if not self.history:
+                        print("Command history is empty.")
+                        return
+
+                    print("Command history:")
+                    for i, command in enumerate(reversed(self.history), start=1):
+                        print(f"{i}: {command}")
 
                 elif command.startswith("reboot"):
                     confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
