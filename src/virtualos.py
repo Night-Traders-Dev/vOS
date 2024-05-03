@@ -163,7 +163,7 @@ class VirtualOS:
 
                 elif command.startswith("mkdir"):
                     _, path = command.split(" ", 1)
-                    VCommands.mkdir(self.fs, path)
+                    VCommands.mkdir(self.fs, self.current_directory, path)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
 
                 elif command.startswith("sysmon"):
@@ -213,8 +213,7 @@ class VirtualOS:
 
                 elif command.startswith("rmdir"):
                     _, path = command.split(" ", 1)
-                    VCommands.rmdir(self.fs, path)
-                    self.fs.save_file_system("file_system.json")  # Save filesystem
+                    VCommands.rmdir(self.fs, self.current_directory, path)
 
                 elif command.startswith("nano"):
                     try:
@@ -301,7 +300,6 @@ class VirtualOS:
                          self.passwordtools.add_user(self.fs, username, password)
                          path = "/home/" + username
                          VCommands.mkdir(self.fs, path)
-                         self.fs.save_file_system("file_system.json")  # Save filesystem
 
                 elif command.startswith("deluser"):
                     if self.su_check(command):

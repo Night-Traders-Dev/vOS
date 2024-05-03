@@ -276,7 +276,7 @@ class VCommands:
 
 
     @staticmethod
-    def mkdir(fs, path=None):
+    def mkdir(fs, current_directory, path=None):
         """
         mkdir: Create a directory\nUsage: mkdir [directory_path]
         If no directory path is provided, creates a directory in the current directory.
@@ -285,8 +285,9 @@ class VCommands:
             print("Error: Please specify a directory path to create.")
             return
         # Concatenate current directory and path
-        directory_path = os.path.join(fs.current_directory.get_full_path(), path) if not path.startswith('/') else path
+        directory_path = os.path.join(current_directory.get_full_path(), path) if not path.startswith('/') else path
         fs.create_directory(directory_path)
+        fs.save_file_system("file_system.json")
         fs.kernel.log_command(f"Created directory: {directory_path}")
 
     @staticmethod
@@ -355,7 +356,7 @@ class VCommands:
 
 
     @staticmethod
-    def rmdir(fs, path=None):
+    def rmdir(fs, current_directory, path=None):
         """
         rmdir: Remove a directory\nUsage: rmdir [directory_path]
         """
@@ -363,7 +364,10 @@ class VCommands:
             print("Error: Please specify a directory path to remove.")
             return
         try:
+            if not path.startswith('/'):
+                path = os.path.join(current_directory.get_full_path(), path)
             fs.remove_directory(path)
+            fs.save_file_system("file_system.json")
             fs.kernel.log_command(f"Removed directory: {path}")
         except FileNotFoundError:
             print(f"Directory '{path}' not found.")
@@ -407,6 +411,7 @@ class VCommands:
             line = Prompt.ask(">> ")
             if line == ":w":
                 fs.create_file(path, layout["editor"].renderable.content)
+                fs.save_file_system("file_system.json")
                 break
             nano_file += line + "\n"
             layout["editor"].update(Panel(nano_file))
@@ -456,6 +461,7 @@ class VCommands:
         parent_directory_path, filename = os.path.split(file_path)
         parent_directory = fs.find_directory(fs.root, parent_directory_path)
         parent_directory.add_file(File(filename))
+        fs.save_file_system("file_system.json")
         fs.kernel.log_command(f"Created file: {file_path}")
 
 
@@ -484,6 +490,7 @@ class VCommands:
             if fs.file_exists(path):
                 # Remove the file
                 fs.remove_file(path)
+                fs.save_file_system("file_system.json")
                 fs.kernel.log_command(f"Removed file: {path}")
             else:
                 print(f"Error: File '{path}' not found.")
@@ -509,6 +516,7 @@ class VCommands:
             file_content = fs.read_file(old_path)
             fs.create_file(new_path, file_content)
             fs.remove_file(old_path)
+            fs.save_file_system("file_system.json")
             fs.kernel.log_command(f"Moved file '{old_path}' to '{new_path}'")
         except FileNotFoundError:
             print(f"File '{old_path}' not found.")
@@ -533,6 +541,7 @@ class VCommands:
         try:
             file_content = fs.read_file(src_path)
             fs.create_file(dest_path, file_content)
+            fs.save_file_system("file_system.json")
             fs.kernel.log_command(f"Copied file '{src_path}' to '{dest_path}'")
         except FileNotFoundError:
             print(f"File '{src_path}' not found.")
@@ -553,11 +562,13 @@ class VCommands:
                     existing_content = ""
                 content = existing_content + "\n" + content
                 fs.write_file(os.path.join(current_directory.get_full_path(), file), content)
+                fs.save_file_system("file_system.json")
                 fs.kernel.log_command(f"Appended content to file: {file}")
             elif ">" in text:
                 parts = text.split(">")
                 content = ">".join(parts[:-1]).strip()
                 fs.create_file(os.path.join(current_directory.get_full_path(), file), content=content)
+                fs.save_file_system("file_system.json")
                 fs.kernel.log_command(f"Created/overwritten file: {file}")
             else:
                 print(text)
