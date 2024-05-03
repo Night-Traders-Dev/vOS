@@ -473,7 +473,7 @@ class VirtualKernel:
                 # Move the contents of the temporary directory to vOS directory
                 self.log_command(f"Copying update")
                 print("Copying update")
-                repo_dir = os.path.join(temp_dir, "vOS-main")
+                repo_dir = os.path.join(temp_dir, "vOS-main", "src")
                 self.move_files(repo_dir, os.getcwd())
 
                 # Clean up: Remove the temporary directory
