@@ -196,6 +196,83 @@ class VCommands:
 
 
     @staticmethod
+    def diff(fs, current_directory, path1, path2):
+        """
+        diff: Compare two files or directories\nUsage: diff [file_or_directory_path_1] [file_or_directory_path_2]
+        """
+        if not path1 or not path2:
+            print("Error: Please specify two file or directory paths to compare.")
+            return
+
+        # Concatenate current directory path with the specified paths if necessary
+        if not path1.startswith('/'):
+            path1 = os.path.join(current_directory.get_full_path(), path1)
+        if not path2.startswith('/'):
+            path2 = os.path.join(current_directory.get_full_path(), path2)
+
+        # Check if both paths exist
+        if not os.path.exists(path1) or not os.path.exists(path2):
+            print("Error: One or both paths do not exist.")
+            return
+
+        # Check if both paths are files or directories
+        is_path1_file = os.path.isfile(path1)
+        is_path2_file = os.path.isfile(path2)
+
+        if is_path1_file != is_path2_file:
+            print("Error: Cannot compare a file with a directory.")
+            return
+
+        # Perform file or directory comparison
+        if is_path1_file:
+            file1_content = fs.read_file(path1)
+            file2_content = fs.read_file(path2)
+            if file1_content == file2_content:
+                print("Files are identical.")
+            else:
+                print("Files are different.")
+        else:
+            directory_diff = fs.compare_directories(path1, path2)
+            if not directory_diff:
+                print("Directories are identical.")
+            else:
+                print("Directories are different.")
+
+    @staticmethod
+    def CMP(fs, current_directory, path1, path2):
+        """
+        CMP: Compare two files\nUsage: CMP [file_path_1] [file_path_2]
+        """
+        if not path1 or not path2:
+            print("Error: Please specify two file paths to compare.")
+            return
+
+        # Concatenate current directory path with the specified paths if necessary
+        if not path1.startswith('/'):
+            path1 = os.path.join(current_directory.get_full_path(), path1)
+        if not path2.startswith('/'):
+            path2 = os.path.join(current_directory.get_full_path(), path2)
+
+        # Check if both paths exist
+        if not os.path.exists(path1) or not os.path.exists(path2):
+            print("Error: One or both paths do not exist.")
+            return
+
+        # Check if both paths are files
+        if not os.path.isfile(path1) or not os.path.isfile(path2):
+            print("Error: Both paths must be files.")
+            return
+
+        # Perform file comparison
+        file1_content = fs.read_file(path1)
+        file2_content = fs.read_file(path2)
+        if file1_content == file2_content:
+            print("Files are identical.")
+        else:
+            print("Files are different.")
+
+
+    @staticmethod
     def mkdir(fs, path=None):
         """
         mkdir: Create a directory\nUsage: mkdir [directory_path]
