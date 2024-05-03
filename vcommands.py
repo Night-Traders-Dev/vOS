@@ -491,7 +491,7 @@ class VCommands:
             print(f"Error: File '{path}' not found.")
 
     @staticmethod
-    def mv(fs, old_path, new_path):
+    def mv(fs, current_directory, old_path, new_path):
         """
         mv: Move a file or directory\nUsage: mv [old_path] [new_path]
         """
@@ -501,12 +501,14 @@ class VCommands:
 
         # Concatenate current directory path with the specified paths
         if not old_path.startswith('/'):
-           old_path = os.path.join(fs.current_directory.get_full_path(), old_path)
+           old_path = os.path.join(current_directory.get_full_path(), old_path)
         if not new_path.startswith('/'):
-            new_path = os.path.join(fs.current_directory.get_full_path(), new_path)
+            new_path = os.path.join(current_directory.get_full_path(), new_path)
 
         try:
-            fs.rename_file(old_path, new_path)
+            file_content = fs.read_file(old_path)
+            fs.create_file(new_path, file_content)
+            fs.remove_file(old_path)
             fs.kernel.log_command(f"Moved file '{old_path}' to '{new_path}'")
         except FileNotFoundError:
             print(f"File '{old_path}' not found.")
@@ -514,7 +516,7 @@ class VCommands:
             print(f"File '{new_path}' already exists.")
 
     @staticmethod
-    def cp(fs, src_path, dest_path):
+    def cp(fs, current_directory, src_path, dest_path):
         """
         cp: Copy a file or directory\nUsage: cp [source_path] [destination_path]
         """
@@ -524,9 +526,9 @@ class VCommands:
 
         # Concatenate current directory path with the specified paths
         if not src_path.startswith('/'):
-            src_path = os.path.join(fs.current_directory.get_full_path(), src_path)
+            src_path = os.path.join(current_directory.get_full_path(), src_path)
         if not dest_path.startswith('/'):
-            dest_path = os.path.join(fs.current_directory.get_full_path(), dest_path)
+            dest_path = os.path.join(current_directory.get_full_path(), dest_path)
 
         try:
             file_content = fs.read_file(src_path)

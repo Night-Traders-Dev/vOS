@@ -276,11 +276,11 @@ class VirtualOS:
 
                 elif command.startswith("mv"):
                     _, old_path, new_path = command.split(" ", 2)
-                    VCommands.mv(self.fs, old_path, new_path)
+                    VCommands.mv(self.fs, self.current_directory, old_path, new_path)
 
                 elif command.startswith("cp"):
                     _, src_path, dest_path = command.split(" ", 2)
-                    VCommands.cp(self.fs, src_path, dest_path)
+                    VCommands.cp(self.fs, self.current_directory, src_path, dest_path)
 
                 elif command.startswith("echo"):
                     parts = command.split(" ")
