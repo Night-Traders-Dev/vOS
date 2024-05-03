@@ -283,8 +283,11 @@ class VirtualOS:
                     VCommands.cp(self.fs, src_path, dest_path)
 
                 elif command.startswith("echo"):
-                    _, *args = command.split(" ")
-                    VCommands.echo(*args)
+                    parts = command.split(" ")
+                    args = parts[1:-1]  # Extract arguments
+                    file = parts[-1]  # Extract filename
+                    self.kernel.log_command(f"Parts: {parts} Args: {args} File: {file}")
+                    VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
                 elif command.startswith("logout"):
                     self.passwordtools.logout()

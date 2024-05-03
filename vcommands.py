@@ -536,9 +536,29 @@ class VCommands:
             print(f"File '{src_path}' not found.")
 
 
+
     @staticmethod
-    def echo(*args):
-        """
-        echo: Display arguments\nUsage: echo [arguments...]
-        """
-        print(" ".join(args))
+    def echo(fs, current_directory, *args, file=None):
+        fs.kernel.log_command(f"{args} {file}")
+        text = " ".join(args)
+        if file:
+            if ">>" in text:
+                parts = text.split(">>")
+                file_path = parts[-1].strip()
+                content = ">>".join(parts[:-1]).strip()
+                try:
+                    existing_content = fs.read_file(os.path.join(current_directory.get_full_path(), file_path))
+                except FileNotFoundError:
+                    existing_content = ""
+                content = existing_content + "\n" + content
+            elif ">" in text:
+                parts = text.split(">")
+                file_path = parts[-1].strip()
+                content = ">".join(parts[:-1]).strip()
+            else:
+                file_path = file.strip()
+                content = text.strip()
+            fs.create_file(os.path.join(current_directory.get_full_path(), file), content=content)
+            fs.kernel.log_command(f"Created file: {file_path}")
+        else:
+            print(text)
