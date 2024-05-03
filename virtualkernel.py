@@ -129,8 +129,8 @@ class PasswordFile:
         self.file_path = file_path
         self.dmesg_file = "dmesg"
         self.active_user = None
-        self.clock_thread = threading.Thread(target=self.update_clock, daemon=True)  # Create a daemon thread for the clock
-        self.clock_thread.start()  # Start the clock thread
+#        self.clock_thread = threading.Thread(target=self.update_clock, daemon=True)  # Create a daemon thread for the clock
+#        self.clock_thread.start()  # Start the clock thread
 
     def update_clock(self):
         while True:
