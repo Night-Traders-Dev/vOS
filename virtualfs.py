@@ -133,6 +133,17 @@ class Directory:
         self.subdirectories = snapshot.subdirectories
         self.files = snapshot.files
 
+    def save_snapshot_to_json(snapshot, filename):
+        """
+        Save a snapshot to a JSON file.
+
+        Parameters:
+            snapshot (Directory): The snapshot to save.
+            filename (str): The filename to save the snapshot to.
+        """
+        with open(filename, 'w') as file:
+            json.dump(snapshot, file, default=lambda o: o.__dict__, indent=4)
+
 
     def copy_on_write(self, source_path, destination_path):
         """
