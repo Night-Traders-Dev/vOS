@@ -11,7 +11,6 @@ import json
 import shutil
 import urllib.request
 import time
-#import keyboard
 from zipfile import ZipFile, is_zipfile
 from io import BytesIO
 import threading
@@ -322,6 +321,8 @@ class Animations:
                 time.sleep(0.1)
 
         console.print("[green]Shutdown complete. Goodbye!")
+
+
 class KernelMessage:
     dmesg_file = "dmesg"
 
@@ -550,13 +551,13 @@ class VirtualKernel:
 
         # If not running or allowing multiple instances, create a new process instance
         pid = ProcessList.get_next_pid()
-        if not user:
+        if user == None:
             user = "Root"
         else:
             if user == "Kernel":
                 pass
             else:
-                user = self.active_user
+                user = self.password_file.online_user()
         new_process = VirtualProcess(program, pid, user)
         return pid
 
@@ -701,7 +702,7 @@ class VirtualProcess:
 
     @staticmethod
     def monitor_processes(self):
-        sysmon_pid = VirtualKernel.create_process(self, "sysmon", self.active_user)  # Start the sysmonitor process
+        sysmon_pid = VirtualKernel.create_process(self, "sysmon", self.active_user)
 
         console = Console()
 
