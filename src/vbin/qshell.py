@@ -23,7 +23,7 @@ class QShell:
     def execute_command(self, command):
         try:
             # Dynamically import the module from the vbin directory
-            module = importlib.import_module(f"vbin.{command}")
+            module = importlib.import_module(command)
             # Get the function from the module
             function = getattr(module, command)
             # Call the function
