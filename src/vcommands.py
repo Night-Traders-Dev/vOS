@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 from rich import print
-from bin import *
+from vbin import *
 
 
 
