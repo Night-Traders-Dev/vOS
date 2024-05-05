@@ -26,6 +26,7 @@ def initialize_system():
     animations_instance = Animations()
     vproc_instance = VirtualProcess("kernel", 0, "Kernel")
     passwordtools_instance = PasswordFile("passwd")
+    qshell_instance = QShellInterpreter()
 
     return fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance
 
@@ -48,6 +49,8 @@ def passwordtools_instance_sys():
 def establish_directory(dir):
     return Directory(dir)
 
+def qshell_instance_sys():
+    return qshell_instance
 
 
 

@@ -227,7 +227,7 @@ class PasswordFile:
             return False
         VirtualKernel.log_command(self, f"auth: {user[1]} and {user_account.password}")
         if user[1] == user_account.password:
-            VirtualKernel.create_process(self, "qShell", True, user[0])
+            pid = VirtualKernel.create_process(self, "qShell", True, "qShell_Instance")
             self.active_user = user[0]
             return True
         else:
@@ -545,7 +545,7 @@ class VirtualKernel:
 
 
     def create_process(self, program, allow_multiple=False, user=None):
-        KernelMessage.log_process(f"Initialize {program} {allow_multiple} {user}")
+        KernelMessage.log_process(f"Initialize {program} Allow_Multiple: {allow_multiple} User: {user}")
         # Check if the process is already running
         for pid, process_info in ProcessList.running_processes.items():
             if process_info['name'] == program:

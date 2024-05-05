@@ -5,11 +5,9 @@ import asyncio
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
 from virtualmachine import Wallet
-from virtualkernel import UserAccount
-from virtualkernel import QShellInterpreter
 from vapi import initialize_system
 from vapi import establish_directory
-
+from vapi import qshell_instance_sys
 
 class VirtualOS:
     def __init__(self):
@@ -17,7 +15,7 @@ class VirtualOS:
         self.kernel = kernel_instance
         self.animations = animations_instance
         self.wallet = Wallet("P3:b6c375b7be", "100000")
-        self.qshell = QShellInterpreter()
+        self.qshell = qshell_instance_sys
         self.fs = fs_instance
         self.passwordtools_instance = passwordtools_instance
         self.vproc_instance = vproc_instance
