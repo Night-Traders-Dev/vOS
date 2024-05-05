@@ -294,6 +294,7 @@ class VirtualFileSystem:
         self.kernel.log_command(f"Setting Default Directory: {self.current_directory.get_full_path()}")
         self.kernel.log_command("Loading OS and Placing OS files...")
         self.add_os_filesystem(self.filesystem_data)
+        self.add_bin_files()
         self.users = {}
 
 
@@ -450,11 +451,12 @@ class VirtualFileSystem:
         # Add provided files to their relevant locations
         provided_files = {
             "vcommands.py": {"name": "bin/vcommands.py"},  # Place vcommands.py in /bin
-            "virtualkernel.py": {"name": "boot/virtualkernel.py"},  # Place virtualkernel.py in /boot
-            "virtualos.py": {"name": "boot/virtualos.py"},  # Place virtualos.py in /boot
-            "virtualfs.py": {"name": "boot/virtualfs.py"},  # Place virtualfs.py in /boot
-            "virtualmachine.py": {"name": "sbin/virtualmachine.py"},  # Place virtualmachine.py in /sbin
-            "checksums.txt": {"name": "etc/checksum"}
+            "virtualkernel.py": {"name": "boot/virtualkernel"},  # Place virtualkernel.py in /boot
+            "virtualos.py": {"name": "boot/virtualos"},  # Place virtualos.py in /boot
+            "virtualfs.py": {"name": "boot/virtualfs"},  # Place virtualfs.py in /boot
+            "virtualmachine.py": {"name": "sbin/virtualmachine"},  # Place virtualmachine.py in /sbin
+            "checksums.txt": {"name": "etc/checksum"},
+            "vapi.py": {"name": "dev/vapi"}
         }
 
         for file_name, file_data in provided_files.items():
@@ -474,6 +476,26 @@ class VirtualFileSystem:
 
             # Add the file to the parent directory with the base file name
             parent_directory.add_file(File(base_file_name, content))
+
+    def add_bin_files(self):
+        vbin_directory = os.path.join(os.path.dirname(__file__), "vbin")
+
+        # Iterate over every file in the vbin directory
+        for filename in os.listdir(vbin_directory):
+            if filename.endswith(".py"):  # Check if the file is a Python file
+                file_path = os.path.join(vbin_directory, filename)
+
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+                    content = file.read()
+
+                # Get the parent directory corresponding to the target directory
+                parent_directory = self.find_directory(self.root, "bin")
+
+                # Add the file to the parent directory
+                # Remove the .py extension from the filename when adding to the filesystem
+                file_name_without_extension = os.path.splitext(filename)[0]
+                parent_directory.add_file(File(file_name_without_extension, content))
+
 
 
     def file_exists(self, path):
