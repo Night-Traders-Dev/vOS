@@ -1,3 +1,4 @@
+
 import signal
 import sys
 import os
@@ -91,6 +92,7 @@ class UserAccount:
         self.gid = gid
         self.home_dir = home_dir
         self.shell = "/bin/qshell"
+
 
 
     def encrypt_password(self, password):
@@ -225,7 +227,8 @@ class PasswordFile:
             return False
         VirtualKernel.log_command(self, f"auth: {user[1]} and {user_account.password}")
         if user[1] == user_account.password:
-            VirtualKernel.create_process(self, "qShell", True)
+            VirtualKernel.create_process(self, "qShell", True, user[0])
+            self.active_user = user[0]
             return True
         else:
             return False
@@ -250,7 +253,6 @@ class PasswordFile:
             if self.authenticate(username, password):
                 console.clear()
                 console.print("[bold green]Login successful![/bold green]")
-                self.active_user = username
                 time.sleep(1)  # Wait for 1 second before clearing the screen
             else:
                 console.print("[bold red]Invalid username or password. Please try again.[/bold red]")
@@ -435,7 +437,7 @@ class VirtualKernel:
             print(f"Error comparing checksums: {e}")
 
     def update_vos(self):
-        pid = self.create_process("update_vos", self.active_user)
+        pid = self.create_process("update_vos", False, self.active_user)
         # Specify the GitHub repository URL
         repo_url = "https://github.com/Night-Traders-Dev/vOS/archive/main.zip"
         self.log_command(f"vOS update started")
@@ -543,6 +545,7 @@ class VirtualKernel:
 
 
     def create_process(self, program, allow_multiple=False, user=None):
+        KernelMessage.log_process(f"Initialize {program} {allow_multiple} {user}")
         # Check if the process is already running
         for pid, process_info in ProcessList.running_processes.items():
             if process_info['name'] == program:
@@ -554,10 +557,7 @@ class VirtualKernel:
         if user == None:
             user = "Root"
         else:
-            if user == "Kernel":
-                pass
-            else:
-                user = self.password_file.online_user()
+            user = PasswordFile.online_user(self)
         new_process = VirtualProcess(program, pid, user)
         return pid
 
@@ -650,7 +650,7 @@ class VirtualProcess:
         self.program = program
         self.pid = pid
         self.cache = 1
-        KernelMessage.log_process(f"[*]Starting {program}...")
+        KernelMessage.log_process(f"[*]{user} starting {program}...")
         ProcessList.add_process(self.program, self.pid, self.cache, user)
 
 
@@ -702,7 +702,7 @@ class VirtualProcess:
 
     @staticmethod
     def monitor_processes(self):
-        sysmon_pid = VirtualKernel.create_process(self, "sysmon", self.active_user)
+        sysmon_pid = VirtualKernel.create_process(self, "sysmon", True, self.active_user)
 
         console = Console()
 

@@ -117,7 +117,7 @@ class VCommands:
         su: Temporarily elevate privileges for all commands\nUsage: su [permissions]
         """
         try:
-            pid = fs.kernel.create_process("su")
+            pid = fs.kernel.create_process("su", False, fs.kernel.active_user)
             # Store the original permissions
             original_permissions = current_directory.permissions
 
