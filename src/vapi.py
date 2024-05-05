@@ -30,11 +30,6 @@ def initialize_system():
     return fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance
 
 
-def user_instance(user, username, password):
-    user_account = UserAccount(username, password, user[2], user[3], user[4], user[5])
-    UserConfig.user = username
-    return user_account
-
 def fs_instance_sys():
     return fs_instance
 
