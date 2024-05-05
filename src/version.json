@@ -2,6 +2,6 @@
   "VirtualOS": "V0.1.8",
   "VirtualFS": "V0.1.5",
   "VirtualKernel": "V0.2.35",
-  "vapi": "V0.0.1",
+  "VirtualAPI": "V0.0.1",
   "VirtualMachine": "V0.0.2"
 }
