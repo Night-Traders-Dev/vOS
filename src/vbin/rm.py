@@ -1,15 +1,7 @@
 import os
-from virtualfs import File
-from virtualfs import Directory
-from virtualfs import VirtualFileSystem
-from virtualkernel import VirtualKernel
-from virtualkernel import VirtualProcess
 
 class VCommands:
     def __init__(self):
-        self.kernel = VirtualKernel()
-        self.vproc = VirtualProcess("vprocd", 1)
-
 
     @staticmethod
     def rm(fs, current_directory, path=None):
@@ -27,13 +19,15 @@ class VCommands:
             return
 
         # Concatenate current directory path with the specified path
-        if not path.startswith('/'):                                                                      path = os.path.join(current_directory.get_full_path(), path)
-                                                                                                      try:
-            # Check if the file exists                                                                    if fs.file_exists(path):
-                # Remove the file
-                fs.remove_file(path)
-                fs.save_file_system("file_system.json")
-                fs.kernel.log_command(f"Removed file: {path}")
-            else:                                                                                             print(f"Error: File '{path}' not found.")
-        except FileNotFoundError:
-            print(f"Error: File '{path}' not found.")
+        if not path.startswith('/'):
+            path = os.path.join(current_directory.get_full_path(), path)
+            try:
+                if fs.file_exists(path):
+                    # Remove the file
+                    fs.remove_file(path)
+                    fs.save_file_system("file_system.json")
+                    fs.kernel.log_command(f"Removed file: {path}")
+                else:
+                    print(f"Error: File '{path}' not found.")
+            except FileNotFoundError:
+                print(f"Error: File '{path}' not found.")
