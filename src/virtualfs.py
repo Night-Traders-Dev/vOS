@@ -126,6 +126,30 @@ class Directory:
         
         return new_directory
 
+    def to_dict(self):
+        """
+        Convert the Directory object to a dictionary.
+        """
+        directory_dict = {
+            'name': self.name,
+            'permissions': self.permissions,
+            'subdirectories': {name: subdir.to_dict() for name, subdir in self.subdirectories.items()},
+            'files': {name: {'content': file.content, 'permissions': file.permissions} for name, file in self.files.items()}
+        }
+        return directory_dict
+
+    @classmethod
+    def from_dict(cls, directory_dict):
+        """
+        Create a Directory object from a dictionary.
+        """
+        directory = cls(directory_dict['name'], permissions=directory_dict['permissions'])
+        directory.subdirectories = {name: cls.from_dict(subdir_dict) for name, subdir_dict in directory_dict['subdirectories'].items()}
+        directory.files = {name: File(name, content=file_dict['content'], permissions=file_dict['permissions']) for name, file_dict in directory_dict['files'].items()}
+        return directory
+
+
+
     def create_snapshot(self, fs, current_directory, path, snapshot_name):
         """
         Create a snapshot of the directory and its contents.
@@ -133,24 +157,39 @@ class Directory:
         snapshot = current_directory.deepcopy()  # Deep copy the current directory
         snapshot.name = snapshot_name
 
+       # Convert the snapshot object to a dictionary
+        snapshot_dict = snapshot.to_dict()
+
+
         # Get the full path where the snapshot will be saved
         snapshot_path = os.path.join(path, f"{snapshot_name}.json")
 
-        # Serialize the snapshot object
-        serialized_snapshot = json.dumps(snapshot, cls=DirectoryEncoder)
+        # Serialize the snapshot dictionary to JSON
+        snapshot_json = json.dumps(snapshot_dict)
 
         # Save the serialized snapshot to a file
-        fs.create_file(snapshot_path, content=serialized_snapshot, permissions="rwxr--r--")
+        fs.create_file(snapshot_path, content=snapshot_json, permissions="rwxr--r--")
 
         return snapshot
 
 
-    def restore_snapshot(self, snapshot):
+    def restore_snapshot(self, fs, snapshot_path):
         """
-        Restore the directory from a snapshot.
+        Restore the directory from a snapshot file.
         """
+        # Read the snapshot file content
+        snapshot_json = fs.read_file(snapshot_path)
+
+        # Deserialize the JSON to a dictionary
+        snapshot_dict = json.loads(snapshot_json)
+
+        # Create a Directory object from the dictionary
+        snapshot = Directory.from_dict(snapshot_dict)
+
+        # Restore the directory from the snapshot
         self.subdirectories = snapshot.subdirectories
         self.files = snapshot.files
+
 
     def save_snapshot_to_json(snapshot, filename):
         """
@@ -162,7 +201,6 @@ class Directory:
         """
         with open(filename, 'w') as file:
             json.dump(snapshot, file, default=lambda o: o.__dict__, indent=4)
-
 
     def copy_on_write(self, source_path, destination_path):
         """

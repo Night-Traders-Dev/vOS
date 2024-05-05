@@ -239,7 +239,7 @@ class PasswordFile:
 
             # Display vOS with flair
             console.print("[bold magenta]╔══════════════════════════╗")
-            console.print("[bold magenta]║        [green]vOS[/green]        ║")
+            console.print("[bold magenta]║        [green]vOS[/green]║")
             console.print("[bold magenta]╚══════════════════════════╝")
 
             # Get username and password

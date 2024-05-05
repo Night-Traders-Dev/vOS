@@ -44,11 +44,11 @@ class VirtualOS:
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
         self.history = []
         self.kernel.log_command(f"{self.active_user} logged in.")
-#        my_directory = Directory("/")
-#        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-#        snapshot_name = f"snapshot_{snapstamp}"
-#        snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)
-#        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
+        my_directory = Directory("/")
+        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        snapshot_name = f"snapshot_{snapstamp}"
+        snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)
+        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
 
 
 
