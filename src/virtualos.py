@@ -2,13 +2,13 @@ import sys
 import time
 import datetime
 import asyncio
-from virtualfs import Directory
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
 from virtualmachine import Wallet
 from virtualkernel import UserAccount
 from virtualkernel import QShellInterpreter
 from vapi import initialize_system
+from vapi import establish_directory
 
 
 class VirtualOS:
@@ -41,7 +41,7 @@ class VirtualOS:
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
         self.history = []
         self.kernel.log_command(f"{self.active_user} logged in.")
-        my_directory = Directory("/")
+        my_directory = establish_directory("/")
         snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         snapshot_name = f"snapshot_{snapstamp}"
         snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)

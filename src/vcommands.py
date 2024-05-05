@@ -144,7 +144,7 @@ class VCommands:
                     elif command == "reset_fs":
                         self.fs.reset_filesystem()
                     elif command == "sysmon":
-                        self.vproc.monitor_processes(self)
+                        self.vproc_instance.monitor_processes(self)
                     elif command.startswith("reboot"):
                         confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
                         if confirmation == "yes":
@@ -168,7 +168,7 @@ class VCommands:
             # Restore the original permissions
             current_directory.permissions = original_permissions
             fs.permissions = original_permissions
-            self.vproc.kill_process(self, pid)
+            self.vproc_instance.kill_process(self, pid)
 
 
 

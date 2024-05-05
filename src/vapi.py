@@ -29,6 +29,30 @@ def initialize_system():
     return fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance
 
 
+
+def fs_instance_sys():
+    return fs_instance
+
+def kernel_instance_sys():
+    return kernel_instance
+
+def animations_instance_sys():
+    return animations_instance
+
+def vproc_instance_sys():
+    return vproc_instance
+
+def passwordtools_instance_sys():
+    return passwordtools_instance
+
+def establish_directory(dir):
+    return Directory(dir)
+
+
+
+
+
+
 # Import the api to gain access to vOS components
 #
 #from vapi import initialize_system
