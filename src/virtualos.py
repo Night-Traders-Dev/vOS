@@ -2,27 +2,25 @@ import sys
 import time
 import datetime
 import asyncio
-from virtualfs import VirtualFileSystem
 from virtualfs import Directory
 from vcommands import VCommands
 from virtualmachine import VirtualMachine
 from virtualmachine import Wallet
-from virtualkernel import VirtualKernel
 from virtualkernel import UserAccount
-from virtualkernel import PasswordFile
 from virtualkernel import QShellInterpreter
-from virtualkernel import VirtualProcess
-from virtualkernel import Animations
-from virtualinput import TerminalInput
+from vapi import initialize_system
+
 
 class VirtualOS:
     def __init__(self):
-        self.kernel = VirtualKernel()
-        self.animations = Animations()
+        fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
+        self.kernel = kernel_instance
+        self.animations = animations_instance
         self.wallet = Wallet("P3:b6c375b7be", "100000")
-        self.vproc = VirtualProcess("Kernel", 0, "Kernel")
-        self.passwordtools = PasswordFile("passwd")
         self.qshell = QShellInterpreter()
+        self.fs = fs_instance
+        self.passwordtools_instance = passwordtools_instance
+        self.vproc_instance = vproc_instance
         self.kernel.log_command("Kernel Loaded...")
         self.kernel.get_checksum_file()
         self.kernel.compare_checksums()
@@ -32,12 +30,11 @@ class VirtualOS:
         self.kernel.print_component_versions(False)
         self.kernel.log_command(f"Python Version: {sys.version}")
         self.kernel.log_command("Initializing VirtualFileSystem...")
-        self.fs = VirtualFileSystem()  # Initialize the filesystem
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
-        self.animations.boot_animation_rich()
-        self.passwordtools.check_passwd_file(self.fs)
-        self.active_user = self.passwordtools.online_user()
+        animations_instance.boot_animation_rich()
+        passwordtools_instance.check_passwd_file(self.fs)
+        self.active_user = passwordtools_instance.online_user()
         self.user_dir = "/home/" + self.active_user
         self.user_perms = "rwxr-xr-x"
         self.su = False
@@ -141,13 +138,13 @@ class VirtualOS:
                 self.kernel.log_command(command)  # Log the command
                 if command == "exit" or command == "shutdown":
                     print("Shutting Down VirtualOS...")
-                    self.vproc.shutdown_vproc(self)
+                    self.vproc_instance.shutdown_vproc(self)
                     self.fs.save_file_system("file_system.json")  # Save filesystem
                     self.kernel.delete_dmesg()  # Delete dmesg file on exit
                     self.animations.shutdown_animation()
                     break
                 elif command.startswith("su"):
-                    auth = self.passwordtools.su_prompt()
+                    auth = self.passwordtools_instance.su_prompt()
                     if auth:
                         parts = command.split(" ", 1)
                         permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
@@ -180,7 +177,7 @@ class VirtualOS:
                     self.fs.save_file_system("file_system.json")  # Save filesystem
 
                 elif command.startswith("sysmon"):
-                    self.vproc.monitor_processes(self)
+                    self.vproc_instance.monitor_processes(self)
 
                 elif command.startswith("diff"):
                     _, path1, path2 = command.split(" ", 2)
@@ -305,28 +302,28 @@ class VirtualOS:
                     VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
                 elif command.startswith("logout"):
-                    self.passwordtools.logout()
+                    self.passwordtools_instance.logout()
 
                 elif command.startswith("adduser"):
                     if self.su_check(command):
                          _, username, password = command.split(" ", 2)
-                         self.passwordtools.add_user(self.fs, username, password)
+                         passwordtools_instance.add_user(self.fs, username, password)
                          path = "/home/" + username
                          VCommands.mkdir(self.fs, path)
 
                 elif command.startswith("deluser"):
                     if self.su_check(command):
                          _, username = command.split(" ", 1)
-                         self.passwordtools.delete_user(self.fs, username)
+                         passwordtools_instance.delete_user(self.fs, username)
 
                 elif command.startswith("updateuser"):
                     if self.su_check(command):
                         _, username, new_password = command.split(" ", 2)
-                        self.passwdtools.update_user(self.fs, username, new_password)
+                        passwdtools_instance.update_user(self.fs, username, new_password)
 
                 elif command.startswith("readuser"):
                     _, username = command.split(" ", 1)
-                    self.passwdtools.read_user(self.fs, username)
+                    passwdtools_instance.read_user(self.fs, username)
 
                 elif command.startswith("wallet"):
                     print("This command is not setup")
@@ -353,7 +350,7 @@ class VirtualOS:
                     self.kernel.log_command(f"[!] Command '{command}' not found.")
             except KeyboardInterrupt:
                 print("Shutting Down VirtualOS...")
-                self.vproc.shutdown_vproc(self)
+                self.vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
                 sys.exit(0)

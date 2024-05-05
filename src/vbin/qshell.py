@@ -25,7 +25,9 @@ class QShell:
             # Dynamically import the module from the vbin directory
             module = importlib.import_module(command)
             # Get the function from the module
-            function = getattr(module, command)
+            command_class = getattr(module, command)
+            class_instance = command_class()
+            function = getattr(class_instance, command)
             # Call the function
             function()
         except Exception as e:
