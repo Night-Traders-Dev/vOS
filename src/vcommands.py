@@ -140,6 +140,8 @@ class VCommands:
                         uptime = self.kernel.get_uptime()
                         print(f"vOS uptime: {uptime}")
                     elif command == "update":
+                        print("Updates currently disabled in vOS\nExit vOS and use git pull to update")
+                        return
                         self.kernel.update_vos()
                     elif command == "reset_fs":
                         self.fs.reset_filesystem()
