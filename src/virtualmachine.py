@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import secrets
+import base64
 import time
 import sys
 from rich.console import Console
@@ -97,6 +98,7 @@ class AddressTools:
         return seed_phrase
 
     def generate_crypto_address(self, seed_phrase):
+
         # Derive seed bytes from seed phrase
         seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), b'Bitcoin seed', 2048)
 
@@ -114,16 +116,13 @@ class AddressTools:
 
         return f"P3:{address}"
 
+    def generate_hash(self, data):
+        # Use SHA-256 hashing algorithm for password encryption
+        hashed_data = hashlib.sha256(data.encode()).digest()
+        # Encode the hashed password using base64 for storage
+        return base64.b64encode(hashed_data).decode()
 
 
-#    def generate_crypto_address(user_id):
-    # Concatenate a prefix (for simulation purposes) with the user ID
-#    data = f"P3:{user_id}:{time.time()}"
-
-    # Use a hash function (SHA-256) to generate a pseudo crypto address
-#    hashed_data = hashlib.sha256(data.encode()).hexdigest()[:10]
-
-#    return f"P3:{hashed_data}"
 
 class Wallet:
     def __init__(self, P3Address, QSE_balance):

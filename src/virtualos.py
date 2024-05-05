@@ -154,7 +154,10 @@ class VirtualOS:
                     self.wordlist = self.addrtools.grab_wordlist(self)
                     self.seed = self.addrtools.generate_seed_phrase(self, self.wordlist)
                     self.addr = self.addrtools.generate_crypto_address(self, self.seed)
+#                    self.seed_hash = self.addrtools.generate_hash(self, self.seed)
+#                    self.addr_hash = self.addrtools.generate_hash(self, self.addr)
                     print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}")
+#\nP3:Address Hash {self.addr_hash}\n Seed Hash: {self.seed_hash}")
 
                 elif command.startswith("history"):
                     if not self.history:
