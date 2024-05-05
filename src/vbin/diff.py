@@ -1,7 +1,8 @@
 import os
 
-class VCommands:
+class diff:
     def __init__(self):
+        self.app_name = "diff"
 
     @staticmethod
     def diff(self, fs, current_directory, path1, path2):

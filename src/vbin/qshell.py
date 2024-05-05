@@ -10,11 +10,11 @@ class QShell:
     def run(self):
         self.console.print("[bold cyan]Welcome to qShell![/bold cyan]")
         while True:
-            command = Prompt.ask("[bold green]qShell[/bold green] > ")
+            command = Prompt.ask("[bold green]qShell[/bold green] $ ")
             if command.lower() == "exit":
                 self.console.print("[bold cyan]Exiting qShell...[/bold cyan]")
                 break
-            elif is_command_in_vbin(command):
+            elif self.is_command_in_vbin(command):
                 # Execute command from vbin directory
                 self.execute_command(command)
             else:
@@ -22,14 +22,16 @@ class QShell:
 
     def execute_command(self, command):
         try:
+            # Dynamically import the module from the vbin directory
             module = importlib.import_module(f"vbin.{command}")
+            # Get the function from the module
             function = getattr(module, command)
+            # Call the function
             function()
         except Exception as e:
             self.console.print(f"[bold red]Error executing command '{command}': {e}[/bold red]")
 
-
-    def is_command_in_vbin(command_name):
+    def is_command_in_vbin(self, command_name):
         """
         Check if a command exists in the vbin directory.
 
@@ -39,13 +41,15 @@ class QShell:
         Returns:
             bool: True if the command exists in vbin, False otherwise.
         """
-        vbin_path = os.path.join(os.path.dirname(__file__), 'vbin')
+        # Get the path to the vbin directory
+        current_directory = os.path.dirname(__file__)
+        # Construct the path to the command file
         command_file = f"{command_name}.py"
-        command_path = os.path.join(vbin_path, command_file)
+        command_path = os.path.join(current_directory, command_file)
+        # Check if the file exists
         return os.path.isfile(command_path)
 
 # Main function
 if __name__ == "__main__":
     qshell = QShell()
     qshell.run()
-

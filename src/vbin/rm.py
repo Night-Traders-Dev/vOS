@@ -1,7 +1,8 @@
 import os
 
-class VCommands:
+class rm:
     def __init__(self):
+        self.app_name = "rm"
 
     @staticmethod
     def rm(fs, current_directory, path=None):
