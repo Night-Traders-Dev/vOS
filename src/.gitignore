@@ -5,3 +5,5 @@ dmesg
 src/filesystem.json
 src/dmesg
 src/passwd
+Hard-Snap/*
+src/Hard-Snap/*

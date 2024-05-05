@@ -91,18 +91,21 @@ class Directory:
 
         return full_path
 
-    def deepcopy(self, copied_directories=None):
+    def deepcopy(self, copied_directories=None, skip_directories=None):
         """
         Create a deepcopy of the directory and its contents.
-        
+
         Parameters:
             copied_directories (dict): A dictionary to keep track of copied directories.
-        
+            skip_directories (list): A list of directory names to skip during deepcopy.
+
         Returns:
             Directory: The deepcopy of the directory.
         """
         if copied_directories is None:
             copied_directories = {}
+        if skip_directories is None:
+            skip_directories = []
 
         # Check if the directory has already been copied
         if self in copied_directories:
@@ -110,20 +113,21 @@ class Directory:
 
         # Create a new directory with the same name and permissions
         new_directory = Directory(self.name, permissions=self.permissions)
-        
+
         # Add the new directory to the copied directories dictionary
         copied_directories[self] = new_directory
-        
+
         # Recursively deepcopy subdirectories
         for subdirectory_name, subdirectory in self.subdirectories.items():
-            new_subdirectory = subdirectory.deepcopy(copied_directories)
-            new_directory.add_subdirectory(new_subdirectory)
-        
+            if subdirectory_name not in skip_directories:
+                new_subdirectory = subdirectory.deepcopy(copied_directories, skip_directories)
+                new_directory.add_subdirectory(new_subdirectory)
+
         # Copy files to the new directory
         for file_name, file in self.files.items():
             new_file = File(file_name, content=file.content, permissions=file.permissions)
             new_directory.add_file(new_file)
-        
+
         return new_directory
 
     def to_dict(self):
@@ -154,7 +158,11 @@ class Directory:
         """
         Create a snapshot of the directory and its contents.
         """
-        snapshot = current_directory.deepcopy()  # Deep copy the current directory
+        # Define the list of directories to skip
+        skip_directories = ["/usr"]
+
+        # Create the snapshot while skipping the /usr directory
+        snapshot = current_directory.deepcopy(skip_directories=skip_directories)
         snapshot.name = snapshot_name
 
        # Convert the snapshot object to a dictionary
