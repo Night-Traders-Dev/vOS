@@ -3,6 +3,7 @@ import os
 class rm:
     def __init__(self):
         self.app_name = "rm"
+        self.app_args = ["fs_instance", "current_directory", "path=None"]
 
     @staticmethod
     def rm(fs, current_directory, path=None):

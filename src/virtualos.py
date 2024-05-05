@@ -8,6 +8,7 @@ from virtualmachine import Wallet
 from vapi import initialize_system
 from vapi import establish_directory
 from vapi import qshell_instance_sys
+from vapi import vm_addresstools_instance
 
 class VirtualOS:
     def __init__(self):
@@ -15,6 +16,7 @@ class VirtualOS:
         self.kernel = kernel_instance
         self.animations = animations_instance
         self.wallet = Wallet("P3:b6c375b7be", "100000")
+        self.addrtools = vm_addresstools_instance()
         self.qshell = qshell_instance_sys
         self.fs = fs_instance
         self.passwordtools_instance = passwordtools_instance
@@ -147,6 +149,12 @@ class VirtualOS:
                         parts = command.split(" ", 1)
                         permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
                         VCommands.su(self, self.fs, self.current_directory, permissions)
+
+                elif command.startswith("new_addr"):
+                    self.wordlist = self.addrtools.grab_wordlist(self)
+                    self.seed = self.addrtools.generate_seed_phrase(self, self.wordlist)
+                    self.addr = self.addrtools.generate_crypto_address(self, self.seed)
+                    print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}")
 
                 elif command.startswith("history"):
                     if not self.history:

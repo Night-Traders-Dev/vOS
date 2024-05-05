@@ -1,6 +1,8 @@
 # virtualmachine.py
 
 import hashlib
+import hmac
+import secrets
 import time
 import sys
 from rich.console import Console
@@ -77,6 +79,51 @@ class Blockchain:
                     balance += transaction.amount
         return balance
 
+
+class AddressTools:
+    def __init__(self):
+        self.p3address = None
+        self.worlist = None
+
+    def grab_wordlist(self):
+        # Load BIP39 word list
+        with open("wordlist/bip39.txt", "r") as f:
+            self.wordlist = [word.strip() for word in f.readlines()]
+        return self.wordlist
+
+    def generate_seed_phrase(self, wordlist):
+        # Generate a random 12-word seed phrase using BIP39 word list
+        seed_phrase = ' '.join(secrets.choice(wordlist) for _ in range(12))
+        return seed_phrase
+
+    def generate_crypto_address(self, seed_phrase):
+        # Derive seed bytes from seed phrase
+        seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), b'Bitcoin seed', 2048)
+
+        # Use HMAC-SHA256 to generate a pseudo crypto address
+        address = hmac.new(seed_bytes[:32], b'P3', hashlib.sha256).hexdigest()[:10]
+
+        return f"P3:{address}"
+
+    def recover_address_from_seed_phrase(self, seed_phrase):
+        # Derive seed bytes from seed phrase
+        seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), b'Bitcoin seed', 2048)
+
+        # Use HMAC-SHA256 to generate a pseudo crypto address
+        address = hmac.new(seed_bytes[:32], b'P3', hashlib.sha256).hexdigest()[:10]
+
+        return f"P3:{address}"
+
+
+
+#    def generate_crypto_address(user_id):
+    # Concatenate a prefix (for simulation purposes) with the user ID
+#    data = f"P3:{user_id}:{time.time()}"
+
+    # Use a hash function (SHA-256) to generate a pseudo crypto address
+#    hashed_data = hashlib.sha256(data.encode()).hexdigest()[:10]
+
+#    return f"P3:{hashed_data}"
 
 class Wallet:
     def __init__(self, P3Address, QSE_balance):

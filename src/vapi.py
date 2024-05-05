@@ -13,6 +13,10 @@ from virtualkernel import PasswordFile
 
 from virtualmachine import VirtualMachine
 from virtualmachine import Wallet
+from virtualmachine import AddressTools
+from virtualmachine import Block
+from virtualmachine import Blockchain
+from virtualmachine import Transaction
 
 from virtualinput import TerminalInput
 
@@ -52,8 +56,8 @@ def establish_directory(dir):
 def qshell_instance_sys():
     return qshell_instance
 
-
-
+def vm_addresstools_instance():
+    return AddressTools
 
 
 # Import the api to gain access to vOS components

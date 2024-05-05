@@ -3,6 +3,7 @@ import os
 class diff:
     def __init__(self):
         self.app_name = "diff"
+        self.app_args = ["fs_instance", "current_directory", "path1", "path2"]
 
     @staticmethod
     def diff(self, fs, current_directory, path1, path2):
