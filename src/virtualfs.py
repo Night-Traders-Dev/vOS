@@ -450,7 +450,6 @@ class VirtualFileSystem:
     def add_os_filesystem(self, filesystem_data):
         # Add provided files to their relevant locations
         provided_files = {
-            "vcommands.py": {"name": "bin/vcommands.py"},  # Place vcommands.py in /bin
             "virtualkernel.py": {"name": "boot/virtualkernel"},  # Place virtualkernel.py in /boot
             "virtualos.py": {"name": "boot/virtualos"},  # Place virtualos.py in /boot
             "virtualfs.py": {"name": "boot/virtualfs"},  # Place virtualfs.py in /boot
