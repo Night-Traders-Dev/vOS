@@ -15,7 +15,7 @@ class VirtualOS:
         fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
         self.kernel = kernel_instance
         self.animations = animations_instance
-        self.wallet = Wallet("P3:b6c375b7be", "100000")
+        self.wallet = Wallet(None, None)
         self.addrtools = vm_addresstools_instance()
         self.qshell = qshell_instance_sys
         self.fs = fs_instance
@@ -118,7 +118,6 @@ class VirtualOS:
             except KeyboardInterrupt:
                 self.stdscr.clear()
                 VCommands.clear_screen()
-                curses.curs_set(1)  # Hide the cursor
                 break
 
             except Exception as e:
@@ -150,14 +149,6 @@ class VirtualOS:
                         permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
                         VCommands.su(self, self.fs, self.current_directory, permissions)
 
-                elif command.startswith("new_addr"):
-                    self.wordlist = self.addrtools.grab_wordlist(self)
-                    self.seed = self.addrtools.generate_seed_phrase(self, self.wordlist)
-                    self.addr = self.addrtools.generate_crypto_address(self, self.seed)
-#                    self.seed_hash = self.addrtools.generate_hash(self, self.seed)
-#                    self.addr_hash = self.addrtools.generate_hash(self, self.addr)
-                    print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}")
-#\nP3:Address Hash {self.addr_hash}\n Seed Hash: {self.seed_hash}")
 
                 elif command.startswith("history"):
                     if not self.history:
@@ -335,8 +326,14 @@ class VirtualOS:
                     passwdtools_instance.read_user(self.fs, username)
 
                 elif command.startswith("wallet"):
-                    print("This command is not setup")
-                    #self.wallet.view_wallet()
+                    if self.fs.file_exists("/usr/addr"):
+                        self.wallet.view_wallet(self.fs, self.addrtools)
+                    else:
+                        self.wordlist = self.addrtools.grab_wordlist(self)
+                        self.seed = self.addrtools.generate_seed_phrase(self, self.wordlist)
+                        self.addr = self.addrtools.generate_crypto_address(self, self.fs, self.addrtools, self.seed, False)
+                        self.wallet = Wallet(self.addr, "0")
+                        print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}")
 
                 elif command.startswith("help"):
                     parts = command.split(" ")

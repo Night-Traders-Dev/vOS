@@ -6,6 +6,7 @@ import secrets
 import base64
 import time
 import sys
+import getpass
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -97,24 +98,31 @@ class AddressTools:
         seed_phrase = ' '.join(secrets.choice(wordlist) for _ in range(12))
         return seed_phrase
 
-    def generate_crypto_address(self, seed_phrase):
+    def generate_crypto_address(self, fs, addrtools, seed_phrase, recover=False):
+        pass1 = getpass.getpass("Enter password: ")
+        pass2 = getpass.getpass("Enter password again: ")
+        if addrtools.generate_hash(self, pass1) != addrtools.generate_hash(self, pass2):
+            print("Passwords do not match")
+            address = None
+            return address
+        else:
+            wallet_hash = addrtools.generate_hash(self, pass1)
 
-        # Derive seed bytes from seed phrase
-        seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), b'Bitcoin seed', 2048)
+        #9 Derive seed bytes from seed phrase
+        seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), wallet_hash.encode(), 2048)
 
         # Use HMAC-SHA256 to generate a pseudo crypto address
         address = hmac.new(seed_bytes[:32], b'P3', hashlib.sha256).hexdigest()[:10]
+        if recover:
+            cryptod_hash = fs.read_file("/usr/cryptod")
+            addr_file = fs.read_file("/usr/addr")
+            if (f"{addrtools.generate_hash(self, seed_phrase)}:{wallet_hash}") == cryptod_hash:
+                return f"P3:{address}"
+        else:
+            cryptod_hash = fs.create_file("/usr/cryptod", (f"{addrtools.generate_hash(self, seed_phrase)}:{wallet_hash}"))
+            addr_file = fs.create_file("/usr/addr", f"P3:{address}")
+            return f"P3:{address}"
 
-        return f"P3:{address}"
-
-    def recover_address_from_seed_phrase(self, seed_phrase):
-        # Derive seed bytes from seed phrase
-        seed_bytes = hashlib.pbkdf2_hmac('sha512', seed_phrase.encode(), b'Bitcoin seed', 2048)
-
-        # Use HMAC-SHA256 to generate a pseudo crypto address
-        address = hmac.new(seed_bytes[:32], b'P3', hashlib.sha256).hexdigest()[:10]
-
-        return f"P3:{address}"
 
     def generate_hash(self, data):
         # Use SHA-256 hashing algorithm for password encryption
@@ -128,11 +136,24 @@ class Wallet:
     def __init__(self, P3Address, QSE_balance):
         self.address = P3Address
         self.balance = QSE_balance
+        self.wallet_locked = True
+        self.hash_file = "/usr/cryptod"
+        self.addr_file = "/usr/addr"
 
 
-
-    def view_wallet(self):
+    def view_wallet(self, fs, addrtools):
         try:
+            if self.wallet_locked:
+                password = getpass.getpass("Enter password: ")
+                pass_hash = addrtools.generate_hash(self, password)
+                cryptod_hash = fs.read_file(self.hash_file)
+                addr_cont = fs.read_file(self.addr_file)
+                cryptod_pass_hash = cryptod_hash.strip().split(':')
+                if cryptod_pass_hash[1] == pass_hash:
+                    self.wallet_locked = False
+                    self.address = addr_cont
+                else:
+                    print(f"Incorrect password for {addr_cont}")
             # Initialize console
             console = Console()
 
@@ -158,9 +179,11 @@ class Wallet:
 
             # Wait for user input
             console.input("Press Enter to continue...")
+            self.wallet_locked = True
 
         except KeyboardInterrupt:
             console.print("\nExiting wallet view.")
+            self.wallet_locked = True
 
 class VirtualMachine:
     def __init__(self, virtual_os, filesystem):  # Pass VirtualOS instance as an argument
