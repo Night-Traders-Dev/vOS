@@ -24,6 +24,8 @@ from rich.table import Table
 from rich.layout import Layout
 from rich.panel import Panel
 
+
+
 class QShellInterpreter:
     def __init__(self):
         self.ext = ".qs"
@@ -282,7 +284,7 @@ class PasswordFile:
     def logout(self):
        os.system('cls' if os.name == 'nt' else 'clear')
        self.active_user = None
-       self.login_prompt()
+       self.login_prompt_rich()
 
 
 
