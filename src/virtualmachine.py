@@ -100,7 +100,7 @@ class AddressTools:
 
     def generate_crypto_address(self, fs, addrtools, seed_phrase, recover=False):
         if recover:
-            print("Wallet Login")
+            print("Wallet Restore and Recovery")
         else:
             print("Setting up P3 address")
         pass1 = getpass.getpass("Enter password: ")
@@ -173,7 +173,7 @@ class Wallet:
 
             table.add_row("Address:", user_address)
             table.add_row("QSE Balance:", str(qse_balance))
-            table.add_row("Tabs:", ", ".join(tabs))
+#            table.add_row("Tabs:", ", ".join(tabs))
 
             # Create a panel to display the table
             panel = Panel(table, expand=False)
