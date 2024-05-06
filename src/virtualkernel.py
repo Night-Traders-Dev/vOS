@@ -233,17 +233,19 @@ class PasswordFile:
         else:
             return False
 
-
     def login_prompt_rich(self):
         console = Console()
 
         try:
             console.clear()
 
-            # Display vOS with flair
-            console.print("[bold magenta]╔══════════════════════════╗")
-            console.print("[bold magenta]║        [green]vOS[/green]║")
-            console.print("[bold magenta]╚══════════════════════════╝")
+            # Get console width
+            console_width = console.width
+
+            # Display title bar
+            console.print("[bold magenta]╔" + "═" * (console_width - 2) + "╗[/bold magenta]")
+            console.print("[bold magenta]║" + " " * ((console_width - 10) // 2) + "[bold white]vOS Login[/bold white]" + " " * ((console_width - 10) // 2) + "[bold magenta]║[/bold magenta]")
+            console.print("[bold magenta]╚" + "═" * (console_width - 2) + "╝[/bold magenta]")
 
             # Get username and password
             username = Prompt.ask("[bold cyan]Username:[/bold cyan]")
@@ -263,7 +265,6 @@ class PasswordFile:
             VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
             time.sleep(2)  # Wait for 2 seconds before exiting
             sys.exit(0)
-
 
     def su_prompt(self):
             while True:
