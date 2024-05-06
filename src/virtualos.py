@@ -333,7 +333,7 @@ class VirtualOS:
                         self.seed = self.addrtools.generate_seed_phrase(self, self.wordlist)
                         self.addr = self.addrtools.generate_crypto_address(self, self.fs, self.addrtools, self.seed, False)
                         self.wallet = Wallet(self.addr, "0")
-                        print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}")
+                        print(f"P3:Address {self.addr}\n Seed Phrase: {self.seed}\n\nRun wallet again to login")
 
                 elif command.startswith("help"):
                     parts = command.split(" ")

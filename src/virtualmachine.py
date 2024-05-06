@@ -99,6 +99,10 @@ class AddressTools:
         return seed_phrase
 
     def generate_crypto_address(self, fs, addrtools, seed_phrase, recover=False):
+        if recover:
+            print("Wallet Login")
+        else:
+            print("Setting up P3 address")
         pass1 = getpass.getpass("Enter password: ")
         pass2 = getpass.getpass("Enter password again: ")
         if addrtools.generate_hash(self, pass1) != addrtools.generate_hash(self, pass2):
