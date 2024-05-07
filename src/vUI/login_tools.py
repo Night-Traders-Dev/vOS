@@ -1,49 +1,49 @@
-from textual import events
-from textual.app import App
-from textual.widget import Label, TextInput, PasswordInput, Button
-from textual.widgets import Footer
+from textual.app import App, ComposeResult
+from textual.containers import ScrollableContainer
+from textual.binding import Binding
+from textual.widgets import Button, Footer, Header, Static, Input, Label
+from textual.validation import Function, Number, ValidationResult, Validator
+from textual.reactive import reactive
+from textual.widget import Widget
+from textual import on
 
-class LoginApp(App):
-    async def on_mount(self) -> None:
-        self.username_input = TextInput(prompt="Username: ")
-        self.password_input = PasswordInput(prompt="Password: ")
-        self.login_button = Button("Login", self.login)
+class LoginScreen(App):
+    BINDINGS = [
+            Binding(key="ctrl+c", action="quit", description="Quit the app"),
+        ]
 
-        self.add(self.username_input)
-        self.add(self.password_input)
-        self.add(self.login_button)
 
-        self.username_input.focus()
+    def compose(self) -> ComposeResult:
 
-    async def login(self, text: str) -> None:
-        username = self.username_input.text
-        password = self.password_input.text
+        yield Header()
+        yield Footer()
+        yield Input(placeholder="Username: ", id="username")
+        yield Input(placeholder="Password: ", password=True, id="password")
+        yield Button("Login", variant="primary")
 
-        if self.authenticate(username, password):
-            self.username_input.clear()
-            self.password_input.clear()
-            self.footer.text = "Login successful!"
+    def on_mount(self) -> None:
+        self.title = "vOS Login Page"
+        self.username = ""
+        self.password = ""
+
+    @on(Input.Submitted)
+    def username_input(self):
+        for input in self.query(Input):
+            if self.username == "":
+                self.username = input.value
+            else:
+                self.password = input.value
+                input.value = ""
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if self.username == "admin" and self.password == "secret":
+            print(f"Hello, {self.username}!")
+            self.mount(Label(f" Welcome {self.username}"))
         else:
-            self.footer.text = "Invalid username or password. Please try again."
+            print(f"Account not found!")
+            self.mount(Label("Account not found!"))
 
-    async def on_idle(self, event: events.Idle) -> None:
-        self.footer.text = ""
 
-    async def on_cancel(self, event: events.Cancel) -> None:
-        self.quit()
-
-    async def on_enter(self, event: events.Enter) -> None:
-        await self.login(event.text)
-
-    async def on_resize(self, event: events.Resize) -> None:
-        self.username_input.center(align="center")
-        self.password_input.center(align="center")
-        self.login_button.center(align="center")
-
-    async def on_mount(self) -> None:
-        self.footer = Footer()
-        self.add(self.footer)
-
-    async def on_load(self, event: events.Load) -> None:
-        await self.on_resize(None)
-
+if __name__ == "__main__":
+    app = LoginScreen()
+    app.run()
