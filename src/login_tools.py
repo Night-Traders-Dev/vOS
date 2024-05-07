@@ -5,9 +5,12 @@ from textual.widgets import Button, Footer, Header, Static, Input, Label
 from textual.validation import Function, Number, ValidationResult, Validator
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual import on
+from textual import on, events
+from vapi import initialize_system
+
 
 class LoginScreen(App):
+    fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     BINDINGS = [
             Binding(key="ctrl+c", action="quit", description="Quit the app"),
         ]
@@ -25,9 +28,10 @@ class LoginScreen(App):
         self.title = "vOS Login Page"
         self.username = ""
         self.password = ""
+        self.passwordtools = self.passwordtools_instance
 
     @on(Input.Submitted)
-    def username_input(self):
+    def login_input(self):
         for input in self.query(Input):
             if self.username == "":
                 self.username = input.value
@@ -35,11 +39,19 @@ class LoginScreen(App):
                 self.password = input.value
                 input.value = ""
 
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if self.username == "admin" and self.password == "secret":
+        if self.username != "" and self.password != "":
+            self.auth()
+            self.username = ""
+            self.password = ""
+
+    def auth(self):
+       login = self.passwordtools.authenticate(self.username, self.password)
+       if login:
             print(f"Hello, {self.username}!")
             self.mount(Label(f" Welcome {self.username}"))
-        else:
+       else:
             print(f"Account not found!")
             self.mount(Label("Account not found!"))
 
