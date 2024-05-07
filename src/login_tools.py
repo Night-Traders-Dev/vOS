@@ -9,53 +9,34 @@ from textual import on, events
 from vapi import initialize_system
 
 
-class LoginScreen(App):
+class vOSLoginApp(App):
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     BINDINGS = [
             Binding(key="ctrl+c", action="quit", description="Quit the app"),
         ]
 
-
     def compose(self) -> ComposeResult:
-
         yield Header()
         yield Footer()
-        yield Input(placeholder="Username: ", id="username")
-        yield Input(placeholder="Password: ", password=True, id="password")
-        yield Button("Login", variant="primary")
+        yield Input(placeholder="User name", id="username")
+        yield Input(placeholder="Password", password= True, id="password")
+        yield Button("Login!")
 
     def on_mount(self) -> None:
         self.title = "vOS Login Page"
-        self.username = ""
-        self.password = ""
         self.passwordtools = self.passwordtools_instance
 
-    @on(Input.Submitted)
-    def login_input(self):
-        for input in self.query(Input):
-            if self.username == "":
-                self.username = input.value
-            else:
-                self.password = input.value
-                input.value = ""
-
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if self.username != "" and self.password != "":
-            self.auth()
-            self.username = ""
-            self.password = ""
-
+    @on(Button.Pressed)
+    def login(self) -> None:
+        self.username = self.query_one("#username", Input).value
+        self.password = self.query_one("#password", Input).value
+        self.auth()
     def auth(self):
        login = self.passwordtools.authenticate(self.username, self.password)
        if login:
-            print(f"Hello, {self.username}!")
             self.mount(Label(f" Welcome {self.username}"))
        else:
-            print(f"Account not found!")
             self.mount(Label("Account not found!"))
 
-
 if __name__ == "__main__":
-    app = LoginScreen()
-    app.run()
+     vOSLoginApp().run()
