@@ -8,7 +8,6 @@ from textual.widget import Widget
 from textual import on, events
 from vapi import initialize_system
 
-
 class vOSLoginApp(App):
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     BINDINGS = [
@@ -23,7 +22,7 @@ class vOSLoginApp(App):
         yield Button("Login!")
 
     def on_mount(self) -> None:
-        self.title = "vOS Login Page"
+        self.title = "vOS Login"
         self.passwordtools = self.passwordtools_instance
 
     @on(Button.Pressed)
