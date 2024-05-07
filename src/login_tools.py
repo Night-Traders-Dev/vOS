@@ -25,11 +25,20 @@ class vOSLoginApp(App):
         self.title = "vOS Login"
         self.passwordtools = self.passwordtools_instance
 
+    @on(Input.Submitted)
+    def login_input(self):
+        self.login()
+
     @on(Button.Pressed)
     def login(self) -> None:
         self.username = self.query_one("#username", Input).value
         self.password = self.query_one("#password", Input).value
-        self.auth()
+        if self.username == "":
+            self.notify("Username missing!")
+        elif self.password == "":
+            self.notify("Password missing!")
+        else:
+            self.auth()
     def auth(self):
        login = self.passwordtools.authenticate(self.username, self.password)
        if login:
@@ -39,3 +48,4 @@ class vOSLoginApp(App):
 
 if __name__ == "__main__":
      vOSLoginApp().run()
+
