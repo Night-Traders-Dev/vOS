@@ -18,6 +18,7 @@ from vapi import vm_addresstools_instance
 
 class QShell(Widget):
 
+
     BINDINGS = [
         Binding(key="ctrl+c", action="quit", description="Quit the app"),
     ]
@@ -33,18 +34,31 @@ class QShell(Widget):
 
     @on(Input.Submitted)
     def execute_command(self):
+        fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
+        self.kernel = kernel_instance
+        self.animations = animations_instance
+        self.addrtools = vm_addresstools_instance()
+        self.qshell = qshell_instance_sys
+        self.fs = fs_instance
+        self.passwordtools_instance = passwordtools_instance
+        self.vproc_instance = vproc_instance
+
         command = self.query_one("#input", Input)
         if command.value.strip():
             self.append_output(f"$ {command.value.strip()}\n")
 #            command = input(f"{self.current_directory.get_full_path()} $ ").strip()
  #           self.history.append(command)
+            command = command.value.strip()
             self.kernel.log_command(command)  # Log the command
             if command == "exit" or command == "shutdown":
-                print("Shutting Down VirtualOS...")
+                self.append_output("Shutting Down VirtualOS...\n")
+                self.mount(Label("Shutting Down VirtualOS...\n"))
                 self.vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
-                self.animations.shutdown_animation()
+                self.display = False
+                self.notify("VirtualOS Shutdown Completed!")
+#                self.animations.shutdown_animation()
             elif command.startswith("su"):
                 auth = self.passwordtools_instance.su_prompt()
                 if auth:
@@ -258,7 +272,7 @@ class QShell(Widget):
                 print("Command not found. Type 'help' to see available commands.")
                 self.kernel.log_command(f"[!] Command '{command}' not found.")
 
-            command.value = ""
+#            command.value = ""
 #            except Exception as e:
 #                self.kernel.handle_error(e)
 

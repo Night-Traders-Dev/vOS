@@ -32,7 +32,7 @@ class VirtualOS:
         self.kernel.log_command("Initializing VirtualFileSystem...")
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
-        animations_instance.boot_animation_rich()
+#        animations_instance.boot_animation_rich()
 #        passwordtools_instance.check_passwd_file(self.fs)
         self.active_user = username #passwordtools_instance.online_user()
         self.user_dir = "/home/" + self.active_user

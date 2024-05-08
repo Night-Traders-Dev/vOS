@@ -10,7 +10,8 @@ from vterminal import QShell
 fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
 logged_in = False
 active_shell = QShell()
-
+animation = animations_instance
+animation.boot_animation_rich()
 
 class VLogin(Widget):
 
