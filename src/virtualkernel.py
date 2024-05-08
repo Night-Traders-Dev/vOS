@@ -1,4 +1,3 @@
-
 import signal
 import sys
 import os
@@ -23,7 +22,6 @@ from rich.progress import SpinnerColumn
 from rich.table import Table
 from rich.layout import Layout
 from rich.panel import Panel
-
 
 
 class QShellInterpreter:
@@ -159,9 +157,13 @@ class PasswordFile:
                 print("First Boot Account Setup")
                 self.create_new_user(fs)
             else:
-                self.login_prompt_rich()
-                # Create and run the login prompt
-                #self.run()
+                pass
+#               from login_tools import vOSLoginApp
+#               app = vOSLoginApp()
+#               auth_status = app.run()
+#               if auth_status:
+#                   print(auth_status)
+#                self.login_prompt_rich()
         else:
             print("First Boot Account Setup")
             self.create_new_user(fs)

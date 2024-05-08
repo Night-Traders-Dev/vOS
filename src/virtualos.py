@@ -11,7 +11,7 @@ from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
 
 class VirtualOS:
-    def __init__(self):
+    def __init__(self, username):
         fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
         self.kernel = kernel_instance
         self.animations = animations_instance
@@ -33,8 +33,8 @@ class VirtualOS:
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
         animations_instance.boot_animation_rich()
-        passwordtools_instance.check_passwd_file(self.fs)
-        self.active_user = passwordtools_instance.online_user()
+#        passwordtools_instance.check_passwd_file(self.fs)
+        self.active_user = username #passwordtools_instance.online_user()
         self.user_dir = "/home/" + self.active_user
         self.user_perms = "rwxr-xr-x"
         self.su = False
@@ -84,54 +84,11 @@ class VirtualOS:
             else:
                 return True
 
-    def draw_vui(self):
-        self.stdscr = curses.initscr()
-        curses.curs_set(0)  # Hide the cursor
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # Border color
-        executed_commands = []
-        while True:
-            try:
-                self.stdscr.clear()
-
-                # Get current time
-                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                # Draw borders
-                self.stdscr.border()
-
-                # Print time in top right corner
-                self.stdscr.addstr(0, curses.COLS - len(current_time) - 1, current_time)
-
-                # Print vOS title in top left corner
-                self.stdscr.addstr(0, 1, "vOS")
-
-                # Display executed commands
-                executed_commands_window = curses.newwin(curses.LINES - 6, curses.COLS - 4, 2, 2)
-                for i, cmd in enumerate(executed_commands):
-                    executed_commands_window.addstr(i, 0, cmd)
-
-                # Get user input
-                self.stdscr.addstr(curses.LINES - 4, 1, self.current_directory.get_full_path() + " $ ")
-                command = self.stdscr.getstr(curses.LINES - 4, len(self.current_directory.get_full_path()) + 3).decode()
-
-            except KeyboardInterrupt:
-                self.stdscr.clear()
-                VCommands.clear_screen()
-                break
-
-            except Exception as e:
-                self.kernel.handle_error(e)
-
-            finally:
-                curses.endwin()
-
 
     def run_shell(self):
         # List to store executed commands
         while True:
             try:
-
                 command = input(f"{self.current_directory.get_full_path()} $ ").strip()
                 self.history.append(command)
                 self.kernel.log_command(command)  # Log the command
@@ -364,6 +321,6 @@ class VirtualOS:
                 self.kernel.handle_error(e)
 
 
-if __name__ == "__main__":
-    virtual_os = VirtualOS()
-    virtual_os.run_shell()
+#if __name__ == "__main__":
+#    virtual_os = VirtualOS()
+#    virtual_os.run_shell()
