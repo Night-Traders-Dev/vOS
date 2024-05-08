@@ -176,7 +176,6 @@ class PasswordFile:
         password = getpass.getpass("Enter password: ")
         self.add_user(fs, username, password)
         os.system('cls' if os.name == 'nt' else 'clear')
-        self.login_prompt_rich()
 
     def add_user(self, fs, username, password):
         # Generate random uid and gid if not provided
@@ -237,38 +236,6 @@ class PasswordFile:
         else:
             return False
 
-    def login_prompt_rich(self):
-        console = Console()
-
-        try:
-            console.clear()
-
-            # Get console width
-            console_width = console.width
-
-            # Display title bar
-            console.print("[bold magenta]╔" + "═" * (console_width - 2) + "╗[/bold magenta]")
-            console.print("[bold magenta]║" + " " * ((console_width - 10) // 2) + "[bold white]vOS Login[/bold white]" + " " * ((console_width - 10) // 2) + "[bold magenta]║[/bold magenta]")
-            console.print("[bold magenta]╚" + "═" * (console_width - 2) + "╝[/bold magenta]")
-
-            # Get username and password
-            username = Prompt.ask("[bold cyan]Username:[/bold cyan]")
-            password = Prompt.ask("[bold cyan]Password:[/bold cyan]", password=True)
-
-            # Check authentication
-            if self.authenticate(username, password):
-                console.clear()
-                console.print("[bold green]Login successful![/bold green]")
-                time.sleep(1)  # Wait for 1 second before clearing the screen
-            else:
-                console.print("[bold red]Invalid username or password. Please try again.[/bold red]")
-                time.sleep(2)  # Wait for 2 seconds before clearing the screen
-
-        except KeyboardInterrupt:
-            console.print("[bold red]Shutting Down VirtualOS...[/bold red]")
-            VirtualKernel.delete_dmesg(self)  # Delete dmesg file on exit
-            time.sleep(2)  # Wait for 2 seconds before exiting
-            sys.exit(0)
 
     def su_prompt(self):
             while True:
@@ -286,7 +253,6 @@ class PasswordFile:
     def logout(self):
        os.system('cls' if os.name == 'nt' else 'clear')
        self.active_user = None
-       self.login_prompt_rich()
 
 
 
@@ -386,7 +352,7 @@ class VirtualKernel:
         try:
             # Define the paths to the OS components
             component_paths = [
-                "virtualos.py",
+                "vteeminal.py",
                 "virtualfs.py",
                 "vcommands.py",
                 "virtualkernel.py",

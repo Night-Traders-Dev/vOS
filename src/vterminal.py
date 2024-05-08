@@ -44,7 +44,6 @@ class VirtualOS:
         self.user_perms = "rwxr-xr-x"
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
-        self.history = []
         self.kernel.log_command(f"{self.active_user} logged in.")
         self.user_home_dir(self.user_dir)
 #        my_directory = establish_directory("/")
@@ -121,6 +120,7 @@ class QShell(Widget):
         self.fs = fs_instance
         self.passwordtools_instance = passwordtools_instance
         self.vproc_instance = vproc_instance
+        self.history = []
 
 
         command = self.query_one("#input", Input)
@@ -129,6 +129,7 @@ class QShell(Widget):
 #            command = input(f"{self.current_directory.get_full_path()} $ ").strip()
  #           self.history.append(command)
             command = command.value.strip()
+            self.history.append(command)
             self.kernel.log_command(command)  # Log the command
             if command == "exit" or command == "shutdown":
                 self.append_output("Shutting Down VirtualOS...\n")
@@ -149,12 +150,11 @@ class QShell(Widget):
 
             elif command.startswith("history"):
                 if not self.history:
-                    print("Command history is empty.")
-                    return
+                    self.append_output("Command history is empty.")
 
                 print("Command history:")
                 for i, command in enumerate(reversed(self.history), start=1):
-                    print(f"{i}: {command}")
+                    self.append_output(f"{i}: {command}")
 
             elif command.startswith("reboot"):
                 confirmation = input("Are you sure you want to reboot? (yes/no): ").strip().lower()
@@ -245,7 +245,7 @@ class QShell(Widget):
 
             elif command == "uptime":
                 uptime = self.kernel.get_uptime()
-                print(f"vOS uptime: {uptime}")
+                self.append_output(f"vOS uptime: {uptime}")
 
 
             elif command == "update":
