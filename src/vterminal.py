@@ -15,6 +15,85 @@ from vapi import establish_directory
 from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
 
+home_dir = None
+
+class VirtualOS:
+    def __init__(self, username):
+        fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
+        self.kernel = kernel_instance
+        self.animations = animations_instance
+        self.wallet = Wallet(None, None)
+        self.addrtools = vm_addresstools_instance()
+        self.qshell = qshell_instance_sys
+        self.fs = fs_instance
+        self.passwordtools_instance = passwordtools_instance
+        self.vproc_instance = vproc_instance
+        self.kernel.log_command("Kernel Loaded...")
+        self.kernel.get_checksum_file()
+        self.kernel.compare_checksums()
+        VCommands.clear_screen()
+        self.kernel.log_command("Booting up VirtualOS...")
+        self.kernel.log_command("Component Version Numbers:\n")
+        self.kernel.print_component_versions(False)
+        self.kernel.log_command(f"Python Version: {sys.version}")
+        self.kernel.log_command("Initializing VirtualFileSystem...")
+        self.kernel.create_process("filesystemd")
+        self.kernel.log_command("VirtualFileSystem Loaded...")
+        self.active_user = username #passwordtools_instance.online_user()
+        self.user_dir = "/home/" + self.active_user
+        self.user_perms = "rwxr-xr-x"
+        self.su = False
+        self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
+        self.history = []
+        self.kernel.log_command(f"{self.active_user} logged in.")
+        self.user_home_dir(self.user_dir)
+#        my_directory = establish_directory("/")
+#        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+#        snapshot_name = f"snapshot_{snapstamp}"
+#        snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)
+#        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
+
+
+
+
+        # Check if 'home' directory exists
+        if "home" in self.fs.root.subdirectories:
+            # Check if 'user' directory exists
+            if self.active_user in self.fs.root.subdirectories["home"].subdirectories:
+                # Set default starting directory to /home/user
+                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
+            else:
+                self.kernel.log_command("User directory not found. Creating...")
+                self.fs.create_directory(self.user_dir)
+                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
+        else:
+            self.kernel.log_command("Home directory not found. Creating...")
+            self.fs.create_directory("/home")
+            self.fs.create_directory(self.user_dir)
+            self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
+
+        self.kernel.log_command("Initializing VirtualMachine...")
+        self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
+        self.kernel.log_command(f"Permissions: {self.current_directory.permissions}")
+
+        try:
+            self.kernel.boot_verbose()
+            self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
+        except Exception as e:
+            self.kernel.log_command(f"Error during kernel boot: {str(e)}")
+
+    def su_check(self, command):
+            if not self.su:
+                print(f"{command} requires su permission")
+                self.kernel.log_command(f"[!!]su_check: {self.active_user} invalid permissions for {command}")
+                return False
+            else:
+                return True
+
+    def user_home_dir(self, user_home_dir):
+        global home_dir
+        home_dir = user_home_dir
+
 
 class QShell(Widget):
 
@@ -30,7 +109,7 @@ class QShell(Widget):
         self.title = "qShell"
         text_area.theme = "vscode_dark"
         yield text_area
-        yield Input(placeholder="$ ", id="input")
+        yield Input(placeholder=f"{home_dir} $ ", id="input")
 
     @on(Input.Submitted)
     def execute_command(self):
@@ -42,6 +121,7 @@ class QShell(Widget):
         self.fs = fs_instance
         self.passwordtools_instance = passwordtools_instance
         self.vproc_instance = vproc_instance
+
 
         command = self.query_one("#input", Input)
         if command.value.strip():

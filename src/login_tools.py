@@ -4,8 +4,8 @@ from textual.widgets import Button, Footer, Header, Static, Input, Label, TextAr
 from textual.widget import Widget
 from textual import on, events
 from vapi import initialize_system
-from virtualos import VirtualOS
 from vterminal import QShell
+from vterminal import VirtualOS
 
 fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
 logged_in = False

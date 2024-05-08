@@ -451,7 +451,7 @@ class VirtualFileSystem:
         # Add provided files to their relevant locations
         provided_files = {
             "virtualkernel.py": {"name": "boot/virtualkernel"},  # Place virtualkernel.py in /boot
-            "virtualos.py": {"name": "boot/virtualos"},  # Place virtualos.py in /boot
+            "vterminal.py": {"name": "boot/virtualos"},  # Place virtualos.py in /boot
             "virtualfs.py": {"name": "boot/virtualfs"},  # Place virtualfs.py in /boot
             "virtualmachine.py": {"name": "sbin/virtualmachine"},  # Place virtualmachine.py in /sbin
             "checksums.txt": {"name": "etc/checksum"},
