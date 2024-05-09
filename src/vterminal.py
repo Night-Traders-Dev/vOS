@@ -70,6 +70,7 @@ class QShell(Widget):
     global active_user_init
     global home_fs
     global home_dir
+    global text_area
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
     animations = animations_instance
@@ -81,6 +82,7 @@ class QShell(Widget):
     home_fs = home_fs_init(active_user_init)
 
     def compose(self) -> ComposeResult:
+        global text_area
         text_area = TextArea(id="output")
         text_area.read_only = True
         text_area.cursor_blink = False
@@ -211,7 +213,7 @@ class QShell(Widget):
                 VCommands.version(self)
 
             elif command == "clear":
-                VCommands.clear_screen()
+                text_area.clear()
 
             elif command == "run_vm":  # Command to run the virtual machine
                 self.vm.run()
