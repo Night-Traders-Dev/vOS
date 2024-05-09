@@ -71,7 +71,9 @@ class vOS(App):
 
     def compose(self) -> ComposeResult:
         login_prompt = VLogin()
-        yield Header()
+        VHeader = Header()
+        VHeader.show_clock = True
+        yield VHeader
         yield Footer()
         yield login_prompt
         yield active_shell

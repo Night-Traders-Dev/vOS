@@ -16,6 +16,8 @@ from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
 from vapi import get_active_user
 from vapi import home_fs_init
+from vbin.fstree import VirtualFSTree
+
 
 
 class VirtualOS:
@@ -69,16 +71,15 @@ class QShell(Widget):
     global animations_instance
     global active_user_init
     global home_fs
-    global text_area
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
-    animations = animations_instance
     addrtools = vm_addresstools_instance()
     qshell = qshell_instance_sys
     fs = fs_instance
     vproc_instance = vproc_instance
     active_user_init = get_active_user()
     home_fs = home_fs_init(active_user_init)
+
 
     def compose(self) -> ComposeResult:
         global text_area
@@ -87,8 +88,10 @@ class QShell(Widget):
         text_area.cursor_blink = False
         self.title = "qShell"
         text_area.theme = "vscode_dark"
+        global fstree
+        fstree = VirtualFSTree()
         yield text_area
-
+#        yield fstree
         yield Input(placeholder=f"{active_user_init} $ ", id="input")
 
     @on(Input.Submitted)
@@ -114,6 +117,7 @@ class QShell(Widget):
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
                 self.display = False
                 self.notify("VirtualOS Shutdown Completed!")
+                exit()
             elif command.startswith("su"):
                 auth = self.passwordtools_instance.su_prompt()
                 if auth:
@@ -148,6 +152,10 @@ class QShell(Widget):
                 _, path = command.split(" ", 1)
                 VCommands.mkdir(self.fs, self.current_directory, path)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
+
+            elif command.startswith("fstree"):
+                self.visible = False
+                fstree.visible = True
 
             elif command.startswith("sysmon"):
                 self.vproc_instance.monitor_processes(self)
@@ -342,3 +350,7 @@ class QShell(Widget):
     def append_output(self, text):
         output = self.query_one("#output", TextArea)
         output.insert(text)
+
+
+#    def on_key(self, event: events.Key) -> None:
+#        keypress = self.query_one(event)
