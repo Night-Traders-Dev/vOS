@@ -551,9 +551,11 @@ class VirtualKernel:
         self.log_command(verbose_message)
 
     def print_dmesg(self):
+        dmesg_list = []
         try:
             with open(self.dmesg_file, "r") as f:
-                print(f.read())
+                dmesg_list.append(f.read())
+            return dmesg_list
         except FileNotFoundError:
             print("dmesg file not found.")
 

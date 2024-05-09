@@ -121,7 +121,7 @@ class QShell(Widget):
         self.passwordtools_instance = passwordtools_instance
         self.vproc_instance = vproc_instance
         self.history = []
-
+        self.active_user = self.passwordtools_instance.online_user()
 
         command = self.query_one("#input", Input)
         if command.value.strip():
@@ -147,6 +147,8 @@ class QShell(Widget):
                         permissions = parts[1] if len(parts) > 1 else "rwxrwxrwx"
                         VCommands.su(self, self.fs, self.current_directory, permissions)
 
+            elif command.startswith(f"whoami"):
+                self.append_output("{self.active_user}\n")
 
             elif command.startswith("history"):
                 if not self.history:
@@ -240,8 +242,10 @@ class QShell(Widget):
                 self.vm.run()
 
             elif command == "dmesg":  # Command to print virtual dmesg
-                if self.su_check(command):
-                    self.kernel.print_dmesg()
+                #if self.su_check(command):
+                dmesg_array = self.kernel.print_dmesg()
+                for i in dmesg_array:
+                    self.append_output(i + "\n")
 
             elif command == "uptime":
                 uptime = self.kernel.get_uptime()
