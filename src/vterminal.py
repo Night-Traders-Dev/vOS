@@ -331,7 +331,7 @@ class QShell(Widget):
                         if callable(method) and not method_name.startswith("__"):
                             print(method.__doc__)
             else:
-                print("Command not found. Type 'help' to see available commands.")
+                self.append_output("Command not found. Type 'help' to see available commands.")
                 self.kernel.log_command(f"[!] Command '{command}' not found.")
 
             command_input.value = ""
