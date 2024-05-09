@@ -64,10 +64,14 @@ def vm_addresstools_instance():
     return AddressTools
 
 def get_active_user():
-    fs_instance = VirtualFileSystem()
-    passwordtools_instance = PasswordFile("passwd")
-    active_user = passwordtools_instance.check_passwd_file(fs_instance)[0]
-    return active_user
+    try:
+        fs_instance = VirtualFileSystem()
+        passwordtools_instance = PasswordFile("passwd")
+        active_user = passwordtools_instance.check_passwd_file(fs_instance)[0]
+        return active_user
+    except:
+        active_user = passwordtools_instance.check_passwd_file(fs_instance)[0]
+        return active_user
 
 def home_fs_init(active_user):
     user_dir = "/home/" + active_user

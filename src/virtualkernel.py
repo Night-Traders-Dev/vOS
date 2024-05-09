@@ -146,16 +146,16 @@ class PasswordFile:
         if os.path.isfile(self.file_path):
             # Check if the file is empty
             if os.path.getsize(self.file_path) == 0:
-                print("First Boot Account Setup")
-                self.create_new_user(fs)
+                self.add_user(fs, "admin", "admin")
+#                self.create_new_user(fs)
             else:
                 with open(self.file_path, 'r') as file:
                     for line in file:
                         parts = line.strip().split(':')
                         return [parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]]
         else:
-            print("First Boot Account Setup")
-            self.create_new_user(fs)
+            self.add_user(fs, "admin", "admin")
+#            self.create_new_user(fs)
 
     def create_new_user(self, fs):
         """
@@ -164,7 +164,6 @@ class PasswordFile:
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
         self.add_user(fs, username, password)
-        os.system('cls' if os.name == 'nt' else 'clear')
 
     def add_user(self, fs, username, password):
         # Generate random uid and gid if not provided
