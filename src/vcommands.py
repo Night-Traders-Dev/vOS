@@ -258,10 +258,16 @@ class VCommands:
                 return(f"Directory '{path}' not found.")
                 return
 
+        subdir_list = []
+        dir_list = []
         for name, item in directory.subdirectories.items():
-            return(f"{name}/")
+            subdir_list.append(f"{name}/")
+#        return(subdir_list)
         for name, item in directory.files.items():
-            return(name)
+            dir_list.append(name)
+        subdir_list.extend(dir_list)
+        return subdir_list
+
 
     @staticmethod
     def cd(self, fs, current_directory, path):
@@ -292,8 +298,7 @@ class VCommands:
         perms = current_directory.permissions
 
         if not path:
-            print("Error: Please specify a file path to read.")
-            return
+            return("Error: Please specify a file path to read.")
 
         # Concatenate current directory path with the specified path if necessary
         if not path.startswith('/'):
@@ -303,9 +308,9 @@ class VCommands:
             # Read the file content
             file_content = fs.read_file(path)
             # Print the file content
-            print(file_content)
+            return(file_content)
         except FileNotFoundError:
-            print(f"File '{path}' not found.")
+           return(f"File '{path}' not found.")
 
 
     @staticmethod
@@ -396,7 +401,7 @@ class VCommands:
         """
         pwd: Print the current directory
         """
-        print(current_directory.get_full_path())
+        return(current_directory.get_full_path())
 
     @staticmethod
     def touch(fs, current_directory, path=None):

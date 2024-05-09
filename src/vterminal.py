@@ -69,6 +69,7 @@ class QShell(Widget):
     global animations_instance
     global active_user_init
     global home_fs
+    global home_dir
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
     animations = animations_instance
@@ -94,6 +95,7 @@ class QShell(Widget):
         self.history = []
         self.passwordtools_instance = passwordtools_instance
         self.active_user = active_user_init
+        self.home_dir = "/home/" + self.active_user
         self.current_directory = home_fs
 
 
@@ -175,9 +177,11 @@ class QShell(Widget):
                 if len(parts) > 1:
                     _, path = parts
                 else:
-                    path = None
+                    path = self.home_dir
                 self.kernel.log_command(f"ls debug: {self.current_directory} and {path}")
-                self.append_output(VCommands.ls(self.fs, self.current_directory, path))
+                ls_list = VCommands.ls(self.fs, self.current_directory, path)
+                for i in ls_list:
+                    self.append_output(i + "\n")
 
             elif command.startswith("cd"):
                 _, path = command.split(" ", 1)
@@ -189,7 +193,7 @@ class QShell(Widget):
                 except ValueError:
                     # If no path is specified, use the current directory
                     path = None
-                VCommands.cat(self.fs, self.current_directory, path)
+                self.append_output(VCommands.cat(self.fs, self.current_directory, path))
 
             elif command.startswith("rmdir"):
                 _, path = command.split(" ", 1)
@@ -238,7 +242,7 @@ class QShell(Widget):
                 self.kernel.monitor_filesystem("file_system.json")
 
             elif command == "pwd":  # Corrected call to pwd method
-                VCommands.pwd(self.current_directory)  # Pass the current directory
+                self.append_output(VCommands.pwd(self.current_directory))  # Pass the current directory
 
             elif command.startswith("snapshot"):
                 VCommands.snapshot(self, self.fs)
