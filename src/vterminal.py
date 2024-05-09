@@ -100,6 +100,16 @@ class QShell(Widget):
         Binding(key="ctrl+c", action="quit", description="Quit the app"),
     ]
 
+    fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
+    kernel = kernel_instance
+    animations = animations_instance
+    addrtools = vm_addresstools_instance()
+    qshell = qshell_instance_sys
+    fs = fs_instance
+    passwordtools_instance = passwordtools_instance
+    vproc_instance = vproc_instance
+
+
     def compose(self) -> ComposeResult:
         text_area = TextArea(id="output")
         text_area.read_only = True
@@ -112,14 +122,6 @@ class QShell(Widget):
 
     @on(Input.Submitted)
     def execute_command(self):
-        fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
-        self.kernel = kernel_instance
-        self.animations = animations_instance
-        self.addrtools = vm_addresstools_instance()
-        self.qshell = qshell_instance_sys
-        self.fs = fs_instance
-        self.passwordtools_instance = passwordtools_instance
-        self.vproc_instance = vproc_instance
         self.history = []
         global cur_user
         global home_dir
