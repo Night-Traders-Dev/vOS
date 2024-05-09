@@ -45,7 +45,6 @@ class VirtualOS:
         self.su = False
         self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
         self.kernel.log_command(f"{self.active_user} logged in.")
-        self.user_home_dir(self.user_dir)
 #        my_directory = establish_directory("/")
 #        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 #        snapshot_name = f"snapshot_{snapstamp}"
@@ -70,6 +69,7 @@ class VirtualOS:
             self.fs.create_directory("/home")
             self.fs.create_directory(self.user_dir)
             self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
+            self.user_home_dir(self.current_directory)
 
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
@@ -91,11 +91,10 @@ class VirtualOS:
 
     def user_home_dir(self, user_home_dir):
         global home_dir
-        home_dir = user_home_dir
+        home_dir = user_home_dir #self.current_directory
 
 
 class QShell(Widget):
-
 
     BINDINGS = [
         Binding(key="ctrl+c", action="quit", description="Quit the app"),
@@ -122,8 +121,10 @@ class QShell(Widget):
         self.vproc_instance = vproc_instance
         self.history = []
         self.active_user = self.passwordtools_instance.online_user()
+        self.fs.current_directory = home_dir
 
         command = self.query_one("#input", Input)
+        command_input = command
         if command.value.strip():
             self.append_output(f"$ {command.value.strip()}\n")
 #            command = input(f"{self.current_directory.get_full_path()} $ ").strip()
@@ -132,8 +133,6 @@ class QShell(Widget):
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
             if command == "exit" or command == "shutdown":
-                self.append_output("Shutting Down VirtualOS...\n")
-                self.mount(Label("Shutting Down VirtualOS...\n"))
                 self.vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
@@ -356,11 +355,11 @@ class QShell(Widget):
                 print("Command not found. Type 'help' to see available commands.")
                 self.kernel.log_command(f"[!] Command '{command}' not found.")
 
-#            command.value = ""
+            command_input.value = ""
 #            except Exception as e:
 #                self.kernel.handle_error(e)
 
 
     def append_output(self, text):
         output = self.query_one("#output", TextArea)
-        output.replace(text, start=(0, 0), end=(0, 0))
+        output.insert(text)

@@ -17,57 +17,6 @@ from vbin import *
 
 
 
-class FancyTextEditor:
-    def __init__(self, fs, current_directory, theme="blue"):
-        self.console = Console()
-        self.fs = fs
-        self.current_directory = current_directory
-        self.theme = theme
-
-    def _create_editor_layout(self):
-        layout = Layout()
-        layout.split_row(Layout(name="header"), Layout(), Layout(size=3, name="editor"))
-        layout["header"].update(Panel(Text("🚀 Fancy Text Editor 🚀", style=f"bold {self.theme}")))
-        layout["editor"].update(Panel(""))
-        return layout
-
-    def _load_file_content(self, path):
-        if self.fs.file_exists(path):
-            try:
-                return self.fs.read_file(path)
-            except FileNotFoundError:
-                self.console.print(f"[bold red]File '{path}' not found.[/]")
-        return ""
-
-    def edit(self, path=None):
-        layout = self._create_editor_layout()
-        self.console.print(layout)
-
-        if not path:
-            filename = Prompt.ask("Enter filename: ")
-            if not filename.strip():
-                self.console.print("[bold red]Filename cannot be empty.[/]")
-                return
-            path = os.path.join(self.current_directory.get_full_path(), filename)
-        else:
-            # Check if the path is relative or absolute
-            if not path.startswith('/'):
-                # If relative, make it relative to the current directory
-                path = os.path.join(self.current_directory.get_full_path(), path)
-
-        editor_content = self._load_file_content(path)
-
-        while True:
-            line = Prompt.ask(">> ")
-            if line == ":w":
-                self.fs.create_file(path, layout["editor"].renderable.content)
-                break
-            editor_content += line + "\n"
-            layout["editor"].update(Panel(editor_content))
-
-        self.console.print(layout)
-
-
 class VCommands:
     def __init__(self):
         self.kernel = VirtualKernel()
@@ -138,7 +87,7 @@ class VCommands:
                         self.kernel.print_dmesg()
                     elif command == "uptime":
                         uptime = self.kernel.get_uptime()
-                        print(f"vOS uptime: {uptime}")
+                        return(f"vOS uptime: {uptime}")
                     elif command == "update":
                         print("Updates currently disabled in vOS\nExit vOS and use git pull to update")
                         return
@@ -306,13 +255,13 @@ class VCommands:
             try:
                 directory = fs.find_directory(current_directory, path)
             except FileNotFoundError:
-                print(f"Directory '{path}' not found.")
+                return(f"Directory '{path}' not found.")
                 return
 
         for name, item in directory.subdirectories.items():
-            print(f"{name}/")
+            return(f"{name}/")
         for name, item in directory.files.items():
-            print(name)
+            return(name)
 
     @staticmethod
     def cd(self, fs, current_directory, path):
