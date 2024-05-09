@@ -242,7 +242,7 @@ class QShell(Widget):
                 self.kernel.monitor_filesystem("file_system.json")
 
             elif command == "pwd":  # Corrected call to pwd method
-                self.append_output(VCommands.pwd(self.current_directory))  # Pass the current directory
+                self.append_output(VCommands.pwd(self.current_directory) + "\n")  # Pass the current directory
 
             elif command.startswith("snapshot"):
                 VCommands.snapshot(self, self.fs)
@@ -275,7 +275,9 @@ class QShell(Widget):
                 if ">>" not in command and ">" not in command:
                     file = None
                     args = parts[1:]
-                VCommands.echo(self.fs, self.current_directory, *args, file=file)
+                    self.append_output(VCommands.echo(self.fs, self.current_directory, *args, file=file) + "\n")
+                else:
+                    VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
             elif command.startswith("logout"):
                 self.passwordtools_instance.logout()
