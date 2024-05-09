@@ -36,18 +36,22 @@ def initialize_system():
 
 
 def fs_instance_sys():
+    fs_instance = VirtualFileSystem()
     return fs_instance
 
 def kernel_instance_sys():
+    kernel_instance = VirtualKernel()
     return kernel_instance
 
 def animations_instance_sys():
+    animations_instance = Animations()
     return animations_instance
 
 def vproc_instance_sys():
     return vproc_instance
 
 def passwordtools_instance_sys():
+    passwordtools_instance = PasswordFile("passwd")
     return passwordtools_instance
 
 def establish_directory(dir):

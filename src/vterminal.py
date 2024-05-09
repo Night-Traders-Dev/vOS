@@ -16,6 +16,7 @@ from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
 
 home_dir = None
+cur_user = None
 
 class VirtualOS:
     def __init__(self, username):
@@ -40,6 +41,8 @@ class VirtualOS:
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
         self.active_user = username #passwordtools_instance.online_user()
+        global cur_user
+        cur_user = username
         self.user_dir = "/home/" + self.active_user
         self.user_perms = "rwxr-xr-x"
         self.su = False
@@ -69,8 +72,8 @@ class VirtualOS:
             self.fs.create_directory("/home")
             self.fs.create_directory(self.user_dir)
             self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
-            self.user_home_dir(self.current_directory)
-
+            global home_dir
+            home_dir = self.current_directory
         self.kernel.log_command("Initializing VirtualMachine...")
         self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
         self.kernel.log_command(f"Permissions: {self.current_directory.permissions}")
@@ -89,9 +92,6 @@ class VirtualOS:
             else:
                 return True
 
-    def user_home_dir(self, user_home_dir):
-        global home_dir
-        home_dir = user_home_dir #self.current_directory
 
 
 class QShell(Widget):
@@ -107,6 +107,7 @@ class QShell(Widget):
         self.title = "qShell"
         text_area.theme = "vscode_dark"
         yield text_area
+        global home_dir
         yield Input(placeholder=f"{home_dir} $ ", id="input")
 
     @on(Input.Submitted)
@@ -120,15 +121,18 @@ class QShell(Widget):
         self.passwordtools_instance = passwordtools_instance
         self.vproc_instance = vproc_instance
         self.history = []
-        self.active_user = self.passwordtools_instance.online_user()
-        self.fs.current_directory = home_dir
+        global cur_user
+        global home_dir
+        self.active_user = cur_user
+        self.user_dir = "/home/" + cur_user
+        self.current_directory = home_dir
+
 
         command = self.query_one("#input", Input)
         command_input = command
         if command.value.strip():
             self.append_output(f"$ {command.value.strip()}\n")
 #            command = input(f"{self.current_directory.get_full_path()} $ ").strip()
- #           self.history.append(command)
             command = command.value.strip()
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
@@ -138,7 +142,6 @@ class QShell(Widget):
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
                 self.display = False
                 self.notify("VirtualOS Shutdown Completed!")
-#                self.animations.shutdown_animation()
             elif command.startswith("su"):
                 auth = self.passwordtools_instance.su_prompt()
                 if auth:
