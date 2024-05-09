@@ -28,9 +28,9 @@ vOS integrates seamlessly with the QSE Blockchain, offering developers a powerfu
 
 To use vOS with the QSE Blockchain integration:
 
-1. Install Python, along with the required modules `Rich` and `Keyboard`.
+1. Install Python, along with the required modules `Rich` and `Textual`.
 2. Clone the vOS repository to your local machine.
-3. Navigate to the vOS directory and execute the `virtualos.py` script.
+3. Navigate to the vOS and src directory and execute the `login_tools.py` script.
 4. Use the provided shell commands from the `vbin/` directory to interact with the virtual file system and execute operations.
 5. Utilize the QSE Blockchain integration for developing, testing, and deploying blockchain applications within vOS.
 
