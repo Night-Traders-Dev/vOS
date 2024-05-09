@@ -68,6 +68,45 @@ def get_active_user():
     passwordtools_instance = PasswordFile("passwd")
     active_user = passwordtools_instance.check_passwd_file(fs_instance)[0]
     return active_user
+
+def home_fs_init(active_user):
+    user_dir = "/home/" + active_user
+    kernel = VirtualKernel()
+    fs = VirtualFileSystem()
+    # Check if 'home' directory exists
+    if "home" in fs.root.subdirectories:
+        # Check if 'user' directory exists
+        if active_user in fs.root.subdirectories["home"].subdirectories:                                                                       # Set default starting directory to /home/user
+            current_directory = fs.root.subdirectories["home"].subdirectories[active_user]
+        else:
+            kernel.log_command("User directory not found. Creating...")
+            fs.create_directory(user_dir)
+            current_directory = fs.root.subdirectories["home"].subdirectories[active_user]
+    else:
+        kernel.log_command("Home directory not found. Creating...")
+        fs.create_directory("/home")
+        fs.create_directory(user_dir)
+        current_directory = fs.root.subdirectories["home"].subdirectories[active_user]
+#    self.kernel.log_command("Initializing VirtualMachine...")
+#    vm = VirtualMachine(kernel, fs)  # Create a VirtualMachine instance
+    kernel.log_command(f"Permissions: {current_directory.permissions}")
+
+    try:
+        kernel.boot_verbose()
+        kernel.log_command(f"Current directory: {current_directory.get_full_path()}")
+        return current_directory
+    except Exception as e:
+        kernel.log_command(f"Error during kernel boot: {str(e)}")
+
+    def su_check(self, command):
+            if not self.su:
+                print(f"{command} requires su permission")
+                self.kernel.log_command(f"[!!]su_check: {self.active_user} invalid permissions for {command}")
+                return False
+            else:
+                return True
+
+
 # Import the api to gain access to vOS components
 #
 #from vapi import initialize_system

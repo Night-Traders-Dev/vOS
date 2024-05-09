@@ -15,11 +15,8 @@ from vapi import establish_directory
 from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
 from vapi import get_active_user
+from vapi import home_fs_init
 
-global home_dir
-home_dir = None
-global cur_user
-cur_user = None
 
 class VirtualOS:
     def __init__(self, username):
@@ -44,8 +41,6 @@ class VirtualOS:
         self.kernel.create_process("filesystemd")
         self.kernel.log_command("VirtualFileSystem Loaded...")
         self.active_user = username #passwordtools_instance.online_user()
-        global cur_user
-        cur_user = username
         self.user_dir = "/home/" + self.active_user
         self.user_perms = "rwxr-xr-x"
         self.su = False
@@ -58,42 +53,6 @@ class VirtualOS:
 #        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
 
 
-
-
-        # Check if 'home' directory exists
-        if "home" in self.fs.root.subdirectories:
-            # Check if 'user' directory exists
-            if self.active_user in self.fs.root.subdirectories["home"].subdirectories:
-                # Set default starting directory to /home/user
-                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
-            else:
-                self.kernel.log_command("User directory not found. Creating...")
-                self.fs.create_directory(self.user_dir)
-                self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
-        else:
-            self.kernel.log_command("Home directory not found. Creating...")
-            self.fs.create_directory("/home")
-            self.fs.create_directory(self.user_dir)
-            self.current_directory = self.fs.root.subdirectories["home"].subdirectories[self.active_user]
-            global home_dir
-            home_dir = self.current_directory
-        self.kernel.log_command("Initializing VirtualMachine...")
-        self.vm = VirtualMachine(self.kernel, self.fs)  # Create a VirtualMachine instance
-        self.kernel.log_command(f"Permissions: {self.current_directory.permissions}")
-
-        try:
-            self.kernel.boot_verbose()
-            self.kernel.log_command(f"Current directory: {self.current_directory.get_full_path()}")
-        except Exception as e:
-            self.kernel.log_command(f"Error during kernel boot: {str(e)}")
-
-    def su_check(self, command):
-            if not self.su:
-                print(f"{command} requires su permission")
-                self.kernel.log_command(f"[!!]su_check: {self.active_user} invalid permissions for {command}")
-                return False
-            else:
-                return True
 
 
 
@@ -109,6 +68,7 @@ class QShell(Widget):
     global vproc_instance
     global animations_instance
     global active_user_init
+    global home_fs
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
     animations = animations_instance
@@ -117,6 +77,7 @@ class QShell(Widget):
     fs = fs_instance
     vproc_instance = vproc_instance
     active_user_init = get_active_user()
+    home_fs = home_fs_init(active_user_init)
 
     def compose(self) -> ComposeResult:
         text_area = TextArea(id="output")
@@ -131,13 +92,9 @@ class QShell(Widget):
     @on(Input.Submitted)
     def execute_command(self):
         self.history = []
-        global cur_user
-        global home_dir
         self.passwordtools_instance = passwordtools_instance
         self.active_user = active_user_init
-#        self.active_user = cur_user
-        self.user_dir = "/home/" + cur_user
-        self.current_directory = self.user_dir
+        self.current_directory = home_fs
 
 
         command = self.query_one("#input", Input)
@@ -220,7 +177,7 @@ class QShell(Widget):
                 else:
                     path = None
                 self.kernel.log_command(f"ls debug: {self.current_directory} and {path}")
-                VCommands.ls(self.fs, self.current_directory, path)
+                self.append_output(VCommands.ls(self.fs, self.current_directory, path))
 
             elif command.startswith("cd"):
                 _, path = command.split(" ", 1)
