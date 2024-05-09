@@ -69,7 +69,6 @@ class QShell(Widget):
     global animations_instance
     global active_user_init
     global home_fs
-    global home_dir
     global text_area
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
