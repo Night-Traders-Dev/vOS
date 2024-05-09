@@ -130,15 +130,7 @@ class PasswordFile:
         self.file_path = file_path
         self.dmesg_file = "dmesg"
         self.active_user = None
-#        self.clock_thread = threading.Thread(target=self.update_clock, daemon=True)  # Create a daemon thread for the clock
-#        self.clock_thread.start()  # Start the clock thread
 
-    def update_clock(self):
-        while True:
-            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            clock_panel = Panel(Text(current_datetime, style="bold white"), width=20)
-            self.console.print(Layout().update(self.console.options, {"upper-right": clock_panel}))
-            time.sleep(1)  # Update the clock every second
 
     @staticmethod
     def generate_random_id():
@@ -157,13 +149,10 @@ class PasswordFile:
                 print("First Boot Account Setup")
                 self.create_new_user(fs)
             else:
-                pass
-#               from login_tools import vOSLoginApp
-#               app = vOSLoginApp()
-#               auth_status = app.run()
-#               if auth_status:
-#                   print(auth_status)
-#                self.login_prompt_rich()
+                with open(self.file_path, 'r') as file:
+                    for line in file:
+                        parts = line.strip().split(':')
+                        return [parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]]
         else:
             print("First Boot Account Setup")
             self.create_new_user(fs)

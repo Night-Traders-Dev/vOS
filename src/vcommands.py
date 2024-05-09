@@ -524,6 +524,6 @@ class VCommands:
                 fs.save_file_system("file_system.json")
                 fs.kernel.log_command(f"Created/overwritten file: {file}")
             else:
-                print(text)
+                return(text)
         else:
-            print(text)
+            return(text)

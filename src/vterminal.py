@@ -14,8 +14,11 @@ from vapi import initialize_system
 from vapi import establish_directory
 from vapi import qshell_instance_sys
 from vapi import vm_addresstools_instance
+from vapi import get_active_user
 
+global home_dir
 home_dir = None
+global cur_user
 cur_user = None
 
 class VirtualOS:
@@ -100,15 +103,20 @@ class QShell(Widget):
         Binding(key="ctrl+c", action="quit", description="Quit the app"),
     ]
 
+    global passwordtools_instance
+    global kernel_instance
+    global fs_instance
+    global vproc_instance
+    global animations_instance
+    global active_user_init
     fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
     kernel = kernel_instance
     animations = animations_instance
     addrtools = vm_addresstools_instance()
     qshell = qshell_instance_sys
     fs = fs_instance
-    passwordtools_instance = passwordtools_instance
     vproc_instance = vproc_instance
-
+    active_user_init = get_active_user()
 
     def compose(self) -> ComposeResult:
         text_area = TextArea(id="output")
@@ -117,17 +125,19 @@ class QShell(Widget):
         self.title = "qShell"
         text_area.theme = "vscode_dark"
         yield text_area
-        global home_dir
-        yield Input(placeholder=f"{home_dir} $ ", id="input")
+
+        yield Input(placeholder=f"{active_user_init} $ ", id="input")
 
     @on(Input.Submitted)
     def execute_command(self):
         self.history = []
         global cur_user
         global home_dir
-        self.active_user = cur_user
+        self.passwordtools_instance = passwordtools_instance
+        self.active_user = active_user_init
+#        self.active_user = cur_user
         self.user_dir = "/home/" + cur_user
-        self.current_directory = home_dir
+        self.current_directory = self.user_dir
 
 
         command = self.query_one("#input", Input)
@@ -139,7 +149,7 @@ class QShell(Widget):
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
             if command == "exit" or command == "shutdown":
-                self.vproc_instance.shutdown_vproc(self)
+                vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
                 self.kernel.delete_dmesg()  # Delete dmesg file on exit
                 self.display = False
@@ -152,7 +162,7 @@ class QShell(Widget):
                         VCommands.su(self, self.fs, self.current_directory, permissions)
 
             elif command.startswith(f"whoami"):
-                self.append_output("{self.active_user}\n")
+                self.append_output(f"{self.active_user}\n")
 
             elif command.startswith("history"):
                 if not self.history:

@@ -63,7 +63,11 @@ def qshell_instance_sys():
 def vm_addresstools_instance():
     return AddressTools
 
-
+def get_active_user():
+    fs_instance = VirtualFileSystem()
+    passwordtools_instance = PasswordFile("passwd")
+    active_user = passwordtools_instance.check_passwd_file(fs_instance)[0]
+    return active_user
 # Import the api to gain access to vOS components
 #
 #from vapi import initialize_system
