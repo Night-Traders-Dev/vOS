@@ -7,6 +7,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Button, Footer, Header, Static, Input, Label, TextArea
 from textual.widget import Widget
+from textual.screen import Screen
 from textual import on, events
 
 from vapi.vapi import  (establish_directory,
@@ -28,7 +29,7 @@ from vapi.widget_bridge import get_data
 
 
 
-class QShell(Widget):
+class QShell(Screen[str]):
 
     BINDINGS = [
         Binding(key="ctrl+c", action="quit", description="Quit the app"),
@@ -42,10 +43,6 @@ class QShell(Widget):
     global active_user_init
     global home_fs
     global home_init
-    global fstree_widget
-    global login_widget
-    fstree_widget = get_data("fstree")
-    login_widget = get_data("login")
     home_init = False
     kernel = kernel_instance()
     addrtools = vm_addresstools_instance()
@@ -56,20 +53,15 @@ class QShell(Widget):
     home_fs = home_fs_init(active_user_init)
 
 
-    def on_mount(self) -> None:
-         self.login_widget = login_widget
-#        self.fstree_widget = fstree_widget
-#        self.fstree_widget.visible = False
 
     def compose(self) -> ComposeResult:
+        yield Static("", id="qshell")
         global text_area
-        global fstree_widget
         text_area = TextArea(id="output")
         text_area.read_only = True
         text_area.cursor_blink = False
         text_area.theme = "vscode_dark"
         yield text_area
-#        yield fstree_widget
         yield Input(placeholder=f"{active_user_init} $ ", id="input")
 
     @on(Input.Submitted)
@@ -281,9 +273,8 @@ class QShell(Widget):
                     VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
             elif command.startswith("logout"):
-                self.visible = False
-                global login_widget
-                login_widget.visible = True
+                text_area.clear()
+                self.dismiss("logout")
 
             elif command.startswith("adduser"):
                 if self.su_check(command):

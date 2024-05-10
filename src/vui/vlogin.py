@@ -1,7 +1,8 @@
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Button, Footer, Header, Static, Input, Label, TextArea
-from textual.widget import Widget
+from textual.screen import Screen
+from textual.containers import Horizontal, Vertical
 from textual import on, events
 from vapi.vapi import passwordtools_instance
 from vapi.vapi import fs_instance
@@ -9,11 +10,11 @@ from vapi.vapi import animations_instance
 from vapi.widget_bridge import get_data
 
 logged_in = False
-global active_shell
 animation = animations_instance()
 animation.boot_animation_rich()
 
-class VLogin(Widget):
+class VLogin(Screen[bool]):
+
 
     BINDINGS = [
             Binding(key="ctrl+c", action="quit", description="Quit the app"),
@@ -22,19 +23,20 @@ class VLogin(Widget):
     def compose(self) -> ComposeResult:
         yield Input(placeholder="User name", id="username")
         yield Input(placeholder="Password", password= True, id="password")
-        yield Button("Login!")
+        yield Horizontal(
+            Button("Login", id="login"),
+            Button("Shutdown", id="shutdown"),
+            )
 
     def on_mount(self) -> None:
         self.title = "vOS Login"
         self.passwordtools = passwordtools_instance()
-        self.shell = get_data("shell")
-        self.shell.display = False
 
     @on(Input.Submitted)
     def login_input(self):
         self.login()
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, "#login")
     def login(self) -> None:
         self.fs = fs_instance()
         self.passwordtools.check_passwd_file(self.fs)
@@ -47,16 +49,20 @@ class VLogin(Widget):
         else:
             self.auth()
 
+
+    @on(Button.Pressed, "#shutdown")
+    def shutdown(self) -> None:
+        self.dismiss(False)
+
+
     def auth(self):
         login = self.passwordtools.authenticate(self.username, self.password)
         if login:
             self.notify("Login Successful!")
-            self.display = False
             self.title = "qShell"
-            self.shell.display = True
             logged_in = True
+            self.dismiss(True)
         else:
             self.mount(Label("Account not found!"))
-
 
 
