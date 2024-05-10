@@ -38,6 +38,8 @@ class QShell(Widget):
     global animations_instance
     global active_user_init
     global home_fs
+    global home_init
+    home_init = False
     kernel = kernel_instance()
     addrtools = vm_addresstools_instance()
     qshell = qshell_instance_sys
@@ -65,7 +67,15 @@ class QShell(Widget):
         self.passwordtools_instance = passwordtools_instance
         self.active_user = active_user_init
         self.home_dir = "/home/" + self.active_user
-        self.current_directory = home_fs
+        global home_init
+        if home_init == False:
+            self.current_directory = home_fs
+            global cur_dir
+            cur_dir = home_fs
+            home_init = True
+        else:
+            self.current_directory = cur_dir
+
 
         VCommands = vcommands_instance()
         command = self.query_one("#input", Input)
@@ -163,7 +173,7 @@ class QShell(Widget):
 
             elif command.startswith("cd"):
                 _, path = command.split(" ", 1)
-                self.current_directory = VCommands.cd(self, self.fs, self.current_directory, path)
+                cur_dir = VCommands.cd(self, self.fs, self.current_directory, path)
 
             elif command.startswith("cat"):
                 try:

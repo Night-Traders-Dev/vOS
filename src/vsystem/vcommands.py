@@ -13,22 +13,13 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 from rich import print
-
-
-# Get the parent directory
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Add the parent directory to sys.path
-sys.path.append(parent_dir)
-
-from vbin import *
+#from vbin import *
 
 
 
 class VCommands:
     def __init__(self):
         self.kernel = VirtualKernel()
-        self.vfs = VirtualFileSystem()
         self.qshell = QShellInterpreter()
         self.vproc = VirtualProcess("vprocd", 1, "vfsd")
 
@@ -63,10 +54,6 @@ class VCommands:
             print("echo - Display arguments")
 
 
-    @staticmethod
-    def text_edit(self, fs, current_directory, path = None):
-        editor = FancyTextEditor(fs, current_directory)
-        editor.edit()
 
     @staticmethod
     def su(self, fs, current_directory, permissions="rwxrwxrwx"):
@@ -292,6 +279,7 @@ class VCommands:
         else:
             try:
                 new_directory = fs.find_directory(current_directory, path)
+                self.kernel.log_command(new_directory)
                 return new_directory
             except FileNotFoundError:
                 print(f"Directory '{path}' not found.")
