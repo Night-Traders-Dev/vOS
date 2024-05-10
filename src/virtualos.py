@@ -13,14 +13,6 @@ from vapi.vapi_ui import FSTree_widget
 from vapi.widget_bridge import set_data
 from time import sleep
 
-fstree_widget = FSTree_widget()
-active_shell = QShell_widget()
-login_widget = VLogin_widget()
-
-set_data("shell", active_shell)
-set_data("fstree", fstree_widget)
-set_data("login", login_widget)
-
 class VOSInit(Screen):
 
     def compose(self) -> ComposeResult:
@@ -33,6 +25,7 @@ class vOS(App):
          "vosinit": VOSInit,
          "qshell": QShell_widget,
          "voslogin": VLogin_widget,
+         "fstree": FSTree_widget,
         }
 
     BINDINGS = [
@@ -45,8 +38,15 @@ class vOS(App):
         while True:
             self.push_screen("vosinit")
             if await self.push_screen_wait("voslogin"):
-                if await self.push_screen_wait("qshell") == "logout":
+                self.qshell_screen = await self.push_screen_wait("qshell")
+                if self.qshell_screen == "logout":
                     self.notify("Logged Out")
+                elif self.qshell_screen == "fstree":
+                    self.fstree_screen = await self.push_screen_wait("fstree")
+                    if self.fstree_screen == False:
+                        self.qshell_screen
+                    else:
+                        break # Exit fstree loop
                 else:
                     break  # Exit the loop if qshell is not logged out
             else:

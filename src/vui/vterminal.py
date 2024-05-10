@@ -136,8 +136,7 @@ class QShell(Screen[str]):
                 self.fs.save_file_system("file_system.json")  # Save filesystem
 
             elif command.startswith("fstree"):
-                self.visible = False
-                fstree.visible = True
+                self.dismiss("fstree")
 
             elif command.startswith("sysmon"):
                 self.vproc_instance.monitor_processes(self)

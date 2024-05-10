@@ -33,4 +33,3 @@ def VLogin_widget():
 
 def FSTree_widget():
     return VirtualFSTree()
-
