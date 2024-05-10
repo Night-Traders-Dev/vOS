@@ -127,8 +127,8 @@ class UserAccount:
 
 class PasswordFile:
     def __init__(self, file_path):
-        self.file_path = file_path
-        self.dmesg_file = "dmesg"
+        self.file_path = os.path.abspath(f"../src/vinit/{file_path}")
+        self.dmesg_file = os.path.abspath("../src/vinit/dmesg")
         self.active_user = None
 
 
@@ -239,7 +239,6 @@ class PasswordFile:
 
 
     def logout(self):
-       os.system('cls' if os.name == 'nt' else 'clear')
        self.active_user = None
 
 
@@ -257,35 +256,13 @@ class Animations:
                 progress.update(task, advance=1)
                 time.sleep(0.1)
 
-        console.print("Welcome to vOS")
+        console.print("Thank you for using vOS © 2024")
 
-    @classmethod
-    def reboot_animation(cls):
-        console = Console()
 
-        with Progress() as progress:
-            task = progress.add_task("[cyan]Rebooting vOS...", total=20)
-            for i in range(20):
-                progress.update(task, advance=1)
-                time.sleep(0.1)
-
-        console.print("[green]Reboot complete. Goodbye!")
-
-    @classmethod
-    def shutdown_animation(cls):
-        console = Console()
-
-        with Progress() as progress:
-            task = progress.add_task("[cyan]Shutting down vOS...", total=20)
-            for i in range(20):
-                progress.update(task, advance=1)
-                time.sleep(0.1)
-
-        console.print("[green]Shutdown complete. Goodbye!")
 
 
 class KernelMessage:
-    dmesg_file = "dmesg"
+    dmesg_file = os.path.abspath("../src/vinit/dmesg")
 
     @classmethod
     def log_process(cls, program):
@@ -316,7 +293,7 @@ class VirtualKernel:
     def __init__(self):
         self.processes = ProcessList.running_processes
         self.create_process("VirtualKernel")
-        self.dmesg_file = "dmesg"
+        self.dmesg_file = os.path.abspath("../src/vinit/dmesg")
         self.create_process("dmesgd")
         self.filesystem_monitoring_enabled = True
         self.last_error = None
@@ -340,7 +317,7 @@ class VirtualKernel:
         try:
             # Define the paths to the OS components
             component_paths = [
-                "vteeminal.py",
+                os.path.abspath("../src/vui/vterminal.py"),
                 "virtualfs.py",
                 "vcommands.py",
                 "virtualkernel.py",
@@ -366,7 +343,7 @@ class VirtualKernel:
         try:
             # Read the checksum file
             stored_checksums = {}
-            with open("checksums.txt", "r") as checksum_file:
+            with open(os.path.abspath("../src/vinit/checksum.txt"), "r") as checksum_file:
                 for line in checksum_file:
                     component, checksum = line.strip().split(": ")
                     stored_checksums[component] = checksum
@@ -464,7 +441,7 @@ class VirtualKernel:
 
     def print_component_versions(self, verbose):
         try:
-            with open("version.json", "r") as file:
+            with open(os.path.abspath("../src/vinit/version.json"), "r") as file:
                 versions = json.load(file)
                 for component, version in versions.items():
                     if verbose:
@@ -482,7 +459,6 @@ class VirtualKernel:
     def reboot_os(self):
         """Reboots the virtual operating system."""
         # Clear the screen
-        os.system('cls' if os.name == 'nt' else 'clear')
 
         # Reset kernel state or perform any necessary actions to reboot the OS
         print("Rebooting the virtual operating system...")

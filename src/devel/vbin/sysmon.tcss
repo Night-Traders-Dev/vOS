@@ -1,0 +1,10 @@
+Screen {
+    align: center middle;
+}
+
+SysMon {
+    width: auto;
+    height: auto;
+    background: $primary;
+    color: $text;
+}

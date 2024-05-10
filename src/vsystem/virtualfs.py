@@ -1,9 +1,9 @@
 import json
-import os
+import os, sys
 import gzip
 import sys
 import copy
-from virtualkernel import VirtualKernel
+from vsystem.virtualkernel import VirtualKernel
 
 class File:
     def __init__(self, name, content="", permissions=""):
@@ -289,7 +289,7 @@ class VirtualFileSystem:
         self.kernel = VirtualKernel()
         self.kernel.log_command("Kernel Module for VirtualFileSystem loaded")
         self.root = Directory("")
-        self.filesystem_data = self.load_file_system("file_system.json")
+        self.filesystem_data = self.load_file_system(os.path.abspath("../src/vinit/file_system.json"))
         self.current_directory = self.root
         self.kernel.log_command(f"Setting Default Directory: {self.current_directory.get_full_path()}")
         self.kernel.log_command("Loading OS and Placing OS files...")
@@ -451,11 +451,11 @@ class VirtualFileSystem:
         # Add provided files to their relevant locations
         provided_files = {
             "virtualkernel.py": {"name": "boot/virtualkernel"},  # Place virtualkernel.py in /boot
-            "vterminal.py": {"name": "boot/virtualos"},  # Place virtualos.py in /boot
+            os.path.abspath("../src/vui/vterminal.py"): {"name": "boot/virtualos"},  # Place virtualos.py in /boot
             "virtualfs.py": {"name": "boot/virtualfs"},  # Place virtualfs.py in /boot
             "virtualmachine.py": {"name": "sbin/virtualmachine"},  # Place virtualmachine.py in /sbin
-            "checksums.txt": {"name": "etc/checksum"},
-            "vapi.py": {"name": "dev/vapi"}
+            os.path.abspath("../src/vinit/checksums.txt"): {"name": "etc/checksum"},
+            os.path.abspath("../src/vapi/vapi.py"): {"name": "dev/vapi"}
         }
 
         for file_name, file_data in provided_files.items():
@@ -476,8 +476,9 @@ class VirtualFileSystem:
             # Add the file to the parent directory with the base file name
             parent_directory.add_file(File(base_file_name, content))
 
+
     def add_bin_files(self):
-        vbin_directory = os.path.join(os.path.dirname(__file__), "vbin")
+        vbin_directory = os.path.join(os.path.dirname(__file__), os.path.abspath("../src/vbin/"))
 
         # Iterate over every file in the vbin directory
         for filename in os.listdir(vbin_directory):
@@ -679,7 +680,7 @@ class VirtualFileSystem:
             self.add_default_filesystem()
 
     def save_file_system(self, file_path):
-        with gzip.open(file_path, 'wb') as file:
+        with gzip.open(os.path.abspath("../src/vinit/file_system.json"), 'wb') as file:
             encoded_data = json.dumps(self._encode_directory(self.root)).encode('utf-8')
             file.write(encoded_data)
 

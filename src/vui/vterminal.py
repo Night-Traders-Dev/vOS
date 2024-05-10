@@ -7,53 +7,20 @@ import sys
 import time
 import datetime
 import asyncio
-from vcommands import VCommands
-from virtualmachine import VirtualMachine
-from virtualmachine import Wallet
-from vapi import initialize_system
-from vapi import establish_directory
-from vapi import qshell_instance_sys
-from vapi import vm_addresstools_instance
-from vapi import get_active_user
-from vapi import home_fs_init
-from vbin.fstree import VirtualFSTree
-
-
-
-class VirtualOS:
-    def __init__(self, username):
-        fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
-        self.kernel = kernel_instance
-        self.animations = animations_instance
-        self.wallet = Wallet(None, None)
-        self.addrtools = vm_addresstools_instance()
-        self.qshell = qshell_instance_sys
-        self.fs = fs_instance
-        self.passwordtools_instance = passwordtools_instance
-        self.vproc_instance = vproc_instance
-        self.kernel.log_command("Kernel Loaded...")
-        self.kernel.get_checksum_file()
-        self.kernel.compare_checksums()
-        VCommands.clear_screen()
-        self.kernel.log_command("Booting up VirtualOS...")
-        self.kernel.log_command("Component Version Numbers:\n")
-        self.kernel.print_component_versions(False)
-        self.kernel.log_command(f"Python Version: {sys.version}")
-        self.kernel.log_command("Initializing VirtualFileSystem...")
-        self.kernel.create_process("filesystemd")
-        self.kernel.log_command("VirtualFileSystem Loaded...")
-        self.active_user = username #passwordtools_instance.online_user()
-        self.user_dir = "/home/" + self.active_user
-        self.user_perms = "rwxr-xr-x"
-        self.su = False
-        self.kernel.log_command("Default user permissions set(rwxr-xr-x)...")
-        self.kernel.log_command(f"{self.active_user} logged in.")
-#        my_directory = establish_directory("/")
-#        snapstamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-#        snapshot_name = f"snapshot_{snapstamp}"
-#        snapshot = my_directory.create_snapshot(self.fs, self.fs.current_directory, "/usr", snapshot_name)
-#        self.kernel.log_command(f"Snapshot Created: {snapshot_name}")
-
+from vapi.vapi import  (establish_directory,
+                        qshell_instance_sys,
+                        vm_addresstools_instance,
+                        get_active_user,
+                        home_fs_init,
+                        vcommands_instance,
+                        vm_wallet_instance,
+                        vm_instance,
+                        fs_instance,
+                        kernel_instance,
+                        vproc_instance,
+                        passwordtools_instance,
+                        vm_wallet_instance,
+                        vm_instance)
 
 
 
@@ -71,12 +38,11 @@ class QShell(Widget):
     global animations_instance
     global active_user_init
     global home_fs
-    fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance = initialize_system()
-    kernel = kernel_instance
+    kernel = kernel_instance()
     addrtools = vm_addresstools_instance()
     qshell = qshell_instance_sys
-    fs = fs_instance
-    vproc_instance = vproc_instance
+    fs = fs_instance()
+    vproc_instance = vproc_instance()
     active_user_init = get_active_user()
     home_fs = home_fs_init(active_user_init)
 
@@ -86,10 +52,9 @@ class QShell(Widget):
         text_area = TextArea(id="output")
         text_area.read_only = True
         text_area.cursor_blink = False
-        self.title = "qShell"
         text_area.theme = "vscode_dark"
         global fstree
-        fstree = VirtualFSTree()
+#        fstree = VirtualFSTree()
         yield text_area
 #        yield fstree
         yield Input(placeholder=f"{active_user_init} $ ", id="input")
@@ -102,7 +67,7 @@ class QShell(Widget):
         self.home_dir = "/home/" + self.active_user
         self.current_directory = home_fs
 
-
+        VCommands = vcommands_instance()
         command = self.query_one("#input", Input)
         command_input = command
         if command.value.strip():
@@ -206,7 +171,9 @@ class QShell(Widget):
                 except ValueError:
                     # If no path is specified, use the current directory
                     path = None
+                text_area.language="python"
                 self.append_output(VCommands.cat(self.fs, self.current_directory, path))
+                text_area.language=None
 
             elif command.startswith("rmdir"):
                 _, path = command.split(" ", 1)

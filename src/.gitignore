@@ -11,3 +11,7 @@ Hard-Snap/*
 src/Hard-Snap/*
 vbin/__pycache__
 vbin/.gitignore
+vinit/passwd
+vinit/file_system.json
+vinit/dmesg
+

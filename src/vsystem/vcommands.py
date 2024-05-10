@@ -1,18 +1,26 @@
 import os
 import sys
 import platform
-from virtualfs import File
-from virtualfs import Directory
-from virtualfs import VirtualFileSystem
-from virtualkernel import VirtualKernel
-from virtualkernel import QShellInterpreter
-from virtualkernel import VirtualProcess
+from vsystem.virtualfs import File
+from vsystem.virtualfs import Directory
+from vsystem.virtualfs import VirtualFileSystem
+from vsystem.virtualkernel import VirtualKernel
+from vsystem.virtualkernel import QShellInterpreter
+from vsystem.virtualkernel import VirtualProcess
 from rich.console import Console
 from rich.layout import Layout
 from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 from rich import print
+
+
+# Get the parent directory
+parent_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
+
 from vbin import *
 
 
@@ -22,7 +30,7 @@ class VCommands:
         self.kernel = VirtualKernel()
         self.vfs = VirtualFileSystem()
         self.qshell = QShellInterpreter()
-        self.vproc = VirtualProcess("vprocd", 1)
+        self.vproc = VirtualProcess("vprocd", 1, "vfsd")
 
     @staticmethod
     def help(command=None):

@@ -1,56 +1,51 @@
 # vapi.py
+import os, sys
 
-from virtualfs import File
-from virtualfs import Directory
-from virtualfs import VirtualFileSystem
-
-from virtualkernel import VirtualKernel
-from virtualkernel import QShellInterpreter
-from virtualkernel import VirtualProcess
-from virtualkernel import Animations
-from virtualkernel import UserAccount
-from virtualkernel import PasswordFile
-
-from virtualmachine import VirtualMachine
-from virtualmachine import Wallet
-from virtualmachine import AddressTools
-from virtualmachine import Block
-from virtualmachine import Blockchain
-from virtualmachine import Transaction
-
-from virtualinput import TerminalInput
-
-class UserConfig:
-    user = None
+sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-2]))
 
 
-def initialize_system():
-    fs_instance = VirtualFileSystem()
-    kernel_instance = VirtualKernel()
-    animations_instance = Animations()
-    vproc_instance = VirtualProcess("kernel", 0, "Kernel")
-    passwordtools_instance = PasswordFile("passwd")
-    qshell_instance = QShellInterpreter()
+from vsystem.virtualfs import File
+from vsystem.virtualfs import Directory
+from vsystem.virtualfs import VirtualFileSystem
 
-    return fs_instance, kernel_instance, animations_instance, vproc_instance, passwordtools_instance
+from vsystem.virtualkernel import VirtualKernel
+from vsystem.virtualkernel import QShellInterpreter
+from vsystem.virtualkernel import VirtualProcess
+from vsystem.virtualkernel import Animations
+from vsystem.virtualkernel import UserAccount
+from vsystem.virtualkernel import PasswordFile
+
+from vsystem.virtualmachine import VirtualMachine
+from vsystem.virtualmachine import Wallet
+from vsystem.virtualmachine import AddressTools
+from vsystem.virtualmachine import Block
+from vsystem.virtualmachine import Blockchain
+from vsystem.virtualmachine import Transaction
+
+from vsystem.virtualinput import TerminalInput
+
+from vsystem.vcommands import VCommands
 
 
-def fs_instance_sys():
+## VirtualAPI Class Instamces
+
+def fs_instance():
     fs_instance = VirtualFileSystem()
     return fs_instance
 
-def kernel_instance_sys():
+def kernel_instance():
     kernel_instance = VirtualKernel()
     return kernel_instance
 
-def animations_instance_sys():
+def animations_instance():
     animations_instance = Animations()
     return animations_instance
 
-def vproc_instance_sys():
+def vproc_instance():
+    vproc_instance = VirtualProcess("vprocd", 0, "Kernel")
     return vproc_instance
 
-def passwordtools_instance_sys():
+def passwordtools_instance():
     passwordtools_instance = PasswordFile("passwd")
     return passwordtools_instance
 
@@ -60,8 +55,19 @@ def establish_directory(dir):
 def qshell_instance_sys():
     return qshell_instance
 
+def vm_instance():
+    return VirtualMachine()
+
 def vm_addresstools_instance():
-    return AddressTools
+    return AddressTools()
+
+def vm_wallet_instance():
+    return Wallet()
+
+def vcommands_instance():
+    return VCommands()
+
+## VirtualAPI Functions
 
 def get_active_user():
     try:

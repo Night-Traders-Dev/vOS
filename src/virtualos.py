@@ -3,15 +3,14 @@ from textual.binding import Binding
 from textual.widgets import Button, Footer, Header, Static, Input, Label, TextArea
 from textual.widget import Widget
 from textual import on, events
-from vapi import passwordtools_instance_sys
-from vapi import fs_instance_sys
-from vapi import animations_instance_sys
-from vterminal import QShell
-from vterminal import VirtualOS
+from vapi.vapi import passwordtools_instance
+from vapi.vapi import fs_instance
+from vapi.vapi import animations_instance
+from vui.vterminal import QShell
 
 logged_in = False
 active_shell = QShell()
-animation = animations_instance_sys()
+animation = animations_instance()
 animation.boot_animation_rich()
 
 class VLogin(Widget):
@@ -27,7 +26,7 @@ class VLogin(Widget):
 
     def on_mount(self) -> None:
         self.title = "vOS Login"
-        self.passwordtools = passwordtools_instance_sys()
+        self.passwordtools = passwordtools_instance()
         self.shell = active_shell
         self.shell.display = False
 
@@ -37,7 +36,7 @@ class VLogin(Widget):
 
     @on(Button.Pressed)
     def login(self) -> None:
-        self.fs = fs_instance_sys()
+        self.fs = fs_instance()
         self.passwordtools.check_passwd_file(self.fs)
         self.username = self.query_one("#username", Input).value
         self.password = self.query_one("#password", Input).value
@@ -52,14 +51,12 @@ class VLogin(Widget):
         login = self.passwordtools.authenticate(self.username, self.password)
         if login:
             self.notify("Login Successful!")
-            virtualos_init = VirtualOS(self.username)
             self.display = False
+            self.title = "qShell"
             self.shell.display = True
             logged_in = True
-            return True
         else:
             self.mount(Label("Account not found!"))
-            return False
 
 
 class vOS(App):
