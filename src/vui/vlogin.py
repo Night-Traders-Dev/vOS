@@ -59,22 +59,4 @@ class VLogin(Widget):
             self.mount(Label("Account not found!"))
 
 
-#class vOS(App):
-
-
-#    BINDINGS = [
-#            Binding(key="ctrl+c", action="quit", description="Quit the app"),
-#        ]
-
-#    def compose(self) -> ComposeResult:
-#        login_prompt = VLogin()
-#        VHeader = Header()
-#        VHeader.show_clock = True
-#        yield VHeader
-#        yield Footer()
-#        yield login_prompt
-#        yield active_shell
-
-#if __name__ == "__main__":
-#     vOS().run()
 
