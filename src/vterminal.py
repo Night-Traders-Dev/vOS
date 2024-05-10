@@ -111,10 +111,14 @@ class QShell(Widget):
             command = command.value.strip()
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
-            if command == "exit" or command == "shutdown":
+            if command.startswith("exit") or command.startswith("shutdown"):
                 vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
-                self.kernel.delete_dmesg()  # Delete dmesg file on exit
+                parts = command.split(" ", 1)
+                if len(parts) > 1 and parts[1] == "--debug":
+                    pass
+                else:
+                    self.kernel.delete_dmesg()  # Delete dmesg file on exit
                 self.display = False
                 self.notify("VirtualOS Shutdown Completed!")
                 exit()
