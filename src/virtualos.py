@@ -6,58 +6,18 @@ from textual import on, events
 from vapi.vapi import passwordtools_instance
 from vapi.vapi import fs_instance
 from vapi.vapi import animations_instance
-from vui.vterminal import QShell
+from vapi.vapi_ui import QShell_widget
+from vapi.vapi_ui import VLogin_widget
+from vapi.vapi_ui import FSTree_widget
+from vapi.widget_bridge import set_data
 
-logged_in = False
-active_shell = QShell()
-animation = animations_instance()
-animation.boot_animation_rich()
+fstree_widget = FSTree_widget()
+login_widget = VLogin_widget()
+active_shell = QShell_widget()
 
-class VLogin(Widget):
-
-    BINDINGS = [
-            Binding(key="ctrl+c", action="quit", description="Quit the app"),
-        ]
-
-    def compose(self) -> ComposeResult:
-        yield Input(placeholder="User name", id="username")
-        yield Input(placeholder="Password", password= True, id="password")
-        yield Button("Login!")
-
-    def on_mount(self) -> None:
-        self.title = "vOS Login"
-        self.passwordtools = passwordtools_instance()
-        self.shell = active_shell
-        self.shell.display = False
-
-    @on(Input.Submitted)
-    def login_input(self):
-        self.login()
-
-    @on(Button.Pressed)
-    def login(self) -> None:
-        self.fs = fs_instance()
-        self.passwordtools.check_passwd_file(self.fs)
-        self.username = self.query_one("#username", Input).value
-        self.password = self.query_one("#password", Input).value
-        if self.username == "":
-            self.notify("Username missing!", severity="warning")
-        elif self.password == "":
-            self.notify("Password missing!", severity="warning")
-        else:
-            self.auth()
-
-    def auth(self):
-        login = self.passwordtools.authenticate(self.username, self.password)
-        if login:
-            self.notify("Login Successful!")
-            self.display = False
-            self.title = "qShell"
-            self.shell.display = True
-            logged_in = True
-        else:
-            self.mount(Label("Account not found!"))
-
+set_data("shell", active_shell)
+set_data("fstree", fstree_widget)
+set_data("login", login_widget)
 
 class vOS(App):
 
@@ -67,14 +27,11 @@ class vOS(App):
         ]
 
     def compose(self) -> ComposeResult:
-        login_prompt = VLogin()
-        VHeader = Header()
-        VHeader.show_clock = True
-        yield VHeader
+        yield Header()
         yield Footer()
-        yield login_prompt
+        yield login_widget
+#        yield fstree_widget
         yield active_shell
 
 if __name__ == "__main__":
      vOS().run()
-
