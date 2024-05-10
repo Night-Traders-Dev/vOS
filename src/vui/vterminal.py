@@ -43,7 +43,9 @@ class QShell(Widget):
     global home_fs
     global home_init
     global fstree_widget
+    global login_widget
     fstree_widget = get_data("fstree")
+    login_widget = get_data("login")
     home_init = False
     kernel = kernel_instance()
     addrtools = vm_addresstools_instance()
@@ -54,7 +56,8 @@ class QShell(Widget):
     home_fs = home_fs_init(active_user_init)
 
 
-#    def on_mount(self) -> None:
+    def on_mount(self) -> None:
+         self.login_widget = login_widget
 #        self.fstree_widget = fstree_widget
 #        self.fstree_widget.visible = False
 
@@ -222,7 +225,7 @@ class QShell(Widget):
 
             elif command == "uptime":
                 uptime = self.kernel.get_uptime()
-                self.append_output(f"vOS uptime: {uptime}")
+                self.append_output(f"vOS uptime: {uptime}\n")
 
 
             elif command == "update":
@@ -278,7 +281,9 @@ class QShell(Widget):
                     VCommands.echo(self.fs, self.current_directory, *args, file=file)
 
             elif command.startswith("logout"):
-                self.passwordtools_instance.logout()
+                self.visible = False
+                global login_widget
+                login_widget.visible = True
 
             elif command.startswith("adduser"):
                 if self.su_check(command):
