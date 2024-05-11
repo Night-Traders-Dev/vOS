@@ -56,10 +56,6 @@ class QShell(Screen[str]):
 
     CSS_PATH = "vterminal.tcss"
 
-#    def on_mount(self):
-#        self.screen.styles.background = Color(94, 39, 80)
-#        self.screen.styles.border = ("double", Color(233, 84, 32))
-
 
     global passwordtools_instance
     global kernel_instance
