@@ -1,19 +1,40 @@
 Screen {
-    content-align-horizontal: center;
-    content-align-vertical: middle;
+    width: 100%;
+    height: 100%;
 }
 
-TextArea {
-    color: rgb(44, 0, 30);
-    border: double rgb(119, 41, 83)
-    content-align-horizontal: center;
-    content-align-vertical: middle;
+
+
+
+#input {
+    margin: 0 2;
+    width: 60%; /* Increase the width of the input */
+    dock: bottom;
+    border: rgb(174, 167, 159);
 }
 
-.output {
-    color: rgb(44, 0, 30);
-    border: double rgb(119, 41, 83)
-    content-align-horizontal: center;
-    content-align-vertical: middle;
 
+#output {
+    color: rgb(44, 0, 30);
+    height: 60%;
+    width: 100%;
+    margin: 0 2;
+    max-width: 95vw; /* Limits the maximum width to 95% of the viewport width */
+    border: double rgb(119, 41, 83); /* Sets a double border with a specific color */
+    align: center top; /* Aligns the content to the center horizontally and to the top vertically */
+    padding: 2 2; /* Provides padding of 2 pixels on all sides */
+    scrollbar-color: rgb(237, 118, 77);
+}
+
+Header {
+  dock: top;
+  height: 3;
+  content-align: center top;
+  background: rgb(51, 51, 51);
+  color: rgb(174, 167, 159);
+  border: double rgb(237, 118, 77);
+}
+
+#header {
+    text-style: bold;
 }

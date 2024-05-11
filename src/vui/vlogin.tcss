@@ -10,6 +10,7 @@ Button {
 Input {
     margin: 1 2;
     width: 90%; /* Increase the width of the input */
+    border: rgb(174, 167, 159);
 }
 
 .login {

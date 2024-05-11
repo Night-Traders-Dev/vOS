@@ -3,7 +3,6 @@ from textual.binding import Binding
 from textual.widgets import Button, Footer, Header, Static, Input, Label, TextArea
 from textual.screen import Screen
 from textual.containers import Horizontal, Vertical
-from textual.command import Hit, Hits, Provider
 from textual.color import Color
 from textual import on, events
 from vapi.vapi import passwordtools_instance
@@ -15,36 +14,11 @@ logged_in = False
 animation = animations_instance()
 animation.boot_animation_rich()
 
-class VLoginCommands(Provider):
-    async def shutdown_vos(self):
-        self.dismiss(False)
-
-
-    async def search(self, query: str) -> Hits:  
-#        matcher = self.matcher(query)  
-        icon: var[str] = var('🔎')
-
-        command = "shutdown_vos()"
-        score = matcher.match(command)  
-        if score > 0:
-            yield Hit(
-                score,
-                matcher.highlight(command),  
-                text="Shutdown",
-                help="quit vOS",
-                command = command
-            )
 
 
 class VLogin(Screen[bool]):
 
     CSS_PATH = "vlogin.tcss"
-
-    COMMANDS = Screen.COMMANDS | {VLoginCommands}
-
-    BINDINGS = [
-            Binding(key="ctrl+c", action="quit", description="Quit the app"),
-        ]
 
     def compose(self) -> ComposeResult:
         yield Header(id="header")
@@ -61,7 +35,6 @@ class VLogin(Screen[bool]):
         self.title = "vOS Login"
         self.screen.styles.background = Color(94, 39, 80)
         self.screen.styles.border = ("ascii", Color(233, 84, 32))
-#        widget.styles.border = ("heavy", Color(51, 51, 51))
         self.passwordtools = passwordtools_instance()
 
 

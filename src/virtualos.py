@@ -5,6 +5,7 @@ from textual.widget import Widget
 from textual import on, events, work
 from textual.screen import Screen
 from textual.color import Color
+from textual.command import Hit, Hits, Provider
 from vapi.vapi import passwordtools_instance
 from vapi.vapi import fs_instance
 from vapi.vapi import animations_instance
@@ -14,7 +15,24 @@ from vapi.vapi_ui import FSTree_widget
 from vapi.widget_bridge import set_data
 from time import sleep
 
+
+class VOSCommand(Provider):
+    async def search(self, query: str) -> Hits:
+        matcher = self.matcher(query)
+        icon: var[str] = var('🖥️')
+        command = query
+        score = matcher.match(command)
+        if score > 0:
+            yield Hit(
+                score,
+                matcher.highlight(query),
+                text="Shutdown",
+                help="quit vOS",
+            )
+
 class VOSInit(Screen):
+
+    COMMANDS = {VOSCommand}
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -22,11 +40,13 @@ class VOSInit(Screen):
 
 class vOS(App):
 
+    def shutdown_vos(self):
+        self.dismiss(False)
+
     def on_mount(self) -> None:
-        self.screen.styles.background = Color(94, 39, 80)
-        self.screen.styles.border = ("ascii", Color(233, 84, 32))
+        pass
 
-
+    COMMANDS = {VOSCommand}
 
     SCREENS = {
          "vosinit": VOSInit,
@@ -34,10 +54,6 @@ class vOS(App):
          "voslogin": VLogin_widget,
          "fstree": FSTree_widget,
         }
-
-#    BINDINGS = [
-#            Binding(key="ctrl+c", action="quit", description="Quit the app"),
-#        ]
 
 
     @work
