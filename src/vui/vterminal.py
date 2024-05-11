@@ -32,7 +32,9 @@ from vapi.vapi import  (establish_directory,
                         vm_instance)
 
 
-class ShellInput(Widget):
+
+
+class QShellIO(Widget):
 
     BORDER_TITLE = "vOS QShell"
 
@@ -46,14 +48,17 @@ class ShellInput(Widget):
             yield text_area
             yield Input(placeholder=f"{active_user_init} $ ", id="input")
 
+
+
 class QShell(Screen[str]):
+
+    AUTO_FOCUS = "#input"
 
     CSS_PATH = "vterminal.tcss"
 
-    def on_mount(self):
-        self.screen.styles.background = Color(94, 39, 80)
-        self.screen.styles.border = ("double", Color(233, 84, 32))
-
+#    def on_mount(self):
+#        self.screen.styles.background = Color(94, 39, 80)
+#        self.screen.styles.border = ("double", Color(233, 84, 32))
 
 
     global passwordtools_instance
@@ -78,7 +83,7 @@ class QShell(Screen[str]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Header(show_clock=True, id="header")
-            TerminalWidget = ShellInput()
+            TerminalWidget = QShellIO()
             yield TerminalWidget
 
     @on(Input.Submitted)
@@ -99,6 +104,8 @@ class QShell(Screen[str]):
 
         VCommands = vcommands_instance()
         command = self.query_one("#input", Input)
+        if command.value.strip() != "qshell" and text_area.visible == False:
+            self.notify("QShell is not running", title="vOS App Manager", severity="error", timeout=2.5)
         command_input = command
         if command.value.strip():
             self.append_output(f"$ {command.value.strip()}\n")
@@ -106,10 +113,17 @@ class QShell(Screen[str]):
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
             if command.startswith("exit"):
-                text_area.visible = False
-                text_area.clear()
+                if text_area.visible:
+                    text_area.visible = False
+                    self.notify("QShell closed", title="vOS App Manager", timeout=1.5)
+                else:
+                    self.notify("QShell is not running", title="vOS App Manager", severity="error", timeout=1.5)
             elif command.startswith("qshell"):
-                text_area.visible = True
+                if not text_area.visible:
+                    text_area.clear()
+                    text_area.visible = True
+                else:
+                    self.notify("QShell already running", title="vOS App Manager", severity="warning", timeout=1.5)
             elif command.startswith("shutdown"):
                 vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
@@ -171,7 +185,7 @@ class QShell(Screen[str]):
                 VCommands.CMP(self.fs, self.current_directory, path1, path2)
 
 
-            elif command.startswith("qshell"):
+            elif command.startswith("qscript"):
                 _, path = command.split(" ", 1)
                 filepath = self.current_directory.get_full_path() + "/" + path
                 self.kernel.log_command(f"qshell: {filepath}")
