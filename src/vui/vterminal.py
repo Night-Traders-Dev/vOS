@@ -10,6 +10,7 @@ from textual.widget import Widget
 from textual.screen import Screen
 from textual import on, events
 from textual.color import Color
+from textual.containers import Vertical
 
 from rich.panel import Panel
 from rich.text import Text
@@ -32,15 +33,18 @@ from vapi.vapi import  (establish_directory,
 
 
 class ShellInput(Widget):
-    def on_mount(self):
-        self.value = ""
 
-    def render(self) -> Panel:
-        active_user_init = get_active_user()  # Assuming get_active_user() returns a string
-        cmd_prefix = Text.assemble((active_user_init, "green"), "$")
-        shell_swag = Input(cmd_prefix, id="input")
-        return cmd_prefix #Panel(cmd_prefix)
+    BORDER_TITLE = "vOS QShell"
 
+    def compose(self) -> ComposeResult:
+        global text_area
+        text_area = TextArea(id="output")
+        text_area.read_only = True
+        text_area.cursor_blink = False
+        text_area.theme = "vscode_dark"
+        with Vertical():
+            yield text_area
+            yield Input(placeholder=f"{active_user_init} $ ", id="input")
 
 class QShell(Screen[str]):
 
@@ -51,9 +55,6 @@ class QShell(Screen[str]):
         self.screen.styles.border = ("double", Color(233, 84, 32))
 
 
-#    BINDINGS = [
-#        Binding(key="ctrl+c", action="quit", description="Quit the app"),
-#    ]
 
     global passwordtools_instance
     global kernel_instance
@@ -75,17 +76,10 @@ class QShell(Screen[str]):
 
 
     def compose(self) -> ComposeResult:
-        yield Static("", id="qshell")
-        global text_area
-        yield Header(id="header")
-        text_area = TextArea(id="output")
-        text_area.read_only = True
-        text_area.cursor_blink = False
-        text_area.theme = "vscode_dark"
-        yield text_area
-        yield Input(placeholder=f"{active_user_init} $ ", id="input")
-#        yield ShellInput()
-#        set_focus(shell_input_widget)
+        with Vertical():
+            yield Header(show_clock=True, id="header")
+            TerminalWidget = ShellInput()
+            yield TerminalWidget
 
     @on(Input.Submitted)
     def execute_command(self):
@@ -108,11 +102,15 @@ class QShell(Screen[str]):
         command_input = command
         if command.value.strip():
             self.append_output(f"$ {command.value.strip()}\n")
-#            command = input(f"{self.current_directory.get_full_path()} $ ").strip()
             command = command.value.strip()
             self.history.append(command)
             self.kernel.log_command(command)  # Log the command
-            if command.startswith("exit") or command.startswith("shutdown"):
+            if command.startswith("exit"):
+                text_area.visible = False
+                text_area.clear()
+            elif command.startswith("qshell"):
+                text_area.visible = True
+            elif command.startswith("shutdown"):
                 vproc_instance.shutdown_vproc(self)
                 self.fs.save_file_system("file_system.json")  # Save filesystem
                 parts = command.split(" ", 1)
