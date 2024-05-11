@@ -4,6 +4,7 @@ from textual.widgets import Button, Footer, Header, Static, Input, Label, TextAr
 from textual.widget import Widget
 from textual import on, events, work
 from textual.screen import Screen
+from textual.color import Color
 from vapi.vapi import passwordtools_instance
 from vapi.vapi import fs_instance
 from vapi.vapi import animations_instance
@@ -21,6 +22,12 @@ class VOSInit(Screen):
 
 class vOS(App):
 
+    def on_mount(self) -> None:
+        self.screen.styles.background = Color(94, 39, 80)
+        self.screen.styles.border = ("ascii", Color(233, 84, 32))
+
+
+
     SCREENS = {
          "vosinit": VOSInit,
          "qshell": QShell_widget,
@@ -28,9 +35,9 @@ class vOS(App):
          "fstree": FSTree_widget,
         }
 
-    BINDINGS = [
-            Binding(key="ctrl+c", action="quit", description="Quit the app"),
-        ]
+#    BINDINGS = [
+#            Binding(key="ctrl+c", action="quit", description="Quit the app"),
+#        ]
 
 
     @work

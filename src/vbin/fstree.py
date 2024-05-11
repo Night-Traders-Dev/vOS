@@ -5,6 +5,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Tree, Header, Footer
 from textual.screen import Screen
 from textual.command import Hit, Hits, Provider
+from textual.color import Color
 
 class FSTreeCommands(Provider):
 
@@ -27,6 +28,11 @@ class FSTreeCommands(Provider):
 
 
 class VirtualFSTree(Screen[bool]):
+
+
+    def on_mount(self):
+        self.screen.styles.background = Color(94, 39, 80)
+        self.screen.styles.border = ("ascii", Color(51, 51, 51))
 
     BINDINGS = [
         ("escape", "push_screen('qshell')", "Back"),  

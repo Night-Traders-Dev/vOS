@@ -1,0 +1,19 @@
+Screen {
+    content-align-horizontal: center;
+    content-align-vertical: middle;
+}
+
+TextArea {
+    color: rgb(44, 0, 30);
+    border: double rgb(119, 41, 83)
+    content-align-horizontal: center;
+    content-align-vertical: middle;
+}
+
+.output {
+    color: rgb(44, 0, 30);
+    border: double rgb(119, 41, 83)
+    content-align-horizontal: center;
+    content-align-vertical: middle;
+
+}

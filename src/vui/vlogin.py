@@ -4,6 +4,7 @@ from textual.widgets import Button, Footer, Header, Static, Input, Label, TextAr
 from textual.screen import Screen
 from textual.containers import Horizontal, Vertical
 from textual.command import Hit, Hits, Provider
+from textual.color import Color
 from textual import on, events
 from vapi.vapi import passwordtools_instance
 from vapi.vapi import fs_instance
@@ -37,6 +38,8 @@ class VLoginCommands(Provider):
 
 class VLogin(Screen[bool]):
 
+    CSS_PATH = "vlogin.tcss"
+
     COMMANDS = Screen.COMMANDS | {VLoginCommands}
 
     BINDINGS = [
@@ -44,18 +47,24 @@ class VLogin(Screen[bool]):
         ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(id="header")
         self.title = "vOS Login"
         yield Input(placeholder="User name", id="username")
         yield Input(placeholder="Password", password= True, id="password")
         yield Horizontal(
             Button("Login", id="login"),
             Button("Shutdown", id="shutdown"),
+            classes="login_buttons",
             )
 
     def on_mount(self) -> None:
         self.title = "vOS Login"
+        self.screen.styles.background = Color(94, 39, 80)
+        self.screen.styles.border = ("ascii", Color(233, 84, 32))
+#        widget.styles.border = ("heavy", Color(51, 51, 51))
         self.passwordtools = passwordtools_instance()
+
+
 
     @on(Input.Submitted)
     def login_input(self):

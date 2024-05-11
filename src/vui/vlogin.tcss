@@ -1,0 +1,45 @@
+Screen {
+    layout: vertical;
+}
+
+Button {
+    margin: 2 2; /* Adjust the horizontal margin */
+    width: 1fr;
+}
+
+Input {
+    margin: 1 2;
+    width: 90%; /* Increase the width of the input */
+}
+
+.login {
+    text-style: bold;
+    height: 100%;
+    content-align: center middle;
+}
+
+.shutdown {
+    text-style: bold;
+    height: 100%;
+    content-align: center middle;
+}
+
+.buttons {
+    width: 100%;
+    height: auto;
+    dock: bottom;
+}
+
+Header {
+  dock: top;
+  height: 3;
+  content-align: center middle;
+  background: rgb(51, 51, 51);
+  color: rgb(174, 167, 159);
+  border: double rgb(237, 118, 77);
+}
+
+.header {
+    margin: 1 0 0 2;
+    text-style: bold;
+}

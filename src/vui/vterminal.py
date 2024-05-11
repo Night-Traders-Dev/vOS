@@ -9,6 +9,7 @@ from textual.widgets import Button, Footer, Header, Static, Input, Label, TextAr
 from textual.widget import Widget
 from textual.screen import Screen
 from textual import on, events
+from textual.color import Color
 
 from rich.panel import Panel
 from rich.text import Text
@@ -43,9 +44,14 @@ class ShellInput(Widget):
 
 class QShell(Screen[str]):
 
-    BINDINGS = [
-        Binding(key="ctrl+c", action="quit", description="Quit the app"),
-    ]
+    def on_mount(self):
+        self.screen.styles.background = Color(94, 39, 80)
+        self.screen.styles.border = ("double", Color(233, 84, 32))
+
+
+#    BINDINGS = [
+#        Binding(key="ctrl+c", action="quit", description="Quit the app"),
+#    ]
 
     global passwordtools_instance
     global kernel_instance
