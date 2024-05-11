@@ -1,0 +1,4 @@
+TextArea {
+    background: rgb(94, 39, 80);
+    border: ascii rgb(233, 84, 32);
+}
