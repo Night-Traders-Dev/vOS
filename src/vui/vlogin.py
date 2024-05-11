@@ -20,10 +20,10 @@ class VLoginCommands(Provider):
 
 
     async def search(self, query: str) -> Hits:  
-        matcher = self.matcher(query)  
+#        matcher = self.matcher(query)  
         icon: var[str] = var('🔎')
 
-        command = "shutdowm_vos()"
+        command = "shutdown_vos()"
         score = matcher.match(command)  
         if score > 0:
             yield Hit(
@@ -65,8 +65,10 @@ class VLogin(Screen[bool]):
     def login(self) -> None:
         self.fs = fs_instance()
         self.passwordtools.check_passwd_file(self.fs)
-        self.username = self.query_one("#username", Input).value
-        self.password = self.query_one("#password", Input).value
+        self.uservalue = self.query_one("#username", Input)
+        self.passvalue = self.query_one("#password", Input)
+        self.username = self.uservalue.value
+        self.password = self.passvalue.value
         if self.username == "":
             self.notify("Username missing!", severity="warning")
         elif self.password == "":
@@ -83,11 +85,14 @@ class VLogin(Screen[bool]):
     def auth(self):
         login = self.passwordtools.authenticate(self.username, self.password)
         if login:
-            self.notify("Login Successful!")
+            self.notify("Login Successful!", title="vOS Notification")
             self.title = "qShell"
             logged_in = True
+            self.uservalue.value = ""
+            self.passvalue.value = ""
             self.dismiss(True)
         else:
             self.mount(Label("Account not found!"))
+            self.passvalue.value = ""
 
 

@@ -3,12 +3,16 @@ import time
 import datetime
 import asyncio
 
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult, RenderableType
 from textual.binding import Binding
 from textual.widgets import Button, Footer, Header, Static, Input, Label, TextArea
 from textual.widget import Widget
 from textual.screen import Screen
 from textual import on, events
+
+from rich.panel import Panel
+from rich.text import Text
+
 
 from vapi.vapi import  (establish_directory,
                         qshell_instance_sys,
@@ -25,8 +29,16 @@ from vapi.vapi import  (establish_directory,
                         vm_wallet_instance,
                         vm_instance)
 
-from vapi.widget_bridge import get_data
 
+class ShellInput(Widget):
+    def on_mount(self):
+        self.value = ""
+
+    def render(self) -> Panel:
+        active_user_init = get_active_user()  # Assuming get_active_user() returns a string
+        cmd_prefix = Text.assemble((active_user_init, "green"), "$")
+        shell_swag = Input(cmd_prefix, id="input")
+        return cmd_prefix #Panel(cmd_prefix)
 
 
 class QShell(Screen[str]):
@@ -63,6 +75,8 @@ class QShell(Screen[str]):
         text_area.theme = "vscode_dark"
         yield text_area
         yield Input(placeholder=f"{active_user_init} $ ", id="input")
+#        yield ShellInput()
+#        set_focus(shell_input_widget)
 
     @on(Input.Submitted)
     def execute_command(self):

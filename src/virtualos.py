@@ -41,10 +41,11 @@ class vOS(App):
                 self.qshell_screen = await self.push_screen_wait("qshell")
                 if self.qshell_screen == "logout":
                     self.notify("Logged Out")
+                    self.push_screen("voslogin")
                 elif self.qshell_screen == "fstree":
                     self.fstree_screen = await self.push_screen_wait("fstree")
                     if self.fstree_screen == False:
-                        self.qshell_screen
+                        self.push_screen("qshell")
                     else:
                         break # Exit fstree loop
                 else:

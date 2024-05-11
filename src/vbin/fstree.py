@@ -2,7 +2,7 @@ import os
 import gzip
 import json
 from textual.app import App, ComposeResult
-from textual.widgets import Tree, Header
+from textual.widgets import Tree, Header, Footer
 from textual.screen import Screen
 from textual.command import Hit, Hits, Provider
 
@@ -13,7 +13,7 @@ class FSTreeCommands(Provider):
         icon: var[str] = var('🔎')
 
 
-        command = "back_to_shell()"
+        command = "back_to_shell"
         score = matcher.match(command)
         if score > 0:
             yield Hit(
@@ -22,11 +22,15 @@ class FSTreeCommands(Provider):
                 partial="back",
                 text="Back",
                 help="Exit fstree",
-                command="back_to_shell()",
+                command=command,
             )
 
 
 class VirtualFSTree(Screen[bool]):
+
+    BINDINGS = [
+        ("escape", "push_screen('qshell')", "Back"),  
+    ]
 
     COMMANDS = Screen.COMMANDS | {FSTreeCommands}
 
@@ -64,11 +68,11 @@ class VirtualFSTree(Screen[bool]):
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Footer()
         self.title = "vOS FStree"
         self.virtual_fs_tree = self.load_virtual_fs_as_tree()
         self.virtual_fs_tree.root.expand()
         yield self.virtual_fs_tree
-
 
 
 

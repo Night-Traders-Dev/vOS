@@ -1,0 +1,17 @@
+Button[start_button] {
+    background: blue;
+    color: white;
+    border: none;
+}
+
+Panel[start_menu] {
+    padding: 5;
+    background: lightblue;
+    border-radius: 5;
+}
+
+Panel[start_menu_content] {
+    padding: 2;
+    background: white;
+    margin-right: 5;
+}
