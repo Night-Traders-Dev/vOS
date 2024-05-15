@@ -1,0 +1,35 @@
+Screen {
+   width: 100%;
+   height: 100%;
+   background: rgb(44, 0, 30);
+   layers: one two three four;
+}
+#dash {
+   layer: two;
+   background: rgb(94, 39, 80);
+   height: 100%;
+   width: 15%;
+   opacity: 0.0;
+   dock: top;
+}
+
+
+#topbar {
+   layer: three;
+   background: rgb(119, 33, 111);
+   height: 7.5%;
+   width: 100%;
+   opacity: 100.0;
+   dock: top;
+}
+
+#clock {
+   layer: four;
+   background: rgb(119, 33, 111);
+   color: rgb(17, 17, 17);
+   width: 30;
+   height: 3;
+   align: right top;
+   margin-left: 48;
+}
+

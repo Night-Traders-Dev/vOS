@@ -43,9 +43,6 @@ class vOS(App):
     def shutdown_vos(self):
         self.dismiss(False)
 
-    def on_mount(self) -> None:
-        pass
-
     COMMANDS = {VOSCommand}
 
     SCREENS = {

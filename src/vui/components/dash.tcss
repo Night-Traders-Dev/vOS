@@ -1,0 +1,26 @@
+#dashwidget {
+    layers: two one;
+}
+
+
+#tdash {
+    height: 2;
+    background: rgba(233, 84, 32, 1);
+    dock: bottom;
+    layer: one;
+}
+
+#vdash {
+    height: 2;     
+    background: rgba(44, 0, 30, 100);
+    dock: bottom;
+    layer: two;
+}
+
+
+
+#background {
+    height: 100%;
+    width: 100%;
+    background: rgb(51, 51, 51);
+}

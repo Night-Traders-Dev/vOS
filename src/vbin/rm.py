@@ -12,13 +12,11 @@ class rm:
         """
         # Use the current directory if no path is specified
         if not path:
-            print("Error: Please specify a file path to remove.")
-            return
+            return("Error: Please specify a file path to remove.")
 
         # Check if the path is already a string
         if not isinstance(path, str):
-            print("Error: Invalid file path.")
-            return
+            return("Error: Invalid file path.")
 
         # Concatenate current directory path with the specified path
         if not path.startswith('/'):
@@ -30,6 +28,6 @@ class rm:
                     fs.save_file_system("file_system.json")
                     fs.kernel.log_command(f"Removed file: {path}")
                 else:
-                    print(f"Error: File '{path}' not found.")
+                    return(f"Error: File '{path}' not found.")
             except FileNotFoundError:
-                print(f"Error: File '{path}' not found.")
+                return(f"Error: File '{path}' not found.")
