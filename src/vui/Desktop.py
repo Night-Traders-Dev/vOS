@@ -14,7 +14,8 @@ class DesktopBase(Screen):
         yield self.dash
         yield Static(id="topbar")
         yield Static("", id="clock")
-        yield Static(id="dashbutton", classes="DashClass")
+        self.dashbutton = Static(id="dashbutton", classes="DashClass")
+        yield self.dashbutton
 
     # Clock Method
     @on(events.Mount)
@@ -45,11 +46,27 @@ class DesktopBase(Screen):
     def dash_animation(self, reveal: bool):
         if reveal:
             self.dash.styles.animate("opacity", value=100.0, duration=1.5)
+            self.dashbutton.styles.animate("opacity", value=100.0, duration=2.5)
             self.dash_open = True
         else:
             self.dash.styles.animate("opacity", value=0.0, duration=0.5)
+            self.dashbutton.styles.animate("opacity", value=0.0, duration=0.5)
             self.dash_open = False
             self.dash_timer = 0
+
+    # Dash Buttom Event
+    @on(events.MouseEvent)
+    def dash_click(self, event: events.MouseEvent) -> None:
+        dash_loc = self.dashbutton.region
+        term_height = 24
+        term_width = 80
+        if self.is_mouse_over_widget(
+            dash_loc.x, dash_loc.y, dash_loc.width, dash_loc.height,
+            event.x, event.y,
+            term_width, term_height
+            ):
+            self.dash_animation(False)
+
 
     # Dash Reveal Trigger
     @on(events.MouseEvent)

@@ -1,5 +1,5 @@
 DesktopBase {
-   layers: one two three;
+   layers: one two three four;
    background: rgb(44, 0, 30);
    layout: grid;
    grid-size: 2;
@@ -11,7 +11,7 @@ DesktopBase {
 }
 
 #dash {
-   layout: horizontal;
+   layout: vertical;
    background: rgb(94, 39, 80);
    opacity: 0.0;
    height: 100%;
@@ -43,11 +43,17 @@ DesktopBase {
    content-align: right top;
 }
 
+
 #dashbutton {
-   box-sizing: border-box;
+   layout: horizontal;
+   align: center middle;
+   background: rgba(255, 255, 255, 0.8);
+   padding: 1;
+   color: black;
+   width: 60w;
+   height: 20h;
    layer: three;
-   background: rgba(233, 84, 32, 0);
-   border: tall grey;
-   height: 1;
-   width: 6;
+   offset-y: 4;
+   offset-x: 2;
+   opacity: 0.0;
 }
