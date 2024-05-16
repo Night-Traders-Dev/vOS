@@ -17,6 +17,7 @@ DesktopBase {
    height: 100%;
    width: 10%;
    dock: left;
+   layer: two;
 }
 
 
@@ -40,4 +41,11 @@ DesktopBase {
    dock: top;
    layer: three;
    content-align: right top;
+}
+
+#dashbutton {
+   box-sizing: border-box;
+   layer: three;
+   background: rgb(233, 84, 32);
+   border: tall grey;
 }
