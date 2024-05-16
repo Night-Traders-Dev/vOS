@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult, RenderResult
 from textual.renderables.gradient import LinearGradient
 from textual.color import Color
-from textual.widgets import Static, Digits, Button
+from textual.widgets import Static, Digits, Button, Label
 from textual.widget import Widget
 from textual.reactive import reactive
 from textual.geometry import Region
@@ -31,26 +31,20 @@ STOPS = [
 ]
 
 
-class TopClock(Digits):
 
-    pass
-#    @on(events.Load)
-#    def render(self) -> RenderResult:
-#        amplitude = 0.1
-#        frequency = 3.5
-#        rotation = sin(time() * frequency) * pi * amplitude
-#        return LinearGradient(rotation, STOPS)
 
-class TopBar(Static):
-    def compose(self) -> None:
-        yield TopClock("", id="clock")
+class AppDrawer(Screen):
 
-    def render(self) -> RenderResult:
-        # Adjust amplitude and frequency for smoother animation
-        amplitude = 0.15  # Adjust amplitude between 0 and 1
-        frequency = 1.5  # Adjust frequency based on desired speed
-        rotation = sin(time() * frequency) * pi * amplitude
-        return LinearGradient(rotation, STOPS)
+   def compose(self) -> ComposeResult:
+     yield Widget(id="AppDrawer")
+
+class DesktopBase(Screen):
+
+    def compose(self) -> ComposeResult:
+        self.dash = Widget(id="dash")
+        yield self.dash
+        yield Static(id="topbar")
+        yield Static("", id="clock")
 
     #Clock Method
     @on(events.Mount)
@@ -60,24 +54,8 @@ class TopBar(Static):
 
     def update_clock(self) -> None:
         clock = datetime.now().time()
-        self.query_one(Digits).update(f"{clock:%T}")
+        self.query_one("#clock", Static).update(f"{clock:%T}")
 
-
-class DesktopUI(Widget):
-
-
-    def compose(self) -> ComposeResult:
-        self.dash = Static(id="dash")
-        yield self.dash
-        self.top_bar = TopBar(id="topbar")
-        yield self.top_bar
-        yield Button(id="DrawerButton")
-
-
-    @on(Button.Pressed, "#DrawerButton")
-    def OpenDrawer(self):
-        if self.dash.opacity == 100.0:
-            pass
 
     def is_mouse_over_widget(self, widget_x, widget_y, widget_width, widget_height, mouse_x, mouse_y, screen_width, screen_height):
         return widget_x <= mouse_x <= widget_x + widget_width and widget_y <= mouse_y <= widget_y + widget_height
@@ -95,20 +73,6 @@ class DesktopUI(Widget):
                 pass
         else:
             self.dash.styles.animate("opacity", value=0.0, duration=0.5)
-
-
-
-
-class AppDrawer(Screen):
-
-   def compose(self) -> ComposeResult:
-     yield Widget(id="AppDrawer")
-
-class DesktopBase(Screen):
-
-    def compose(self) -> ComposeResult:
-        yield DesktopUI(id="DesktopUI")
-
 
 class Desktop(App):
     CSS_PATH = "ui.tcss"
