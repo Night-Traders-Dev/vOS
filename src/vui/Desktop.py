@@ -29,9 +29,7 @@ class DesktopBase(Screen):
            if self.dash_timer != 3:
               self.dash_timer += 1
            else:
-              self.dash.styles.animate("opacity", value=0.0, duration=0.5)
-              self.dash_timer = 0
-              self.dash_open = False
+              self.dash_animation(False)
         clock = datetime.now().time()
         self.query_one("#clock", Static).update(f"{clock:%T}")
     # End Clock
@@ -43,6 +41,15 @@ class DesktopBase(Screen):
         screen_width, screen_height
         ):
         return widget_x <= mouse_x <= widget_x + widget_width and widget_y <= mouse_y <= widget_y + widget_height
+
+    def dash_animation(self, reveal: bool):
+        if reveal:
+            self.dash.styles.animate("opacity", value=100.0, duration=1.5)
+            self.dash_open = True
+        else:
+            self.dash.styles.animate("opacity", value=0.0, duration=0.5)
+            self.dash_open = False
+            self.dash_timer = 0
 
     # Dash Reveal Trigger
     @on(events.MouseEvent)
@@ -56,14 +63,11 @@ class DesktopBase(Screen):
             term_width, term_height
             ):
             if self.dash.opacity == 0.0:
-                self.dash_open = True
-                self.dash.styles.animate("opacity", value=100.0, duration=1.5)
+                self.dash_animation(True)
             else:
                 pass
         else:
-            self.dash.styles.animate("opacity", value=0.0, duration=0.5)
-            self.dash_timer = 0
-            self.dash_open = False
+            self.dash_animation(False)
     # End Dash Reveal
 
 class Desktop(App):

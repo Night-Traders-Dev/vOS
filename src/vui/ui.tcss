@@ -46,6 +46,8 @@ DesktopBase {
 #dashbutton {
    box-sizing: border-box;
    layer: three;
-   background: rgb(233, 84, 32);
+   background: rgba(233, 84, 32, 0);
    border: tall grey;
+   height: 1;
+   width: 6;
 }
