@@ -1,46 +1,56 @@
 DesktopBase {
-   layers: one two three four;
-   background: rgb(44, 0, 30);
-   layout: grid;
-   grid-size: 2;
-   grid-columns: 10% 90%;
-   grid-rows: 10% 90%;
-   width: 100%;
-   height: 100%;
-   layer: one;
+    layers: one two three four;
+    background: rgb(44, 0, 30);
+    layout: grid;
+    grid-rows: 1fr 9fr;
+    grid-columns: 1fr 9fr;
+    width: 100%;
+    height: 100%;
+    layer: one;
 }
 
 #dash {
-   layout: vertical;
-   background: rgb(94, 39, 80);
-   opacity: 0.0;
-   height: 100%;
-   width: 10%;
-   dock: left;
-   layer: two;
+    layout: vertical;
+    background: rgb(94, 39, 80);
+    opacity: 0.0;
+    height: 100%;
+    width: 10%;
+    dock: left;
+    layer: two;
 }
-
 
 #topbar {
-   layout: vertical;
-   align: center top;
-   background: rgba(119, 33, 111, 100);
-   height: 7.5%;
-   width: 100%;
-   dock: top;
-   layer: two;
+    layout: vertical;
+    align: center top;
+    background: rgba(119, 33, 111, 100);
+    height: 7.5%;
+    width: 100%;
+    dock: top;
+    layer: two;
 }
-
 
 #clock {
-
-   offset-x: -2;
-   background: rgba(119, 33, 111, 100);   
-   color: rgb(17, 17, 17);
-   text-style: bold;
-   dock: top;
-   layer: three;
-   content-align: right top;
+    offset-x: -2;
+    background: rgba(119, 33, 111, 100);   
+    color: rgb(17, 17, 17);
+    text-style: bold;
+    dock: top;
+    layer: three;
+    content-align: right top;
 }
 
 
+
+DashScreen {
+    align: center middle;
+}
+
+#Dashboard {
+    grid-size: 2;
+    grid-gutter: 1 2;
+    grid-rows: 1fr 3;
+    padding: 0 1;
+    width: 60;
+    height: 11;
+    background: $surface;
+}

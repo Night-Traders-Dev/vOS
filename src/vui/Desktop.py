@@ -1,8 +1,9 @@
 from textual.app import App, ComposeResult
 from textual.color import Color
 from textual.widgets import Static, LoadingIndicator
+from textual.containers import Grid
 from textual.geometry import Region
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 from textual import on, events, work
 from datetime import datetime
 
@@ -11,7 +12,6 @@ class DesktopBase(Screen):
 
     def compose(self) -> ComposeResult:
         self.dash = Static(id="dash", classes="DashClass")
-        self.dashhelp = "This is the vOS dash"
         yield self.dash
         yield Static(id="topbar")
         yield Static("", id="clock")
@@ -19,7 +19,6 @@ class DesktopBase(Screen):
     # Clock Method
     @on(events.Mount)
     def clock_timer(self) -> None:
-        self.notify("Welcome to vOS\nDesktop Environmemt", title="vOS Notification")
         self.dash_open = False
         self.dash_timer = 0
         self.update_clock()
@@ -66,16 +65,39 @@ class DesktopBase(Screen):
             ):
             if self.dash.opacity == 0.0:
                 self.dash_animation(True)
-                self.notify(self.dashhelp, title="vOS Notification")
             else:
-                pass
+                self.app.push_screen(DashScreen())
+
         else:
             self.dash_animation(False)
     # End Dash Reveal
 
+
+
+class DashScreen(ModalScreen):
+
+    def compose(self) -> ComposeResult:
+        yield Grid(id="Dashboard")
+        yield Static(id="topbar")
+        yield Static("", id="clock")
+
+    # Clock Method
+    @on(events.Mount)
+    def clock_timer(self) -> None:
+        self.update_clock()
+        self.set_interval(1, self.update_clock)
+
+    def update_clock(self) -> None:
+        clock = datetime.now().time()
+        self.query_one("#clock", Static).update(f"{clock:%T}")
+    # End Clock
+    @on(events.MouseEvent)
+    def go_back(self):
+        self.app.push_screen(DesktopBase())
+
 class Desktop(App):
     CSS_PATH = "ui.tcss"
-    SCREENS = {"DesktopBase": DesktopBase()}
+    SCREENS = {"DesktopBase": DesktopBase(), "DashScreen": DashScreen()}
 
     @work
     async def on_mount(self) -> None:
