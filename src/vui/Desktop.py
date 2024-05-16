@@ -37,7 +37,11 @@ class DesktopBase(Screen):
     # End Clock
 
     # MouseMove Alternative
-    def is_mouse_over_widget(self, widget_x, widget_y, widget_width, widget_height, mouse_x, mouse_y, screen_width, screen_height):
+    def is_mouse_over_widget(
+        self, widget_x, widget_y, widget_width, widget_height,
+        mouse_x, mouse_y,
+        screen_width, screen_height
+        ):
         return widget_x <= mouse_x <= widget_x + widget_width and widget_y <= mouse_y <= widget_y + widget_height
 
     # Dash Reveal Trigger
@@ -46,7 +50,11 @@ class DesktopBase(Screen):
         dash_loc = self.dash.region
         term_height = 24
         term_width = 80
-        if self.is_mouse_over_widget(dash_loc.x, dash_loc.y, dash_loc.width, dash_loc.height, event.x, event.y, term_width, term_height):
+        if self.is_mouse_over_widget(
+            dash_loc.x, dash_loc.y, dash_loc.width, dash_loc.height,
+            event.x, event.y,
+            term_width, term_height
+            ):
             if self.dash.opacity == 0.0:
                 self.dash_open = True
                 self.dash.styles.animate("opacity", value=100.0, duration=1.5)
