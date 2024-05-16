@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.color import Color
-from textual.widgets import Static
+from textual.widgets import Static, LoadingIndicator
 from textual.geometry import Region
 from textual.screen import Screen
 from textual import on, events, work
@@ -11,11 +11,10 @@ class DesktopBase(Screen):
 
     def compose(self) -> ComposeResult:
         self.dash = Static(id="dash", classes="DashClass")
+        self.dashhelp = "This is the vOS dash"
         yield self.dash
         yield Static(id="topbar")
         yield Static("", id="clock")
-        self.dashbutton = Static(id="dashbutton", classes="DashClass")
-        yield self.dashbutton
 
     # Clock Method
     @on(events.Mount)
@@ -47,19 +46,11 @@ class DesktopBase(Screen):
     def dash_animation(self, reveal: bool):
         if reveal:
             self.dash.styles.animate("opacity", value=100.0, duration=1.5)
-            self.dashbutton.styles.animate("opacity", value=100.0, duration=2.5)
             self.dash_open = True
         else:
             self.dash.styles.animate("opacity", value=0.0, duration=0.5)
-            self.dashbutton.styles.animate("opacity", value=0.0, duration=0.5)
             self.dash_open = False
             self.dash_timer = 0
-
-    # Dash Buttom Event
-    @on(events.Click)
-    def dash_click(self, event: events.MouseEvent) -> None:
-        if self.dashbutton.opacity == 100.0:
-           self.dash_animation(False)
 
 
     # Dash Reveal Trigger
@@ -75,6 +66,7 @@ class DesktopBase(Screen):
             ):
             if self.dash.opacity == 0.0:
                 self.dash_animation(True)
+                self.notify(self.dashhelp, title="vOS Notification")
             else:
                 pass
         else:

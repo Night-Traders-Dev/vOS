@@ -44,16 +44,3 @@ DesktopBase {
 }
 
 
-#dashbutton {
-   layout: horizontal;
-   align: center middle;
-   background: rgba(255, 255, 255, 0.8);
-   padding: 1;
-   color: black;
-   width: 60w;
-   height: 20h;
-   layer: three;
-   offset-y: 4;
-   offset-x: 2;
-   opacity: 0.0;
-}
