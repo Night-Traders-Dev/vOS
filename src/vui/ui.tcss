@@ -1,14 +1,31 @@
-Screen {
-   width: 100%;
-   height: 100%;
+DesktopBase {
    background: rgb(44, 0, 30);
+   layer: one;
+   width: 80;
+   height: 24;
    layers: one two three four;
 }
+#DesktopUI {
+   background: rgb(44, 0, 30);
+   height: 100%;
+   width: 100%;
+   layer: one;
+}
+
+#AppDrawer {
+   background: rgb(174, 167, 159);
+   height: 60%;
+   width: 60%;
+   layer: two;
+   margin: 1;
+}
+
+
 #dash {
    layer: two;
    background: rgb(94, 39, 80);
-   height: 100%;
-   width: 15%;
+   height: 100vh;
+   width: 15vw;
    opacity: 0.0;
    dock: top;
 }
@@ -17,19 +34,19 @@ Screen {
 #topbar {
    layer: three;
    background: rgb(119, 33, 111);
-   height: 7.5%;
-   width: 100%;
+   height: 10.5h;
+   width: 100w;
    opacity: 100.0;
    dock: top;
 }
 
 #clock {
    layer: four;
-   background: rgb(119, 33, 111);
+   background: rgba(119, 33, 111, 0);
    color: rgb(17, 17, 17);
-   width: 30;
-   height: 3;
-   align: right top;
-   margin-left: 48;
+   width: 40w;
+   height: 100h;
+   dock: right;
 }
+
 

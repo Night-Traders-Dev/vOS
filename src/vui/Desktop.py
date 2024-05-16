@@ -1,12 +1,66 @@
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult, RenderResult
+from textual.renderables.gradient import LinearGradient
 from textual.color import Color
-from textual.widgets import Static, Digits
+from textual.widgets import Static, Digits, Button
 from textual.widget import Widget
 from textual.reactive import reactive
 from textual.geometry import Region
 from textual.screen import Screen
 from textual import on, events, work
 from datetime import datetime
+from math import sin, pi
+from time import time
+
+
+COLORS = [
+    "#2C001E",
+    "#3A052B",
+    "#481A38",
+    "#562445",
+    "#643052",
+    "#713A5F",
+    "#7F456C",
+    "#8D4F79",
+    "#9B5A86",
+    "#A96593",
+    "#77216F",
+]
+
+STOPS = [
+     (i / (len(COLORS) - 1), color) for i, color in enumerate(COLORS)
+]
+
+
+class TopClock(Digits):
+
+    pass
+#    @on(events.Load)
+#    def render(self) -> RenderResult:
+#        amplitude = 0.1
+#        frequency = 3.5
+#        rotation = sin(time() * frequency) * pi * amplitude
+#        return LinearGradient(rotation, STOPS)
+
+class TopBar(Static):
+    def compose(self) -> None:
+        yield TopClock("", id="clock")
+
+    def render(self) -> RenderResult:
+        # Adjust amplitude and frequency for smoother animation
+        amplitude = 0.15  # Adjust amplitude between 0 and 1
+        frequency = 1.5  # Adjust frequency based on desired speed
+        rotation = sin(time() * frequency) * pi * amplitude
+        return LinearGradient(rotation, STOPS)
+
+    #Clock Method
+    @on(events.Mount)
+    def clock_timer(self) -> None:
+        self.update_clock()
+        self.set_interval(1, self.update_clock)
+
+    def update_clock(self) -> None:
+        clock = datetime.now().time()
+        self.query_one(Digits).update(f"{clock:%T}")
 
 
 class DesktopUI(Widget):
@@ -15,10 +69,15 @@ class DesktopUI(Widget):
     def compose(self) -> ComposeResult:
         self.dash = Static(id="dash")
         yield self.dash
-        self.top_bar = Static(id="topbar")
+        self.top_bar = TopBar(id="topbar")
         yield self.top_bar
-        yield Digits("", id="clock")
+        yield Button(id="DrawerButton")
 
+
+    @on(Button.Pressed, "#DrawerButton")
+    def OpenDrawer(self):
+        if self.dash.opacity == 100.0:
+            pass
 
     def is_mouse_over_widget(self, widget_x, widget_y, widget_width, widget_height, mouse_x, mouse_y, screen_width, screen_height):
         return widget_x <= mouse_x <= widget_x + widget_width and widget_y <= mouse_y <= widget_y + widget_height
@@ -38,30 +97,27 @@ class DesktopUI(Widget):
             self.dash.styles.animate("opacity", value=0.0, duration=0.5)
 
 
-    #Clock Method
-    @on(events.Mount)
-    def clock_timer(self) -> None:
-        self.update_clock()
-        self.set_interval(1, self.update_clock)
-
-    def update_clock(self) -> None:
-        clock = datetime.now().time()
-        self.query_one(Digits).update(f"{clock:%T}")
 
 
+class AppDrawer(Screen):
+
+   def compose(self) -> ComposeResult:
+     yield Widget(id="AppDrawer")
 
 class DesktopBase(Screen):
 
     def compose(self) -> ComposeResult:
-        yield DesktopUI()
+        yield DesktopUI(id="DesktopUI")
+
 
 class Desktop(App):
     CSS_PATH = "ui.tcss"
-    SCREENS = {"DesktopBase": DesktopBase}
+    SCREENS = {"DesktopBase": DesktopBase(), "AppDrawer": AppDrawer()}
+    MODES= {"DesktopBase": DesktopBase(), "AppDrawer": AppDrawer()}
 
     @work
     async def on_mount(self) -> None:
-        self.push_screen("DesktopBase")
+        await self.push_screen_wait("DesktopBase")
 
 if __name__ == "__main__":
     app = Desktop()
