@@ -20,6 +20,7 @@ class DesktopBase(Screen):
     # Clock Method
     @on(events.Mount)
     def clock_timer(self) -> None:
+        self.notify("Welcome to vOS\nDesktop Environmemt", title="vOS Notification")
         self.dash_open = False
         self.dash_timer = 0
         self.update_clock()
@@ -55,17 +56,10 @@ class DesktopBase(Screen):
             self.dash_timer = 0
 
     # Dash Buttom Event
-    @on(events.MouseEvent)
+    @on(events.Click)
     def dash_click(self, event: events.MouseEvent) -> None:
-        dash_loc = self.dashbutton.region
-        term_height = 24
-        term_width = 80
-        if self.is_mouse_over_widget(
-            dash_loc.x, dash_loc.y, dash_loc.width, dash_loc.height,
-            event.x, event.y,
-            term_width, term_height
-            ):
-            self.dash_animation(False)
+        if self.dashbutton.opacity == 100.0:
+           self.dash_animation(False)
 
 
     # Dash Reveal Trigger
