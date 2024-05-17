@@ -34,7 +34,7 @@ class SettingsScreen(Screen):
 
         def on_click(self) -> None:
             if self.setting == "back":
-                pass
+                self.app.push_screen("DesktopBase")
 
     CSS_PATH = "Desktop.tcss"
 
