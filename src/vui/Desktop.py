@@ -74,7 +74,7 @@ class DesktopBase(Screen):
 
 
 
-class DashScreen(ModalScreen):
+class DashScreen(ModalScreen[str]):
 
     def compose(self) -> ComposeResult:
         yield Grid(id="Dashboard")
@@ -93,7 +93,7 @@ class DashScreen(ModalScreen):
     # End Clock
     @on(events.MouseEvent)
     def go_back(self):
-        self.app.push_screen(DesktopBase())
+        self.dismiss("App Name")
 
 class Desktop(App):
     CSS_PATH = "ui.tcss"

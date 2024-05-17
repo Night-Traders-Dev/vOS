@@ -46,11 +46,5 @@ DashScreen {
 }
 
 #Dashboard {
-    grid-size: 2;
-    grid-gutter: 1 2;
-    grid-rows: 1fr 3;
-    padding: 0 1;
-    width: 60;
-    height: 11;
-    background: $surface;
+    background: rgba(233, 84, 32, 0.08);
 }
