@@ -16,6 +16,13 @@ class DesktopBase(Screen):
         yield self.dash
         yield Static(id="topbar")
         yield Static("", id="clock")
+        yield Static("App One", classes="dashapp")
+#        yield Static("App Two", classes="dashapp")
+#        yield Static("App Three", classes="dashapp")
+#        yield Static("App Four", classes="dashapp")
+#        yield Static("App Five", classes="dashapp")
+#        yield Static("App Six", classes="dashapp")
+
 
     # Clock Method
     @on(events.Mount)

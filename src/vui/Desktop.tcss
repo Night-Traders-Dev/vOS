@@ -10,15 +10,22 @@ DesktopBase {
 }
 
 #dash {
-    layout: vertical;
+    layout: grid;
+    grid-size: 0 6;
     background: rgb(94, 39, 80);
     opacity: 0.0;
     height: 1fr;
     width: 8;
     dock: left;
     layer: one;
-}
 
+.dashapp {
+
+   border: solid rgba(233, 84, 32, 0.2);
+   layer: two;
+   opacity: 100.0;
+}
+}
 #topbar {
     layout: vertical;
     align: center top;
@@ -100,7 +107,7 @@ SettingsScreen {
 
 
 
-.sidebutton {
+SettingButton {
    height: 4;
    width: 1fr;
    color: rgb(191, 189, 183);

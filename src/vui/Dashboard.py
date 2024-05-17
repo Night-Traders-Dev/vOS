@@ -25,7 +25,6 @@ class DashScreen(ModalScreen[str]):
         yield Static("App Eight", classes="box")
         yield Static("App Nine", classes="box")
 
-
     # Clock Method
     @on(events.Mount)
     def clock_timer(self) -> None:
