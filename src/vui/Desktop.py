@@ -6,6 +6,7 @@ from textual.geometry import Region
 from textual.screen import Screen, ModalScreen
 from textual import on, events, work
 from datetime import datetime
+from Settings import SettingsScreen
 
 
 class DesktopBase(Screen):
@@ -66,7 +67,7 @@ class DesktopBase(Screen):
             if self.dash.opacity == 0.0:
                 self.dash_animation(True)
             else:
-                self.app.push_screen(DashScreen())
+                self.app.push_screen("DashScreen")
 
         else:
             self.dash_animation(False)
@@ -77,9 +78,18 @@ class DesktopBase(Screen):
 class DashScreen(ModalScreen[str]):
 
     def compose(self) -> ComposeResult:
-        yield Grid(id="Dashboard")
         yield Static(id="topbar")
         yield Static("", id="clock")
+        yield Static("App One", classes="box")
+        yield Static("App Two", classes="box")
+        yield Static("App Three", classes="box")
+        yield Static("App Four", classes="box")
+        yield Static("App Five", classes="box")
+        yield Static("App Six", classes="box")
+        yield Static("App Seven", classes="box")
+        yield Static("App Eight", classes="box")
+        yield Static("App Nine", classes="box")
+
 
     # Clock Method
     @on(events.Mount)
@@ -93,11 +103,12 @@ class DashScreen(ModalScreen[str]):
     # End Clock
     @on(events.MouseEvent)
     def go_back(self):
-        self.dismiss("App Name")
+        self.app.push_screen("SettingsScreen")
+#        self.dismiss("App Name")
 
 class Desktop(App):
-    CSS_PATH = "ui.tcss"
-    SCREENS = {"DesktopBase": DesktopBase(), "DashScreen": DashScreen()}
+    CSS_PATH = "Desktop.tcss"
+    SCREENS = {"DesktopBase": DesktopBase(), "DashScreen": DashScreen(), "SettingsScreen": SettingsScreen()}
 
     @work
     async def on_mount(self) -> None:
