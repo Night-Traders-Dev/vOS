@@ -7,6 +7,7 @@ from textual.screen import Screen, ModalScreen
 from textual import on, events, work
 from datetime import datetime
 from Settings import SettingsScreen
+from components.background_gradient import ScreenSaver
 
 
 class DesktopBase(Screen):
@@ -27,6 +28,7 @@ class DesktopBase(Screen):
     # Clock Method
     @on(events.Mount)
     def clock_timer(self) -> None:
+        self.idle_timer = 0
         self.dash_open = False
         self.dash_timer = 0
         self.update_clock()
@@ -38,6 +40,11 @@ class DesktopBase(Screen):
               self.dash_timer += 1
            else:
               self.dash_animation(False)
+        if self.idle_timer == 60:
+            self.idle_timer = 0
+            self.app.push_screen("ScreenSaver")
+        else:
+            self.idle_timer += 1
         clock = datetime.now().time()
         self.query_one("#clock", Static).update(f"{clock:%T}")
     # End Clock
@@ -63,6 +70,7 @@ class DesktopBase(Screen):
     # Dash Reveal Trigger
     @on(events.MouseEvent)
     def dash_thrigger(self, event: events.MouseEvent) -> None:
+        self.idle_timer = 0
         dash_loc = self.dash.region
         term_height = 24
         term_width = 80
@@ -115,7 +123,7 @@ class DashScreen(ModalScreen[str]):
 
 class Desktop(App):
     CSS_PATH = "Desktop.tcss"
-    SCREENS = {"DesktopBase": DesktopBase(), "DashScreen": DashScreen(), "SettingsScreen": SettingsScreen()}
+    SCREENS = {"DesktopBase": DesktopBase(), "DashScreen": DashScreen(), "SettingsScreen": SettingsScreen(), "ScreenSaver": ScreenSaver()}
 
     @work
     async def on_mount(self) -> None:

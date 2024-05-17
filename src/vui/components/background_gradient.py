@@ -2,7 +2,9 @@ import random
 from time import time
 from math import sin, pi, cos
 
-from textual.app import App, ComposeResult, RenderResult
+from textual import on, events
+from textual.app import ComposeResult, RenderResult
+from textual.screen import Screen
 from textual.containers import Container
 from textual.color import Gradient
 from textual.renderables.gradient import LinearGradient
@@ -96,7 +98,7 @@ class Splash(Container):
     colors = generate_random_colors(2)
 
     def on_mount(self) -> None:
-        self.auto_refresh = 1  # Refresh rate
+        self.auto_refresh = 10  # Refresh rate
         self.last_update_time = time()
         self.gradient_stops_cache = []  # Cache for gradient stops
         self.cache_size = 2048  # Size of the cache
@@ -157,12 +159,13 @@ class Splash(Container):
         return LinearGradient(rotation, stops)
 
 
-class SplashApp(App):
+    @on(events.MouseEvent)
+    def return_to_desktop(self):
+        self.app.push_screen("DesktopBase")
+
+class ScreenSaver(Screen):
 
     def compose(self) -> ComposeResult:
         yield Splash()
 
 
-if __name__ == "__main__":
-    app = SplashApp()
-    app.run()
