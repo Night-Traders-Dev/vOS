@@ -35,6 +35,8 @@ class SettingsScreen(Screen):
         def on_click(self) -> None:
             if self.setting == "back":
                 self.app.push_screen("DesktopBase")
+            else:
+                self.notify(f"{self.setting} pressed", title="vOS Notification")
 
     CSS_PATH = "Desktop.tcss"
 
